@@ -5,6 +5,7 @@ on:
       - main
 jobs:
   Binary:
+    needs: Standalone
     env:
       date: 000000
     runs-on: ubuntu-latest
