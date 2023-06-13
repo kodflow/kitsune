@@ -1,0 +1,12 @@
+## BUILDER
+FROM kodmain/kitsune.standalone as standalone
+
+## RUNNER
+FROM scratch as runner
+
+ARG BINARY_NAME=NO_SERVICE
+ENV BINARY_NAME=${BINARY_NAME}
+
+COPY --from=standalone /run/${BINARY_NAME} /run/service
+WORKDIR /run
+ENTRYPOINT [ "/run/service" ]
