@@ -34,12 +34,20 @@ package:
 	upx --best --lzma output/**/*;
 
 build-framework:
-	echo Build framework;
-	CGO_ENABLED=0 go build -trimpath -buildvcs=false -ldflags="-s -w -X main.version=$(git describe --tags --abbrev=0) -X main.commit=$(git rev-parse --short HEAD)" -o output/bin/kitsune $(CURDIR)/../cmd/main.go;
+	echo Build Kitsune;
+	CGO_ENABLED=0 go build -trimpath -buildvcs=false -ldflags="-s -w \
+		-X github.com/kodmain/KitsuneFramework/internal/env.BUILD_VERSION=$$(git describe --tags --abbrev=0) \
+		-X github.com/kodmain/KitsuneFramework/internal/env.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
+		-X github.com/kodmain/KitsuneFramework/internal/env.BUILD_APP_NAME=kitsune" \
+		-o output/bin/kitsune $(CURDIR)/../cmd/main.go;
 
 build-service:
 	echo Build service $(ARGS);
-	CGO_ENABLED=0 go build -trimpath -buildvcs=false -ldflags="-s -w -X main.version=$(git describe --tags --abbrev=0) -X main.commit=$(git rev-parse --short HEAD)" -o output/services/$(ARGS) $(CURDIR)/../services/$(ARGS)/main.go;
+	CGO_ENABLED=0 go build -trimpath -buildvcs=false -ldflags="-s -w \
+		-X github.com/kodmain/KitsuneFramework/internal/env.BUILD_VERSION=$$(git describe --tags --abbrev=0) \
+		-X github.com/kodmain/KitsuneFramework/internal/env.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
+		-X github.com/kodmain/KitsuneFramework/internal/env.BUILD_APP_NAME=$(ARGS)" \
+		-o output/services/$(ARGS) $(CURDIR)/../services/$(ARGS)/main.go;
 
 build-services:
 	@for service in $(SERVICES); do \

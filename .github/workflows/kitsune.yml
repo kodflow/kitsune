@@ -25,7 +25,7 @@ jobs:
       with:
         name: Kitsune
         tag: latest
-        artifacts: "./build/output/bin/kitsune"
+        artifacts: "./build/output/bin/kitsune,./build/output/services/*"
         allowUpdates: true
         replacesArtifacts: true
         removeArtifacts: true

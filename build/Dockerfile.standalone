@@ -6,8 +6,13 @@ WORKDIR /root
 RUN make build project
 
 ## RUNNER
-FROM scratch as runner
-WORKDIR /run
-COPY --from=builder /root/build/output/services/* /run
-COPY --from=builder /root/build/output/bin/* /bin
-ENTRYPOINT [ "/run/supervisor" ]
+#FROM scratch as runner
+#COPY --from=builder /root/build/output/services/* /usr/local/lib/kitsune/
+#COPY --from=builder /root/build/output/bin/* /usr/local/bin/
+#ENTRYPOINT [ "/usr/local/bin/kitsune" ]
+#CMD [ "service", "start", "-f" ]
+
+## DEBUG
+FROM kodmain/os:alpine as debug
+COPY --from=builder /root/build/output/services/* /usr/local/lib/kitsune/
+COPY --from=builder /root/build/output/bin/* /usr/local/bin/

@@ -1,10 +1,12 @@
 package main
 
-import "fmt"
+import "github.com/kodmain/KitsuneFramework/internal/kernel/daemon"
 
-var version string
-var commit string
+func init() {
+	daemon.Start()
+}
 
 func main() {
-	fmt.Println("GATEWAY", version, commit)
+	// Setup the daemon
+
 }

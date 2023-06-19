@@ -34,5 +34,9 @@ start: ## Start services
 stop: ## Stop services
 	docker compose -f build/compose.yml --profile=services down
 
-standalone: ## Start services in portable version
+aio: ## Start services in portable version
 	docker compose -f build/compose.yml --profile=standalone up
+
+run: ## Run services in portable version
+	docker compose -f build/compose.yml --profile=standalone build
+	docker compose -f build/compose.yml --profile=standalone run --rm kitsune.$(ARGS)
