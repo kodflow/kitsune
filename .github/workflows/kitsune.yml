@@ -23,8 +23,8 @@ jobs:
     - name: Create Kitsune CLI
       uses: ncipollo/release-action@v1
       with:
-        name: Kitsune
-        tag: cli
+        name: Kitsune Framework
+        tag: framework
         artifacts: "./build/output/bin/kitsune"
         allowUpdates: true
         replacesArtifacts: true
