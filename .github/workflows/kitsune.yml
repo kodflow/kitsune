@@ -24,7 +24,7 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         name: Kitsune
-        tag: latest
+        tag: cli
         artifacts: "./build/output/bin/kitsune"
         allowUpdates: true
         replacesArtifacts: true
@@ -34,7 +34,7 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         name: Kitsune Services
-        tag: latest
+        tag: services
         artifacts: "./build/output/services/*"
         allowUpdates: true
         replacesArtifacts: true
