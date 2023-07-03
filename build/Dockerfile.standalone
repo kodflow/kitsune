@@ -1,8 +1,8 @@
 ## BUILDER
 FROM kodmain/builder:go AS builder
 USER root:root
-COPY ./src /root
-COPY ./go.mod /root/go.mod
+COPY ./src 		/root/src
+COPY ./go.mod 	/root/go.mod
 COPY ./Makefile /root/Makefile
 
 WORKDIR /root
