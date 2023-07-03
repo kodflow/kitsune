@@ -22,48 +22,19 @@ func Start(handlers ...*Handler) {
 	fmt.Println(env.BUILD_APP_NAME, "start")
 
 	if _, err := GetPID(env.BUILD_APP_NAME); err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
+		handleErrorAndExit(err)
 	}
 
 	if err := SetPID(); err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
+		handleErrorAndExit(err)
 	}
 
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	go func() {
-		<-sigs
-		ClearPID(env.BUILD_APP_NAME)
-		done <- true
-	}()
+	go handleSignal()
 
 	for _, handler := range handlers {
-		go func(handler *Handler) {
-			count := 0
-			startTime := time.Now()
-
-			for {
-				fmt.Println(env.BUILD_APP_NAME, handler.Name, "start")
-				if err := handler.Call(); err != nil {
-					fmt.Println(env.BUILD_APP_NAME, handler.Name, "fail")
-					if count >= 2 {
-						elapsedTime := time.Since(startTime)
-						if elapsedTime < time.Minute {
-							fmt.Println(env.BUILD_APP_NAME, handler.Name, "exit")
-							done <- true
-							break
-						}
-						count = 0
-						startTime = time.Now()
-					}
-					count++
-				} else {
-					break
-				}
-			}
-		}(handler)
+		go processHandler(handler)
 	}
 
 	<-done
@@ -73,4 +44,39 @@ func Start(handlers ...*Handler) {
 func Stop() {
 	fmt.Println(env.BUILD_APP_NAME, "stop")
 	sigs <- syscall.SIGTERM
+}
+
+func handleErrorAndExit(err error) {
+	fmt.Println(err.Error())
+	os.Exit(1)
+}
+
+func handleSignal() {
+	<-sigs
+	ClearPID(env.BUILD_APP_NAME)
+	done <- true
+}
+
+func processHandler(handler *Handler) {
+	count := 0
+	startTime := time.Now()
+
+	for {
+		fmt.Println(env.BUILD_APP_NAME, handler.Name, "start")
+		if err := handler.Call(); err != nil {
+			fmt.Println(env.BUILD_APP_NAME, handler.Name, "fail")
+			if count >= 2 && shouldExit(count, startTime) {
+				done <- true
+				break
+			}
+			count++
+		} else {
+			break
+		}
+	}
+}
+
+func shouldExit(count int, startTime time.Time) bool {
+	elapsedTime := time.Since(startTime)
+	return elapsedTime < time.Minute
 }

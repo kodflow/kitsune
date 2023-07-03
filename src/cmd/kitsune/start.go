@@ -32,8 +32,8 @@ var startCmd = &cobra.Command{
 	Short: "Start all kitsune-services",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		var SERVICE_SUPERVISOR string = filepath.Join(env.PATH_SERVICES, "supervisor")
-		var exec *exec.Cmd = exec.Command(SERVICE_SUPERVISOR)
+		var serviceSupervisor string = filepath.Join(env.PATH_SERVICES, "supervisor")
+		var exec *exec.Cmd = exec.Command(serviceSupervisor)
 		var err error = nil
 
 		if forceRun {
