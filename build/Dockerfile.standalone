@@ -1,7 +1,10 @@
 ## BUILDER
 FROM kodmain/builder:go AS builder
 USER root:root
-COPY . /root
+COPY ./src /root
+COPY ./go.mod /root/go.mod
+COPY ./Makefile /root/Makefile
+
 WORKDIR /root
 RUN make build project
 RUN make build binary-only
