@@ -58,7 +58,12 @@ build-services:
 		make build-service $$(basename $$service);\
 	done
 
-project: clean build-framework build-services package ## Build all for current env
+update: ## Install/Update vendor
+	echo "Update all dependencies"
+	go get -u ../...
+	go mod tidy
+
+project: clean update build-framework build-services package ## Build all for current env
 
 binary-only:
 	find . | grep -E 'sha1|md5' | xargs rm;
