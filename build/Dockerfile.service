@@ -1,8 +1,8 @@
 ## BUILDER
-FROM kodmain/kitsune.standalone as standalone
+FROM kodmain/kitsune.standalone AS standalone
 
 ## RUNNER
-FROM scratch as runner
+FROM scratch AS runner
 
 ARG BINARY_NAME=NO_SERVICE
 ENV BINARY_NAME=${BINARY_NAME}

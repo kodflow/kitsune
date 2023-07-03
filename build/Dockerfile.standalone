@@ -1,5 +1,5 @@
 ## BUILDER
-FROM kodmain/builder:go as builder
+FROM kodmain/builder:go AS builder
 USER root:root
 COPY / /root
 WORKDIR /root
@@ -7,14 +7,14 @@ RUN make build project
 RUN make build binary-only
 
 ## RUNNER
-FROM scratch as runner
+FROM scratch AS runner
 COPY --from=builder /root/build/output/services/* /etc/kitsune/services/
 COPY --from=builder /root/build/output/bin/* /usr/local/bin/
 ENTRYPOINT [ "/usr/local/bin/kitsune" ]
 CMD [ "service", "start", "-f" ]
 
 ## DEBUG
-FROM kodmain/os:alpine as debug
+FROM kodmain/os:alpine AS debug
 COPY --from=builder /root/build/output/services/* /etc/kitsune/services/
 COPY --from=builder /root/build/output/bin/* /usr/local/bin/
 USER root:root
