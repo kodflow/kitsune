@@ -6,12 +6,12 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/d5102bdf5504b9ce56ce/maintainability)](https://codeclimate.com/github/kodmain/kitsune/maintainability)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/3a89526aa9624788a14e1d443a82a2f2)](https://www.codacy.com/gh/kodmain/kitsune/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=kodmain/kitsune&amp;utm_campaign=Badge_Grade)
 
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=anotherhope_FizzBuzz&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=anotherhope_FizzBuzz)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=anotherhope_FizzBuzz&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=anotherhope_FizzBuzz)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=anotherhope_FizzBuzz&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=anotherhope_FizzBuzz)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=anotherhope_FizzBuzz&metric=bugs)](https://sonarcloud.io/summary/new_code?id=anotherhope_FizzBuzz)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=anotherhope_FizzBuzz&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=anotherhope_FizzBuzz)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=anotherhope_FizzBuzz&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=anotherhope_FizzBuzz)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=bugs)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
 
 
 Kitsune is a lightweight microservice-oriented framework designed to simplify the development and deployment of microservices across different cloud providers. Its goal is to provide developers with an intuitive and flexible toolkit to build scalable and resilient applications.
