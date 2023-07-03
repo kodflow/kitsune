@@ -19,7 +19,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
     - name: Install/Update vendor
-      run: make update
+      run: make build update
     - name: Generate coverage report
       run: |
         go test `go list ./...` -coverprofile=coverage.txt -covermode=atomic
