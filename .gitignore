@@ -24,3 +24,5 @@ output
 *.tfstate*
 .DS_store
 Thumbs.db
+
+coverage.txt
