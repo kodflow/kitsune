@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kodmain/kitsune/internal/env"
-	"github.com/kodmain/kitsune/internal/storages/fs"
+	"github.com/kodmain/kitsune/src/internal/env"
+	"github.com/kodmain/kitsune/src/internal/storages/fs"
 )
 
 func getPIDFilePath(processName string) string {

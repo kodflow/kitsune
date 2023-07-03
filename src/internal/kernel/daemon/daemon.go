@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kodmain/kitsune/internal/env"
+	"github.com/kodmain/kitsune/src/internal/env"
 )
 
 type Handler struct {

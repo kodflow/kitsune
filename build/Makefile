@@ -25,7 +25,7 @@ help: #Pour générer automatiquement l'aide ## Display all commands available
 	echo '╚──────────────────────────────────────────────────>'
 	echo ''
 
-SERVICES := $(wildcard ../services/*)
+SERVICES := $(wildcard ../src/services/*)
 
 clean:
 	rm -rf output/*
@@ -36,20 +36,20 @@ package:
 build-framework:
 	echo Build Kitsune;
 	CGO_ENABLED=0 go build -trimpath -buildvcs=false -ldflags="-s -w \
-		-X github.com/kodmain/kitsune/internal/env.BUILD_VERSION=$$(git describe --tags --abbrev=0) \
-		-X github.com/kodmain/kitsune/internal/env.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
-		-X github.com/kodmain/kitsune/internal/env.BUILD_APP_NAME=kitsune" \
-		-o output/bin/kitsune $(CURDIR)/../cmd/main.go;
+		-X github.com/kodmain/kitsune/src/internal/env.BUILD_VERSION=$$(git describe --tags --abbrev=0) \
+		-X github.com/kodmain/kitsune/src/internal/env.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
+		-X github.com/kodmain/kitsune/src/internal/env.BUILD_APP_NAME=kitsune" \
+		-o output/bin/kitsune $(CURDIR)/../src/cmd/main.go;
 	sha1sum output/bin/kitsune | awk '{ print $$1 }' | tr -d '\n' >> output/bin/kitsune.sha1;
 	md5sum  output/bin/kitsune | awk '{ print $$1 }' | tr -d '\n' >> output/bin/kitsune.md5;
 
 build-service:
 	echo Build service $(ARGS);
 	CGO_ENABLED=0 go build -trimpath -buildvcs=false -ldflags="-s -w \
-		-X github.com/kodmain/kitsune/internal/env.BUILD_VERSION=$$(git describe --tags --abbrev=0) \
-		-X github.com/kodmain/kitsune/internal/env.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
-		-X github.com/kodmain/kitsune/internal/env.BUILD_APP_NAME=$(ARGS)" \
-		-o output/services/$(ARGS) $(CURDIR)/../services/$(ARGS)/main.go;
+		-X github.com/kodmain/kitsune/src/internal/env.BUILD_VERSION=$$(git describe --tags --abbrev=0) \
+		-X github.com/kodmain/kitsune/src/internal/env.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
+		-X github.com/kodmain/kitsune/src/internal/env.BUILD_APP_NAME=$(ARGS)" \
+		-o output/services/$(ARGS) $(CURDIR)/../src/services/$(ARGS)/main.go;
 	sha1sum output/services/$(ARGS) | awk '{ print $$1 }'  | tr -d '\n' > output/services/$(ARGS).sha1;
 	md5sum  output/services/$(ARGS) | awk '{ print $$1 }'  | tr -d '\n' > output/services/$(ARGS).md5;
 

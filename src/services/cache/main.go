@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/kodmain/kitsune/internal/kernel/daemon"
+	"github.com/kodmain/kitsune/src/internal/kernel/daemon"
 )
 
 func main() {

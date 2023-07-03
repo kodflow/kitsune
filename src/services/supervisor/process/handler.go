@@ -4,8 +4,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/kodmain/kitsune/internal/env"
-	"github.com/kodmain/kitsune/internal/kernel/daemon"
+	"github.com/kodmain/kitsune/src/internal/env"
+	"github.com/kodmain/kitsune/src/internal/kernel/daemon"
 )
 
 var Handler *daemon.Handler = &daemon.Handler{

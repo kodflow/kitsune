@@ -8,8 +8,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kodmain/kitsune/internal/env"
-	"github.com/kodmain/kitsune/internal/kernel/daemon"
+	"github.com/kodmain/kitsune/src/internal/env"
+	"github.com/kodmain/kitsune/src/internal/kernel/daemon"
 )
 
 type Process struct {
