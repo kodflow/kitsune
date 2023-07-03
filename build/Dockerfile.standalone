@@ -1,7 +1,7 @@
 ## BUILDER
 FROM kodmain/builder:go AS builder
 USER root:root
-COPY / /root
+COPY . /root
 WORKDIR /root
 RUN make build project
 RUN make build binary-only
