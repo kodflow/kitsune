@@ -2,6 +2,7 @@
 FROM kodmain/builder:go AS builder
 USER root:root
 COPY ./src 		/root/src
+COPY ./build 	/root/build
 COPY ./go.mod 	/root/go.mod
 COPY ./Makefile /root/Makefile
 
