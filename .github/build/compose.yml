@@ -6,8 +6,8 @@ services:
       - standalone
     container_name: kitsune.standalone
     build:
-      context: ../
-      dockerfile: build/Dockerfile.standalone
+      context: ../../
+      dockerfile: .github/build/Dockerfile.standalone
     image: kodmain/kitsune.standalone:latest
 
   kitsune.gateway: 
@@ -15,8 +15,8 @@ services:
       - services
     container_name: kitsune.gateway
     build:
-      context: ../
-      dockerfile: build/Dockerfile.service
+      context: ../../
+      dockerfile: .github/build/Dockerfile.service
       args:
         - BINARY_NAME=gateway
     image: kodmain/kitsune.gateway:latest
@@ -26,8 +26,8 @@ services:
       - services
     container_name: kitsune.cache
     build:
-      context: ../
-      dockerfile: build/Dockerfile.service
+      context: ../../
+      dockerfile: .github/build/Dockerfile.service
       args:
         - BINARY_NAME=cache
     image: kodmain/kitsune.cache:latest

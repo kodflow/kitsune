@@ -24,7 +24,7 @@ jobs:
       with:
         name: Kitsune Framework
         tag: framework
-        artifacts: "./build/output/bin/*"
+        artifacts: ".generated/bin/*"
         allowUpdates: true
         replacesArtifacts: true
         removeArtifacts: true
@@ -34,7 +34,7 @@ jobs:
       with:
         name: Kitsune Services
         tag: services
-        artifacts: "./build/output/services/*"
+        artifacts: ".generated/services/*"
         allowUpdates: true
         replacesArtifacts: true
         removeArtifacts: true
@@ -65,7 +65,7 @@ jobs:
     - name: Build Image Standalone
       uses: docker/build-push-action@v4
       with:
-        file: build/Dockerfile.standalone
+        file: .github/build/Dockerfile.standalone
         context: .
         platforms: linux/amd64,linux/arm64
         push: true
@@ -103,7 +103,7 @@ jobs:
     - name: Build Image ${{ matrix.binary_name }}
       uses: docker/build-push-action@v4
       with:
-        file: build/Dockerfile.service
+        file: .github/build/Dockerfile.service
         context: .
         platforms: linux/amd64,linux/arm64
         push: true

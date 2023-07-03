@@ -1,26 +1,25 @@
 ## BUILDER
 FROM kodmain/builder:go AS builder
 USER root:root
-COPY ./src 		/root/src
-COPY ./build 	/root/build
-COPY ./go.mod 	/root/go.mod
-COPY ./Makefile /root/Makefile
+COPY ./src       /root/src
+COPY ./Makefile  /root/Makefile
+COPY ./go.mod    /root/go.mod
 
 WORKDIR /root
-RUN make build project
-RUN make build binary-only
+RUN make build
+RUN make binary-only
 
 ## RUNNER
 FROM scratch AS runner
-COPY --from=builder /root/build/output/services/* /etc/kitsune/services/
-COPY --from=builder /root/build/output/bin/* /usr/local/bin/
+COPY --from=builder /root/.generated/services/* /etc/kitsune/services/
+COPY --from=builder /root/.generated/bin/* /usr/local/bin/
 ENTRYPOINT [ "/usr/local/bin/kitsune" ]
 CMD [ "service", "start", "-f" ]
 
 ## DEBUG
 FROM kodmain/os:alpine AS debug
-COPY --from=builder /root/build/output/services/* /etc/kitsune/services/
-COPY --from=builder /root/build/output/bin/* /usr/local/bin/
+COPY --from=builder /root/.generated/services/* /etc/kitsune/services/
+COPY --from=builder /root/.generated/bin/* /usr/local/bin/
 USER root:root
 RUN mkdir -p /var/log/kitsune /var/run/kitsune
 RUN chown nobody:nobody -R /etc/kitsune /var/log/kitsune /var/run/kitsune
