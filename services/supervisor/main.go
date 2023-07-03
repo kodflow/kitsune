@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/kodmain/KitsuneFramework/internal/kernel/daemon"
-	"github.com/kodmain/KitsuneFramework/services/supervisor/process"
+	"github.com/kodmain/kitsune/internal/kernel/daemon"
+	"github.com/kodmain/kitsune/services/supervisor/process"
 )
 
 func main() {

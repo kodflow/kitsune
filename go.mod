@@ -1,4 +1,4 @@
-module github.com/kodmain/KitsuneFramework
+module github.com/kodmain/kitsune
 
 go 1.20
 

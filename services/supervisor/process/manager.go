@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/kodmain/KitsuneFramework/internal/kernel/daemon"
+	"github.com/kodmain/kitsune/internal/kernel/daemon"
 )
 
 type Manager struct {

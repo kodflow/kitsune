@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/kodmain/KitsuneFramework/internal/env"
+	"github.com/kodmain/kitsune/internal/env"
 )
 
 const (

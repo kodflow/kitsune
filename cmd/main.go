@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/kodmain/KitsuneFramework/cmd/kitsune"
+	"github.com/kodmain/kitsune/cmd/kitsune"
 )
 
 func main() {
