@@ -1,7 +1,7 @@
-# Kitsune [![Reference](https://pkg.go.dev/badge/github.com/kodmain/kitsune.svg)](https://pkg.go.dev/github.com/kodmain/kitsune) [![License](https://img.shields.io:/github/license/kodmain/kitsune)](https://github.com/kodmain/kitsune/blob/main/LICENSE.md) [![Docker](https://img.shields.io/docker/image-size/aubeio/fizzbuzz/latest)](https://hub.docker.com/r/aubeio/fizzbuzz) ![Linux](https://img.shields.io/badge/Linux%20(amd%7Carm)-595959?logo=linux&logoColor=F0F0F0)
+# Kitsune [![Reference](https://pkg.go.dev/badge/github.com/kodmain/kitsune.svg)](https://pkg.go.dev/github.com/kodmain/kitsune) [![License](https://img.shields.io:/github/license/kodmain/kitsune)](https://github.com/kodmain/kitsune/blob/main/LICENSE.md) ![Linux](https://img.shields.io/badge/Linux%20(amd%7Carm)-595959?logo=linux&logoColor=F0F0F0)
 
 [![codecov](https://codecov.io/gh/kodmain/kitsune/branch/main/graph/badge.svg?token=VQQ4EQKVSA)](https://codecov.io/gh/kodmain/kitsune)
-[![Workflow](https://img.shields.io/github/actions/workflow/status/kodmain/kitsune/build.yml)](https://github.com/kodmain/kitsune/actions/workflows/build.yml)
+[![Workflow](https://img.shields.io/github/actions/workflow/status/kodmain/kitsune/kitsune.yml)](https://github.com/kodmain/kitsune/actions/workflows/kitsune.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/kodmain/kitsune)](https://goreportcard.com/report/github.com/kodmain/kitsune)
 [![Maintainability](https://api.codeclimate.com/v1/badges/d5102bdf5504b9ce56ce/maintainability)](https://codeclimate.com/github/kodmain/kitsune/maintainability)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/3a89526aa9624788a14e1d443a82a2f2)](https://www.codacy.com/gh/kodmain/kitsune/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=kodmain/kitsune&amp;utm_campaign=Badge_Grade)
@@ -13,6 +13,7 @@
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
 
+## Description
 
 Kitsune is a lightweight microservice-oriented framework designed to simplify the development and deployment of microservices across different cloud providers. Its goal is to provide developers with an intuitive and flexible toolkit to build scalable and resilient applications.
 
