@@ -1,5 +1,11 @@
 package env
 
-var BUILD_VERSION string
-var BUILD_COMMIT string
-var BUILD_APP_NAME string
+const (
+	PROJECT_NAME = "debug.kitsune"
+)
+
+var (
+	BUILD_VERSION  string
+	BUILD_COMMIT   string
+	BUILD_APP_NAME string = PROJECT_NAME
+)

@@ -7,6 +7,6 @@ FROM scratch as runner
 ARG BINARY_NAME=NO_SERVICE
 ENV BINARY_NAME=${BINARY_NAME}
 
-COPY --from=standalone /usr/local/lib/kitsune/${BINARY_NAME} /bin/service
+COPY --from=standalone /etc/kitsune/services/${BINARY_NAME} /bin/service
 WORKDIR /run
 ENTRYPOINT [ "/bin/service" ]

@@ -21,6 +21,7 @@ func init() {
 	Helper.AddCommand(statusCmd)
 	serviceCmd.AddCommand(startCmd)
 	serviceCmd.AddCommand(stopCmd)
+	serviceCmd.AddCommand(logCmd)
 
 	Helper.CompletionOptions.DisableDefaultCmd = true
 	Helper.CompletionOptions.DisableNoDescFlag = true

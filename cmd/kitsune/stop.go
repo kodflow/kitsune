@@ -8,7 +8,7 @@ import (
 
 var stopCmd = &cobra.Command{
 	Use:   "stop",
-	Short: "Stop all micro-services",
+	Short: "Stop all kitsune-services",
 	Run: func(cmd *cobra.Command, args []string) {
 		// Logic for down command
 		fmt.Println("Stopping all services...")

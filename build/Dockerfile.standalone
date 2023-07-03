@@ -4,15 +4,24 @@ USER root:root
 COPY / /root
 WORKDIR /root
 RUN make build project
+RUN make build binary-only
 
 ## RUNNER
-#FROM scratch as runner
-#COPY --from=builder /root/build/output/services/* /usr/local/lib/kitsune/
-#COPY --from=builder /root/build/output/bin/* /usr/local/bin/
-#ENTRYPOINT [ "/usr/local/bin/kitsune" ]
-#CMD [ "service", "start", "-f" ]
+FROM scratch as runner
+COPY --from=builder /root/build/output/services/* /etc/kitsune/services/
+COPY --from=builder /root/build/output/bin/* /usr/local/bin/
+ENTRYPOINT [ "/usr/local/bin/kitsune" ]
+CMD [ "service", "start", "-f" ]
 
 ## DEBUG
 FROM kodmain/os:alpine as debug
-COPY --from=builder /root/build/output/services/* /usr/local/lib/kitsune/
+COPY --from=builder /root/build/output/services/* /etc/kitsune/services/
 COPY --from=builder /root/build/output/bin/* /usr/local/bin/
+USER root:root
+RUN mkdir -p /var/log/kitsune /var/run/kitsune
+RUN chown nobody:nobody -R /etc/kitsune /var/log/kitsune /var/run/kitsune
+USER nobody:nobody
+RUN echo "kitsune service start"  > .zsh_history
+RUN echo "cat /var/log/kitsune/*" >> .zsh_history
+#ENTRYPOINT [ "/usr/local/bin/kitsune" ]
+#CMD [ "service", "start", "-f" ]

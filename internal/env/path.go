@@ -1,6 +1,7 @@
 package env
 
 const (
-	PATH_PID = "/var/run"
-	PATH_LIB = "/usr/local/lib"
+	PATH_SERVICES = "/etc/kitsune/services/"
+	PATH_RUN      = "/var/run/kitsune/"
+	PATH_LOGS     = "/var/log/kitsune/"
 )

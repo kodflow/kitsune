@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/kodmain/KitsuneFramework/internal/env"
+	"github.com/kodmain/KitsuneFramework/internal/storages/fs"
 	"github.com/spf13/cobra"
 )
 
@@ -16,19 +17,40 @@ func init() {
 	startCmd.Flags().BoolVarP(&forceRun, "forground", "f", false, "run service in forground")
 }
 
+func createLog(logName string) *os.File {
+	file, err := fs.CreateFile(filepath.Join(env.PATH_LOGS, logName))
+	if err != nil {
+		fmt.Println("Impossible de créer le fichier kitsune.log :", err)
+		os.Exit(1)
+	}
+
+	return file
+}
+
 var startCmd = &cobra.Command{
 	Use:   "start",
-	Short: "Start all micro-services",
+	Short: "Start all kitsune-services",
 	Run: func(cmd *cobra.Command, args []string) {
-		// Logic for up command
-		fmt.Println("Starting the kitsune services")
+
+		var SERVICE_SUPERVISOR string = filepath.Join(env.PATH_SERVICES, "supervisor")
+		var exec *exec.Cmd = exec.Command(SERVICE_SUPERVISOR)
+		var err error = nil
+
 		if forceRun {
-			exec := exec.Command(filepath.Join(env.PATH_LIB, env.BUILD_APP_NAME, "supervisor"))
+			fmt.Println("Starting the kitsune")
 			exec.Stdout = os.Stdout
 			exec.Stderr = os.Stderr
-			exec.Run()
+			err = exec.Run()
 		} else {
-			exec.Command(filepath.Join(env.PATH_LIB, env.BUILD_APP_NAME, "supervisor")).Start()
+			fmt.Println("Starting the kitsune as a services")
+			exec.Stdout = createLog("kitsune.log")
+			exec.Stderr = createLog("errors.log")
+			err = exec.Start()
+		}
+
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
 		}
 	},
 }

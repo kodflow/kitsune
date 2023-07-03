@@ -37,6 +37,9 @@ stop: ## Stop services
 aio: ## Start services in portable version
 	docker compose -f build/compose.yml --profile=standalone up
 
-run: ## Run services in portable version
+test: ## Run services in portable version
 	docker compose -f build/compose.yml --profile=standalone build
+	docker compose -f build/compose.yml --profile=standalone run --rm kitsune.$(ARGS)
+
+run: ## Run services in portable version
 	docker compose -f build/compose.yml --profile=standalone run --rm kitsune.$(ARGS)

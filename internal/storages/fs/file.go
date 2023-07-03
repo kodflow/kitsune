@@ -6,20 +6,20 @@ import (
 )
 
 // Crée un fichier avec le chemin spécifié
-func CreateFile(filePath string) error {
+func CreateFile(filePath string) (*os.File, error) {
 	// Vérifie si le dossier parent existe, sinon le crée
 	err := createParentDirectory(filePath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Crée le fichier
-	_, err = os.Create(filePath)
+	file, err := os.Create(filePath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return file, nil
 }
 
 // Supprime un fichier avec le chemin spécifié

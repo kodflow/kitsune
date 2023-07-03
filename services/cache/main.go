@@ -1,12 +1,9 @@
 package main
 
-import "github.com/kodmain/KitsuneFramework/internal/kernel/daemon"
-
-func init() {
-	daemon.Start()
-}
+import (
+	"github.com/kodmain/KitsuneFramework/internal/kernel/daemon"
+)
 
 func main() {
-	// Setup the daemon
-
+	daemon.Start()
 }
