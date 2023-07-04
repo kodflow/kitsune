@@ -38,9 +38,12 @@ stop: ## Stop services
 aio: ## Start services in portable version
 	docker compose -f .github/build/compose.yml --profile=standalone up
 
-test: ## Run services in portable version
-	docker compose -f .github/build/compose.yml --profile=standalone build
-	docker compose -f .github/build/compose.yml --profile=standalone run --rm kitsune.$(ARGS)
+#test: ## Run services in portable version
+#	docker compose -f .github/build/compose.yml --profile=standalone build
+#	docker compose -f .github/build/compose.yml --profile=standalone run --rm kitsune.$(ARGS)
+
+tests:
+	go test -v `go list ./...` -coverprofile=coverage.txt -covermode=atomic
 
 run: ## Run services in portable version
 	docker compose -f .github/build/compose.yml --profile=standalone run --rm kitsune.$(ARGS)
