@@ -1,22 +1,8 @@
 #!/bin/sh
 commit_message=$(cat $1)
 
-commit_regex='^(feature|hotfix|release|bugfix)\/[a-z0-9_-]+: .{10,}$'
-if ! echo "$commit_message" | grep -iqE "$commit_regex"; then
-  echo "Erreur : Le message de commit ne respecte pas le format requis."
-  echo "Format attendu : <type>/<ID tâche>: <description>"
-  echo "Format recus   : $commit_message"
-  echo "Exemple : feature/PROJ-123: Ajouter la fonctionnalité X"
-  exit 1
-fi
 
-branch_regex='^(feature|hotfix|release|bugfix)\/[A-Z0-9_]+-([0-9]+|n/a)$'
-if ! echo "$commit_message" | grep -iqE "$branch_regex"; then
-  echo "Erreur : Le nom de branche spécifié dans le message de commit est incorrect."
-  exit 1
-fi
-
-branch_name=$(echo "$commit_message" | awk -F '/' '{print $1}')
+branch_name=$(echo "$commit_message" | head -n1 | awk -F ':' '{print $1}')
 if [ "$branch_name" != "$(git rev-parse --abbrev-ref HEAD)" ]; then
   echo "Erreur : Vous devez être sur la branche '$branch_name' pour effectuer ce commit."
   exit 1
