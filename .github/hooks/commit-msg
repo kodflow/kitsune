@@ -1,8 +1,13 @@
-#!/bin/bash
+#!/bin/sh
 
 # Retrieve the commit message
 commit_msg_file=$1
 commit_msg=$(cat $commit_msg_file)
+
+# Ignore merge commits
+if [[ $commit_msg == "Merge branch"* ]]; then
+    exit 0
+fi
 
 # Regular expressions for each commit type
 feat_regex='^feat(\([a-zA-Z0-9]+\))?!?: .+'
@@ -34,4 +39,5 @@ else
     echo "Error: for 'feat' and 'fix' types, a description must follow the ':' and space"
     exit 1
 fi
+
 exit 0
