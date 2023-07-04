@@ -20,7 +20,7 @@ jobs:
           git config user.email "${{env.GIT_COMMITTER_EMAIL}}"
           git checkout main
           git merge --no-ff develop
-          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/kodmain/kitsune.git main
+          git push main
       env:
           GIT_COMMITTER_NAME: github-actions
           GIT_COMMITTER_EMAIL: github-actions@github.com
