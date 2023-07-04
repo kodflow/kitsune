@@ -1,43 +1,10 @@
 name: Build
 on:
   push:
-    branches: [ main ]
-jobs:
-  Binary:
-    env:
-      date: 000000
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - name: Set up Go
-      uses: actions/setup-go@v4
-    - name: Build binaries for all platforms
-      run: make build project
-    - name: Get Next Version
-      id: semver
-      uses: ietf-tools/semver-action@v1
-      with:
-        token: ${{ github.token }}
-        branch: main
-        skipInvalidTags: true
-    - name: Create Kitsune CLI
-      uses: ncipollo/release-action@v1
-      with:
-        name: Kitsune Framework
-        makeLatest: true
-        tag: ${{ steps.semver.outputs.next }}
-        artifacts: ".generated/**/*"
-        allowUpdates: true
-        replacesArtifacts: true
-        removeArtifacts: true
-        token: ${{ secrets.GITHUB_TOKEN }}
+    tags: '*'
+
+jobs:     
   Standalone:
-    needs: Binary
     env:
       date: 000000
     runs-on: ubuntu-latest
