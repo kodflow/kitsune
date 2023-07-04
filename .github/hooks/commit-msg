@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Retrieve the commit message
 commit_msg_file=$1
