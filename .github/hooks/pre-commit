@@ -1,0 +1,40 @@
+#!/bin/sh
+
+# Vérification du message de commit
+commit_message=$(cat $1)
+
+# Vérification du format du message de commit
+commit_regex='^(feature|hotfix|release|bugfix)\/[A-Z0-9_]+-([0-9]+|n/a): .{10,}$'
+if ! echo "$commit_message" | grep -iqE "$commit_regex"; then
+  echo "Erreur : Le message de commit ne respecte pas le format requis."
+  echo "Format attendu : <type>/<ID tâche>: <description>"
+  echo "Exemple : feature/PROJ-123: Ajouter la fonctionnalité X"
+  exit 1
+fi
+
+# Vérification de la branche actuelle
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+if [[ $commit_message =~ ^(fix)\/[A-Z0-9_]+-([0-9]+|n/a): ]]; then
+  if ! echo "$current_branch" | grep -iqE "^hotfix\/|^bugfix\/"; then
+    echo "Erreur : Vous devez être sur une branche hotfix ou bugfix pour effectuer un commit avec le type 'fix'."
+    exit 1
+  fi
+elif [[ $commit_message =~ ^(feat|feature)\/[A-Z0-9_]+-([0-9]+|n/a): ]]; then
+  if ! echo "$current_branch" | grep -iqE "^feature\/"; then
+    echo "Erreur : Vous devez être sur une branche feature pour effectuer un commit avec le type 'feat' ou 'feature'."
+    exit 1
+  fi
+fi
+
+# Vérification des règles de fusion et de push
+if [[ "$current_branch" == "main" ]]; then
+  echo "Erreur : Le push direct sur la branche 'main' est interdit."
+  exit 1
+elif [[ "$current_branch" != "develop" ]]; then
+  if ! git merge-base --is-ancestor develop HEAD; then
+    echo "Erreur : Seul le merge avec la branche 'develop' est autorisé."
+    exit 1
+  fi
+fi
+
+exit 0
