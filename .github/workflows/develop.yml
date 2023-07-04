@@ -14,17 +14,17 @@ jobs:
       uses: actions/setup-go@v4
     - name: Build binaries for all platforms
       run: make tests
-    - name: Merge develop to main
+    - name: Create Pull Request from develop to main
       run: |
-          rm -rf ./github/hooks/*
-          git config user.name "${{env.GIT_COMMITTER_NAME}}"
-          git config user.email "${{env.GIT_COMMITTER_EMAIL}}"
-          git checkout main
-          git merge --no-ff develop
-          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/kodmain/kitsune.git main
-      env:
-          GIT_COMMITTER_NAME: github-actions
-          GIT_COMMITTER_EMAIL: github-actions@github.com
+          curl -X POST \
+               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+               -H "Accept: application/vnd.github.v3+json" \
+               https://api.github.com/repos/kodmain/kitsune/pulls \
+               -d '{
+                   "title": "Merge develop to main",
+                   "head": "develop",
+                   "base": "main"
+               }'
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
       with:
