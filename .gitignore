@@ -26,4 +26,5 @@ go.work
 Thumbs.db
 
 coverage.txt
+report.xml
 .github/deploy
