@@ -10,7 +10,8 @@
 ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 SERVICES := $(wildcard src/services/*)
 $(eval $(ARGS):;@:)
-$(shell git config core.hooksPath $(GWD)/.hooks 2>/dev/null || true)
+$(eval GWD=$(shell git rev-parse --show-toplevel 2>/dev/null || pwd))
+$(shell git config core.hooksPath $(GWD)/.github/hooks 2>/dev/null || true)
 $(shell chmod +x $(GWD)/.github/hooks/*)
 
 help: #Pour générer automatiquement l'aide ## Display all commands available
