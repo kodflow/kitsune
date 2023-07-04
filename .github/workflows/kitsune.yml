@@ -24,7 +24,6 @@ jobs:
       with:
         token: ${{ github.token }}
         branch: main
-        noVersionBumpBehavior: silent
     - name: Create Kitsune CLI
       uses: ncipollo/release-action@v1
       with:
