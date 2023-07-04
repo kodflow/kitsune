@@ -1,28 +1,8 @@
-#!/bin/sh
-
-# Vérification de la branche actuelle
-current_branch=$(git rev-parse --abbrev-ref HEAD)
-if [[ $commit_message =~ ^(fix)\/[A-Z0-9_]+-([0-9]+|n/a): ]]; then
-  if ! echo "$current_branch" | grep -iqE "^hotfix\/|^bugfix\/"; then
-    echo "Erreur : Vous devez être sur une branche hotfix ou bugfix pour effectuer un commit avec le type 'fix'."
+#!/bin/bash
+branch=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$branch" = "main" || "$branch" = *release* || "$branch" = "develop" ]]; then
+    echo "Vous ne pouvez pas commit directement sur la branche main, une branche release, ou la branche develop."
     exit 1
-  fi
-elif [[ $commit_message =~ ^(feat|feature)\/[A-Z0-9_]+-([0-9]+|n/a): ]]; then
-  if ! echo "$current_branch" | grep -iqE "^feature\/"; then
-    echo "Erreur : Vous devez être sur une branche feature pour effectuer un commit avec le type 'feat' ou 'feature'."
-    exit 1
-  fi
-fi
-
-# Vérification des règles de fusion et de push
-if [[ "$current_branch" == "main" ]]; then
-  echo "Erreur : Le push direct sur la branche 'main' est interdit."
-  exit 1
-elif [[ "$current_branch" != "develop" ]]; then
-  if ! git merge-base --is-ancestor develop HEAD; then
-    echo "Erreur : Seul le merge avec la branche 'develop' est autorisé."
-    exit 1
-  fi
 fi
 
 exit 0

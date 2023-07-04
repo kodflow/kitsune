@@ -1,12 +1,14 @@
-#!/bin/sh
-
-# Vérification de la branche source et de la branche cible pour le push
+#!/bin/bash
+protected_branches=("main" "release/*")
 while read local_ref local_sha remote_ref remote_sha
 do
-    if [[ $remote_ref =~ ^refs/heads/main$ ]]; then
-        echo "Erreur : Le push direct sur la branche 'main' est interdit."
+  if [ "$remote_ref" = "refs/heads/main" ]; then
+    for branch in "${protected_branches[@]}"; do
+      if [ "$remote_ref" = "refs/heads/$branch" ]; then
+        echo "Push directement interdit sur la branche $branch !"
         exit 1
-    fi
+      fi
+    done
+  fi
 done
-
 exit 0

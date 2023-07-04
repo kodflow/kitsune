@@ -1,17 +1,36 @@
 #!/bin/sh
-commit_message=$(cat $1)
 
-commit_regex='^(feature|hotfix|release|bugfix)\/[a-z0-9_-]+((:.{10,})|(\n\n.{10,}))$'
-if ! echo "$commit_message" | grep -iqE "$commit_regex"; then
-  echo "Erreur : Le message de commit ne respecte pas le format requis."
-  echo "Format attendu : <type>/<ID tâche>: <description>"
-  echo "Format recus   : $commit_message"
-  echo "Exemple : feature/PROJ-123: Ajouter la fonctionnalité X"
-  exit 1
+# Retrieve the commit message
+commit_msg_file=$1
+commit_msg=$(cat $commit_msg_file)
+
+# Regular expressions for each commit type
+feat_regex='^feat(\([a-zA-Z0-9]+\))?!?: .+'
+fix_regex='^fix(\([a-zA-Z0-9]+\))?!?: .+'
+valid_types='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore)(\([a-zA-Z0-9]+\))?!?: .+'
+
+# Verify the commit type
+if [[ !($commit_msg =~ $valid_types) ]]; then
+    echo "Error: commit message must be valid <type>(<context>): <message>"
+    echo "$commit_msg"
+    exit 1
 fi
 
-branch_name=$(echo "$commit_message" | head -n1 | awk -F ':' '{print $1}')
-if [ "$branch_name" != "$(git rev-parse --abbrev-ref HEAD)" ]; then
-  echo "Erreur : Vous devez être sur la branche '$branch_name' pour effectuer ce commit."
-  exit 1
+# If there is a BREAKING CHANGE, check if it's valid
+if [[ $commit_msg == *"BREAKING CHANGE"* || $commit_msg == *"BREAKING-CHANGE"* ]]; then
+    if [[ $commit_msg =~ $breaking_change_footer_regex ]]; then
+        echo "Commit with valid breaking change detected"
+    else
+        echo "Error: invalid 'BREAKING CHANGE:' or 'BREAKING-CHANGE:' in the commit message"
+        exit 1
+    fi
 fi
+
+# Verify 'feat' or 'fix'
+if [[ ($commit_msg =~ $feat_regex) || ($commit_msg =~ $fix_regex) ]]; then
+    echo "Commit accepted"
+else
+    echo "Error: for 'feat' and 'fix' types, a description must follow the ':' and space"
+    exit 1
+fi
+exit 0
