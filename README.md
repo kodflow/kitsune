@@ -10,7 +10,6 @@
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
-[![Duplicated Line Density](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=bugs)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
 

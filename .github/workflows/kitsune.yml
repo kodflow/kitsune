@@ -1,8 +1,8 @@
-name: Build Kitsune Runtime
+name: Build
 on:
   push:
     branches:
-      - main
+      - main, develop
 jobs:
   Binary:
     env:
@@ -23,7 +23,8 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         name: Kitsune Framework
-        tag: framework
+        makeLatest: true
+        tag: framework-${{ env.date }}
         artifacts: ".generated/bin/*"
         allowUpdates: true
         replacesArtifacts: true
@@ -33,7 +34,8 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         name: Kitsune Services
-        tag: services
+        makeLatest: true
+        tag: services-${{ env.date }}
         artifacts: ".generated/services/*"
         allowUpdates: true
         replacesArtifacts: true
