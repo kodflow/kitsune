@@ -35,7 +35,6 @@ jobs:
         replacesArtifacts: true
         removeArtifacts: true
         token: ${{ secrets.GITHUB_TOKEN }}
-
   Standalone:
     needs: Binary
     env:
