@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Retrieve the commit message
 commit_msg_file=$1
@@ -7,6 +7,7 @@ commit_msg=$(cat $commit_msg_file)
 # Regular expressions for each commit type
 feat_regex='^feat(\([a-zA-Z0-9]+\))?!?: .+'
 fix_regex='^fix(\([a-zA-Z0-9]+\))?!?: .+'
+breaking_change_footer_regex='^BREAKING( |-)CHANGE: .+'
 valid_types='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore)(\([a-zA-Z0-9]+\))?!?: .+'
 
 # Verify the commit type

@@ -1,4 +1,4 @@
-name: Binary
+name: Main
 on:
   push:
     branches: [ main ]
