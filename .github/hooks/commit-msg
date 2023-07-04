@@ -7,7 +7,6 @@ commit_msg=$(cat $commit_msg_file)
 # Regular expressions for each commit type
 feat_regex='^feat(\([a-zA-Z0-9]+\))?!?: .+'
 fix_regex='^fix(\([a-zA-Z0-9]+\))?!?: .+'
-breaking_change_footer_regex='^BREAKING( |-)CHANGE: .+'
 valid_types='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore)(\([a-zA-Z0-9]+\))?!?: .+'
 
 # Verify the commit type
@@ -17,6 +16,16 @@ if [[ !($commit_msg =~ $valid_types) ]]; then
     exit 1
 fi
 
+# If there is a BREAKING CHANGE, check if it's valid
+if [[ $commit_msg == *"BREAKING CHANGE"* || $commit_msg == *"BREAKING-CHANGE"* ]]; then
+    if [[ $commit_msg =~ $breaking_change_footer_regex ]]; then
+        echo "Commit with valid breaking change detected"
+    else
+        echo "Error: invalid 'BREAKING CHANGE:' or 'BREAKING-CHANGE:' in the commit message"
+        exit 1
+    fi
+fi
+
 # Verify 'feat' or 'fix'
 if [[ ($commit_msg =~ $feat_regex) || ($commit_msg =~ $fix_regex) ]]; then
     echo "Commit accepted"
@@ -24,13 +33,4 @@ else
     echo "Error: for 'feat' and 'fix' types, a description must follow the ':' and space"
     exit 1
 fi
-
-# Verify BREAKING CHANGE in the footer
-if [[ $commit_msg =~ $breaking_change_footer_regex ]]; then
-    echo "Commit with breaking change detected"
-else
-    echo "Error: for breaking changes, 'BREAKING CHANGE:' or 'BREAKING-CHANGE:' must be included in the footer"
-    exit 1
-fi
-
 exit 0
