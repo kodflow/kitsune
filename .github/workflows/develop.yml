@@ -16,6 +16,7 @@ jobs:
       run: make tests
     - name: Merge develop to main
       run: |
+          rm -rf ./github/hooks/*
           git config user.name "${{env.GIT_COMMITTER_NAME}}"
           git config user.email "${{env.GIT_COMMITTER_EMAIL}}"
           git checkout main
