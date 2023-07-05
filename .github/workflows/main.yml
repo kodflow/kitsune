@@ -39,7 +39,7 @@ jobs:
         replacesArtifacts: true
         removeArtifacts: true
         token: ${{ secrets.GITHUB_TOKEN }}
-        
+
     - name: Create or update 'latest' tag
       uses: actions/github-script@v4
       with:
@@ -47,11 +47,7 @@ jobs:
         script: |
           const version = "${{ steps.semver.outputs.next }}";
           const ref = `refs/tags/latest`;
-          const sha = (await github.git.getRef({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            ref: `refs/tags/${version}`
-          })).data.object.sha;
+          const sha = context.sha;
     
           try {
             // Try to get the 'latest' tag
