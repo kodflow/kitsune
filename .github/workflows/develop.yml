@@ -2,8 +2,7 @@ name: Develop
 
 on:
   push:
-    branches:
-      - develop
+    branches: develop
 
 jobs:
   test:

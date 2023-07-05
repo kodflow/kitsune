@@ -1,7 +1,7 @@
 name: Releases
 on:
   push:
-    tags: '*'
+    branches: 'releases/*'
 
 jobs:     
   Standalone:
