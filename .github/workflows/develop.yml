@@ -22,7 +22,7 @@ jobs:
       - name: Delete old PRs
         uses: actions/github-script@v4
         with:
-          github-token: "${{ secrets.GH_OFA }}"
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
           script: |
             const { data } = await github.pulls.list({
               owner: context.repo.owner,
@@ -45,7 +45,7 @@ jobs:
         id: create_pr
         uses: actions/github-script@v4
         with:
-          github-token: "${{ secrets.GH_OFA }}"
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
           script: |
             const { data } = await github.pulls.create({
               owner: context.repo.owner,
