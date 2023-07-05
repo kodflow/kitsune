@@ -51,6 +51,7 @@ jobs:
           });
           console.log(data.number);
           core.setOutput('result', data.number);
+          
     - name: Approve Pull Request
       uses: actions/github-script@v4
       with:
