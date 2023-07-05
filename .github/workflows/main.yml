@@ -1,7 +1,7 @@
 name: Main
 on:
   push:
-    branches: [ main ]
+    branches: [ oki ]
 jobs:
   Binary:
     runs-on: ubuntu-latest
