@@ -1,11 +1,13 @@
-## BUILDER
-FROM kodmain/kitsune.standalone AS standalone
-
 ## RUNNER
 FROM scratch AS runner
 
 ARG BINARY_NAME=NO_SERVICE
 ENV BINARY_NAME=${BINARY_NAME}
+
+ARG BINARY_VERSION=latest
+ENV BINARY_VERSION=${BINARY_VERSION}
+
+ADD https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/${BINARY_NAME} /bin/service
 
 COPY --from=standalone /etc/kitsune/services/${BINARY_NAME} /bin/service
 WORKDIR /run

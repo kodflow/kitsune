@@ -27,6 +27,7 @@ jobs:
         token: ${{ github.token }}
         branch: main
         skipInvalidTags: true
+        
     - name: Build Kitsune Framework
       uses: ncipollo/release-action@v1
       with:
@@ -38,19 +39,52 @@ jobs:
         replacesArtifacts: true
         removeArtifacts: true
         token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Create release branch
+        
+    - name: Create or update 'latest' tag
       uses: actions/github-script@v4
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const version = "${{ steps.semver.outputs.next }}";
-          const ref = `refs/heads/releases/${version}`;
-          const createRefResponse = await github.git.createRef({
+          const ref = `refs/tags/latest`;
+          const sha = (await github.git.getRef({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            ref,
-            sha: context.sha
-          });
+            ref: `refs/tags/${version}`
+          })).data.object.sha;
+    
+          try {
+            // Try to get the 'latest' tag
+            await github.git.getRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref
+            });
+    
+            // If the 'latest' tag exists, update it to point to the new version
+            await github.git.updateRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref,
+              sha,
+              force: true
+            });
+            console.log(`'latest' tag exists. Updated to point to version ${version}`);
+          } catch (error) {
+            if (error.status === 404) {
+              // If the 'latest' tag does not exist, create it
+              await github.git.createRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref,
+                sha
+              });
+              console.log(`'latest' tag did not exist. Created to point to version ${version}`);
+            } else {
+              throw error;
+            }
+          }
+      
 
   Services:
     needs: Binary
