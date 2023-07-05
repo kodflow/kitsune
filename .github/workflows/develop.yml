@@ -4,6 +4,8 @@ on:
     branches: [ develop ]
 jobs:
   Tests:
+    permissions:
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -39,7 +41,7 @@ jobs:
       id: create_pr
       uses: actions/github-script@v4
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ secrets.GH_OFA }}
         script: |
           const { data } = await github.pulls.create({
             owner: context.repo.owner,
