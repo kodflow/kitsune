@@ -50,7 +50,7 @@ jobs:
             body: 'Automated Pull Request created by GitHub Actions'
           });
           console.log(data.number);
-          core.setOutput('pull_request_number', data.number);
+          core.setOutput('result', data.number);
     - name: Approve Pull Request
       uses: actions/github-script@v4
       with:
@@ -59,7 +59,7 @@ jobs:
           await github.pulls.createReview({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            pull_number: ${{ steps.create_pr.outputs.pull_request_number }}
+            pull_number: ${{ steps.create_pr.outputs.result }},
             event: 'APPROVE'
           });
           
