@@ -24,12 +24,12 @@ jobs:
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           script: |
-            console.log("${{ secrets.GITHUB_TOKEN }}".length)
-            const { data: prs } = await github.pulls.list({
+            const { data } = await github.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              state: 'open',
-              head: 'develop'
+              head: 'develop',
+              base: 'main',
+              state: 'open'
             });
 
             for (const pr of prs) {
