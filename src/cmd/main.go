@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	// test
+	// oki
 	kitsune.Helper.Execute()
 }
