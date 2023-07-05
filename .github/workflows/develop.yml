@@ -24,7 +24,7 @@ jobs:
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           script: |
-            const { data } = await github.pulls.list({
+            const { data: prs } = await github.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
               head: 'develop',
