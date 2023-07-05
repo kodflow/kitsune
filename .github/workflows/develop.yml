@@ -1,4 +1,4 @@
-name: Go Test, PR and Auto Merge
+name: Testing
 
 on:
   push:
@@ -6,19 +6,24 @@ on:
       - develop
 
 jobs:
-  build:
+  test:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      #- name: Check out code
-      #  uses: actions/checkout@v3
+      - name: Check out code
+        uses: actions/checkout@v3
 
-      #- name: Set up Go
-      #  uses: actions/setup-go@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
 
-      #- name: Test
-      #  run: make tests
-
+      - name: Test
+        run: make tests
+  
+  merge:
+    name: Build
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
       - name: Delete old PRs
         uses: actions/github-script@v4
         with:

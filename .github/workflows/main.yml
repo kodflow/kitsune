@@ -1,7 +1,7 @@
 name: Main
 on:
-  push:
-    branches: [ oki ]
+  pull_request:
+    branches: [ main ]
 jobs:
   Binary:
     runs-on: ubuntu-latest
