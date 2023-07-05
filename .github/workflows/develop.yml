@@ -63,8 +63,34 @@ jobs:
             repo: context.repo.repo,
             pull_number: ${{ steps.create_pr.outputs.pull_request_number }},
             event: 'APPROVE'
+          }); 
+    - name: Wait for Pull Request Status
+      id: wait_for_status
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { data } = await github.pulls.checkIfMerged({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: ${{ steps.create_pr.outputs.pull_request_number }}
           });
-          
+          console.log(data.merged);
+          core.setOutput('pull_request_merged', data.merged);
+      continue-on-error: true
+
+    - name: Merge Pull Request
+      if: steps.wait_for_status.outputs.pull_request_merged == 'true'
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          await github.pulls.merge({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: ${{ steps.create_pr.outputs.pull_request_number }}
+          });
+
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
       with:
