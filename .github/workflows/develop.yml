@@ -23,7 +23,7 @@ jobs:
         uses: actions/github-script@v4
         with:
           script: |
-            const token = ${{secrets.GH_OFA}}
+            const token   = "${{secrets.GH_OFA}}"
             const octokit = github.getOctokit(token);
 
             const { data: prs } = await octokit.pulls.list({
@@ -49,7 +49,7 @@ jobs:
         uses: actions/github-script@v4
         with:
           script: |
-            const token = ${{secrets.GH_OFA}}
+            const token   = "${{secrets.GH_OFA}}"
             const octokit = github.getOctokit(token);
 
             const response = await octokit.pulls.create({
@@ -67,7 +67,7 @@ jobs:
         uses: actions/github-script@v4
         with:
           script: |
-            const token = ${{secrets.GH_OFA}}
+            const token   = "${{secrets.GH_OFA}}"
             const octokit = github.getOctokit(token);
 
             const prNumber = ${{ steps.create_pr.outputs.result }};
@@ -86,7 +86,7 @@ jobs:
         uses: actions/github-script@v4
         with:
           script: |
-            const token = ${{secrets.GH_OFA}}
+            const token   = "${{secrets.GH_OFA}}"
             const octokit = github.getOctokit(token);
 
             // Get PR number from previous step
