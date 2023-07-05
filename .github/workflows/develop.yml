@@ -38,7 +38,7 @@ jobs:
           await github.pulls.createReview({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            pull_number: context.payload.pull_request.number,
+            pull_number: ${{ steps.create_pr.outputs.result.pull_request_number }}
             event: 'APPROVE'
           });
           
