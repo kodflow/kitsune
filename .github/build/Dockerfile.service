@@ -8,7 +8,5 @@ ARG BINARY_VERSION=latest
 ENV BINARY_VERSION=${BINARY_VERSION}
 
 ADD https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/${BINARY_NAME} /bin/service
-
-COPY --from=standalone /etc/kitsune/services/${BINARY_NAME} /bin/service
 WORKDIR /run
 ENTRYPOINT [ "/bin/service" ]
