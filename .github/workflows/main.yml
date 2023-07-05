@@ -50,36 +50,25 @@ jobs:
           const sha = context.sha;
     
           try {
-            // Try to get the 'latest' tag
-            await github.git.getRef({
+            // Try to delete the 'latest' tag
+            await github.git.deleteRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref
             });
-    
-            // If the 'latest' tag exists, update it to point to the new version
-            await github.git.updateRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref,
-              sha,
-              force: true
-            });
-            console.log(`'latest' tag exists. Updated to point to version ${version}`);
           } catch (error) {
-            if (error.status === 404) {
-              // If the 'latest' tag does not exist, create it
-              await github.git.createRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref,
-                sha
-              });
-              console.log(`'latest' tag did not exist. Created to point to version ${version}`);
-            } else {
+            if (error.status !== 404) {
               throw error;
             }
+            // Ignore if the 'latest' tag does not exist
           }
+
+          await github.git.createRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref,
+            sha
+          });
       
 
   Services:
