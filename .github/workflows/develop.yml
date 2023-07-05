@@ -61,7 +61,7 @@ jobs:
         with:
           github-token: "${{ secrets.GH_OFA }}"
           script: |
-            const prNumber    = ${{ steps.create_pr.outputs.result.pull_request_number }};
+            const prNumber    = ${{ steps.create_pr.outputs.pull_request_number }};
             const isRepoOwner = context.actor === context.repo.owner;
 
             if (isRepoOwner) {
@@ -79,7 +79,7 @@ jobs:
           github-token: "${{ secrets.GH_OFA }}"
           script: |
             // Get PR number from previous step
-            const prNumber    = ${{ steps.create_pr.outputs.result.pull_request_number }};
+            const prNumber    = ${{ steps.create_pr.outputs.pull_request_number }};
             const isRepoOwner = context.actor === context.repo.owner;
 
             // Wait for SonarCloud checks to complete
