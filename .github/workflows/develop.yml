@@ -23,21 +23,18 @@ jobs:
         uses: actions/github-script@v4
         with:
           script: |
-            const token   = "${{secrets.GH_OFA}}"
-            const octokit = github.getOctokit(token);
-
-            const { data: prs } = await octokit.pulls.list({
-              owner: github.context.repo.owner,
-              repo: github.context.repo.repo,
+            const { data: prs } = await github.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
               state: 'open',
               head: 'develop'
             });
 
             for (const pr of prs) {
-              if (pr.user.login === github.context.actor) {
-                await octokit.pulls.update({
-                  owner: github.context.repo.owner,
-                  repo: github.context.repo.repo,
+              if (pr.user.login === context.actor) {
+                await github.pulls.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
                   pull_number: pr.number,
                   state: 'closed'
                 });
@@ -49,17 +46,14 @@ jobs:
         uses: actions/github-script@v4
         with:
           script: |
-            const token   = "${{secrets.GH_OFA}}"
-            const octokit = github.getOctokit(token);
-
-            const response = await octokit.pulls.create({
-              owner: github.context.repo.owner,
-              repo: github.context.repo.repo,
+            const response = await github.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
               title: 'Automated PR from develop to main',
               head: 'develop',
               base: 'main'
             });
-            
+
             console.log('PR created with number:', response.data.number);
             return response.data.number;  # Retourne le numéro de la PR
       
@@ -67,16 +61,13 @@ jobs:
         uses: actions/github-script@v4
         with:
           script: |
-            const token   = "${{secrets.GH_OFA}}"
-            const octokit = github.getOctokit(token);
-
             const prNumber = ${{ steps.create_pr.outputs.result }};
-            const isRepoOwner = github.context.actor === github.context.repo.owner;
+            const isRepoOwner = context.actor === context.repo.owner;
 
             if (isRepoOwner) {
-              await octokit.pulls.createReview({
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
+              await github.pulls.createReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
                 pull_number: prNumber,
                 event: 'APPROVE'
               });
@@ -86,18 +77,15 @@ jobs:
         uses: actions/github-script@v4
         with:
           script: |
-            const token   = "${{secrets.GH_OFA}}"
-            const octokit = github.getOctokit(token);
-
             // Get PR number from previous step
             const prNumber = ${{ steps.create_pr.outputs.result }};
-            const isRepoOwner = github.context.actor === github.context.repo.owner;
+            const isRepoOwner = context.actor === context.repo.owner;
 
             // Wait for SonarCloud checks to complete
             while (true) {
-              const { data: { statuses } } = await octokit.repos.getCombinedStatusForRef({
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
+              const { data: { statuses } } = await github.repos.getCombinedStatusForRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
                 ref: `pull/${prNumber}/merge`,
               });
 
@@ -123,9 +111,9 @@ jobs:
 
             // If repo owner, merge the PR
             if (isRepoOwner) {
-              await octokit.pulls.merge({
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
+              await github.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
                 pull_number: prNumber,
               });
             }
