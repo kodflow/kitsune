@@ -24,7 +24,7 @@ jobs:
         with:
           github-token: "${{ secrets.GH_OFA }}"
           script: |
-            const { data: prs } = await github.pulls.list({
+            const { data } = await github.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
               head: 'develop',
@@ -32,7 +32,7 @@ jobs:
               state: 'open'
             });
 
-            for (const pr of prs) {
+            for (const pr of data.prs) {
               if (pr.user.login === context.actor) {
                 await github.pulls.update({
                   owner: context.repo.owner,
