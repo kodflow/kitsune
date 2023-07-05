@@ -6,6 +6,5 @@ import (
 
 func main() {
 	// oki
-	// doki
 	kitsune.Helper.Execute()
 }
