@@ -22,7 +22,7 @@ jobs:
       - name: Delete old PRs
         uses: actions/github-script@v4
         with:
-          github-token: ${{ secrets.GH_OFA }}
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
           script: |
             const { data: prs } = await github.pulls.list({
               owner: context.repo.owner,
@@ -46,7 +46,7 @@ jobs:
         id: create_pr
         uses: actions/github-script@v4
         with:
-          github-token: ${{ secrets.GH_OFA }}
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
           script: |
             const response = await github.pulls.create({
               owner: context.repo.owner,
@@ -62,7 +62,7 @@ jobs:
       - name: Approve PR
         uses: actions/github-script@v4
         with:
-          github-token: ${{ secrets.GH_OFA }}
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
           script: |
             const prNumber = ${{ steps.create_pr.outputs.result }};
             const isRepoOwner = context.actor === context.repo.owner;
@@ -79,7 +79,7 @@ jobs:
       - name: Wait and merge PR
         uses: actions/github-script@v4
         with:
-          github-token: ${{ secrets.GH_OFA }}
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
           script: |
             // Get PR number from previous step
             const prNumber = ${{ steps.create_pr.outputs.result }};
