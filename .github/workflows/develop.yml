@@ -14,12 +14,34 @@ jobs:
       uses: actions/setup-go@v4
     - name: Build binaries for all platforms
       run: make tests
-    - name: Merge develop -> main
-      uses: devmasx/merge-branch@master
+    - name: Create Pull Request
+      id: create_pr
+      uses: actions/github-script@v4
       with:
-        from_branch: develop
-        target_branch: main
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { data } = await github.pulls.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: 'Automated Pull Request from develop to main',
+            head: 'develop',
+            base: 'main',
+            body: 'Automated Pull Request created by GitHub Actions'
+          });
+          console.log(data.number);
+          core.setOutput('pull_request_number', data.number);
+    - name: Approve Pull Request
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          await github.pulls.createReview({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.payload.pull_request.number,
+            event: 'APPROVE'
+          });
+          
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
       with:
