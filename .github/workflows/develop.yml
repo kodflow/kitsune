@@ -11,10 +11,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3
-
       - name: Set up Go
         uses: actions/setup-go@v4
-
       - name: Test
         run: make tests
   
@@ -44,7 +42,6 @@ jobs:
                 state: 'closed'
               });
             }
-
       - name: Create PR using script
         id: create_pr
         uses: actions/github-script@v4
@@ -60,7 +57,6 @@ jobs:
               body: 'Automated Pull Request created by GitHub Actions'
             });
             core.setOutput('pull_request_number', data.number);
-            
       - name: Approve PR
         uses: actions/github-script@v4
         with:
@@ -77,7 +73,6 @@ jobs:
                 event: 'APPROVE'
               });
             }
-
       - name: Wait all checks have passed and merge PR
         uses: actions/github-script@v4
         with:
