@@ -46,7 +46,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const version = "${{ steps.semver.outputs.next }}";
-          const ref = `refs/tags/latest`;
+          const ref = `tags/latest`;
           const sha = context.sha;
     
           try {
@@ -54,7 +54,7 @@ jobs:
             await github.git.deleteRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref
+              ref: 
             });
           } catch (error) {
             if (error.status !== 404) {
