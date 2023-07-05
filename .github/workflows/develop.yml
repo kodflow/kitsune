@@ -60,6 +60,7 @@ jobs:
               body: 'Automated Pull Request created by GitHub Actions'
             });
             core.setOutput('pull_request_number', data.number);
+            
       - name: Approve PR
         uses: actions/github-script@v4
         with:
