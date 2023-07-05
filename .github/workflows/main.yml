@@ -34,3 +34,16 @@ jobs:
         replacesArtifacts: true
         removeArtifacts: true
         token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create release branch
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const version = "${{ steps.semver.outputs.next }}";
+          const ref = `refs/heads/releases/${version}`;
+          const createRefResponse = await github.git.createRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref,
+            sha: context.sha
+          });
