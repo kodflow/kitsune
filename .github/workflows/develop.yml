@@ -33,14 +33,12 @@ jobs:
             });
 
             for (const pr of data) {
-              if (pr.user.login === context.actor) {
-                await github.pulls.update({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number: pr.number,
-                  state: 'closed'
-                });
-              }
+              await github.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                state: 'closed'
+              });
             }
 
       - name: Create PR using script
