@@ -1,101 +1,143 @@
-name: Develop
+name: Go Test, PR and Auto Merge
+
 on:
   push:
-    branches: [ develop ]
+    branches:
+      - develop
+
 jobs:
-  Tests:
-    permissions:
-      pull-requests: write
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - name: Set up Go
-      uses: actions/setup-go@v4
-    - name: Build binaries for all platforms
-      run: make tests
-    - name: Check for existing Pull Request
-      id: check_pr
-      uses: actions/github-script@v4
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const { data } = await github.pulls.list({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            head: 'develop',
-            base: 'main',
-            state: 'open'
-          });
-          if (data.length > 0) {
-            await github.pulls.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: data[0].number,
-              state: 'closed'
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+
+      - name: Test
+        run: make tests
+
+      - name: Delete old PRs
+        uses: actions/github-script@v4
+        with:
+          script: |
+            const github = require('@actions/github');
+            const core = require('@actions/core');
+            
+            const token = ${{secrets.GH_OFA}}
+            const octokit = github.getOctokit(token);
+
+            const { data: prs } = await octokit.pulls.list({
+              owner: github.context.repo.owner,
+              repo: github.context.repo.repo,
+              state: 'open',
+              head: 'develop'
             });
-          }
-    - name: Create Pull Request
-      id: create_pr
-      uses: actions/github-script@v4
-      with:
-        github-token: ${{ secrets.GH_OFA }}
-        script: |
-          const { data } = await github.pulls.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: 'Automated Pull Request from develop to main',
-            head: 'develop',
-            base: 'main',
-            body: 'Automated Pull Request created by GitHub Actions'
-          });
-          console.log(data.number);
-          core.setOutput('pull_request_number', data.number);
-    - name: Approve Pull Request
-      uses: actions/github-script@v4
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          await github.pulls.createReview({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: ${{ steps.create_pr.outputs.pull_request_number }},
-            event: 'APPROVE'
-          }); 
-    - name: Wait for Pull Request Status
-      id: wait_for_status
-      uses: actions/github-script@v4
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const { data } = await github.pulls.checkIfMerged({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: ${{ steps.create_pr.outputs.pull_request_number }}
-          });
-          console.log(data.merged);
-          core.setOutput('pull_request_merged', data.merged);
-      continue-on-error: true
 
-    - name: Merge Pull Request
-      if: steps.wait_for_status.outputs.pull_request_merged == 'true'
-      uses: actions/github-script@v4
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          await github.pulls.merge({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: ${{ steps.create_pr.outputs.pull_request_number }}
-          });
+            for (const pr of prs) {
+              if (pr.user.login === github.context.actor) {
+                await octokit.pulls.update({
+                  owner: github.context.repo.owner,
+                  repo: github.context.repo.repo,
+                  pull_number: pr.number,
+                  state: 'closed'
+                });
+              }
+            }
 
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        file: ./coverage.txt
-        flags: unittests # optional
-        fail_ci_if_error: true # optional (default = false)
-        verbose: true # optional (default = false)
+      - name: Create PR using script
+        id: create_pr
+        uses: actions/github-script@v4
+        with:
+          script: |
+            const github = require('@actions/github');
+            const core = require('@actions/core');
+            
+            const token = ${{secrets.GH_OFA}}
+            const octokit = github.getOctokit(token);
+
+            const response = await octokit.pulls.create({
+              owner: github.context.repo.owner,
+              repo: github.context.repo.repo,
+              title: 'Automated PR from develop to main',
+              head: 'develop',
+              base: 'main'
+            });
+            
+            console.log('PR created with number:', response.data.number);
+            return response.data.number;  # Retourne le numéro de la PR
+      
+      - name: Approve PR
+        uses: actions/github-script@v4
+        with:
+          script: |
+            const github = require('@actions/github');
+            const core = require('@actions/core');
+            
+            const token = ${{secrets.GH_OFA}}
+            const octokit = github.getOctokit(token);
+
+            const prNumber = ${{ steps.create_pr.outputs.result }};
+            const isRepoOwner = github.context.actor === github.context.repo.owner;
+
+            if (isRepoOwner) {
+              await octokit.pulls.createReview({
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+                pull_number: prNumber,
+                event: 'APPROVE'
+              });
+            }
+
+      - name: Wait and merge PR
+        uses: actions/github-script@v4
+        with:
+          script: |
+            const github = require('@actions/github');
+            const core = require('@actions/core');
+            
+            const token = ${{secrets.GH_OFA}}
+            const octokit = github.getOctokit(token);
+
+            // Get PR number from previous step
+            const prNumber = ${{ steps.create_pr.outputs.result }};
+            const isRepoOwner = github.context.actor === github.context.repo.owner;
+
+            // Wait for SonarCloud checks to complete
+            while (true) {
+              const { data: { statuses } } = await octokit.repos.getCombinedStatusForRef({
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+                ref: `pull/${prNumber}/merge`,
+              });
+
+              const sonarCheck = statuses.find(({ context }) => context === 'SonarCloud');
+
+              if (!sonarCheck) {
+                core.setFailed('SonarCloud check not found');
+                break;
+              }
+
+              if (sonarCheck.state === 'success') {
+                break;
+              }
+
+              if (sonarCheck.state === 'failure') {
+                core.setFailed('SonarCloud check failed');
+                break;
+              }
+
+              // Sleep for 30 seconds
+              await new Promise(resolve => setTimeout(resolve, 30000));
+            }
+
+            // If repo owner, merge the PR
+            if (isRepoOwner) {
+              await octokit.pulls.merge({
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+                pull_number: prNumber,
+              });
+            }
