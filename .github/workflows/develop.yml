@@ -23,9 +23,6 @@ jobs:
         uses: actions/github-script@v4
         with:
           script: |
-            const github = require('@actions/github');
-            const core = require('@actions/core');
-            
             const token = ${{secrets.GH_OFA}}
             const octokit = github.getOctokit(token);
 
@@ -52,9 +49,6 @@ jobs:
         uses: actions/github-script@v4
         with:
           script: |
-            const github = require('@actions/github');
-            const core = require('@actions/core');
-            
             const token = ${{secrets.GH_OFA}}
             const octokit = github.getOctokit(token);
 
@@ -73,9 +67,6 @@ jobs:
         uses: actions/github-script@v4
         with:
           script: |
-            const github = require('@actions/github');
-            const core = require('@actions/core');
-            
             const token = ${{secrets.GH_OFA}}
             const octokit = github.getOctokit(token);
 
@@ -95,9 +86,6 @@ jobs:
         uses: actions/github-script@v4
         with:
           script: |
-            const github = require('@actions/github');
-            const core = require('@actions/core');
-            
             const token = ${{secrets.GH_OFA}}
             const octokit = github.getOctokit(token);
 
