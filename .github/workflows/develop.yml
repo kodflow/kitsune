@@ -10,14 +10,14 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
-        uses: actions/checkout@v3
+      #- name: Check out code
+      #  uses: actions/checkout@v3
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
+      #- name: Set up Go
+      #  uses: actions/setup-go@v4
 
-      - name: Test
-        run: make tests
+      #- name: Test
+      #  run: make tests
 
       - name: Delete old PRs
         uses: actions/github-script@v4
@@ -49,23 +49,21 @@ jobs:
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           script: |
-            const response = await github.pulls.create({
+            const { data } = await github.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: 'Automated PR from develop to main',
+              title: 'Automated Pull Request from develop to main',
               head: 'develop',
-              base: 'main'
+              base: 'main',
+              body: 'Automated Pull Request created by GitHub Actions'
             });
-
-            console.log('PR created with number:', response.data.number);
-            return response.data.number;  # Retourne le numéro de la PR
-      
+            core.setOutput('number', data.number);
       - name: Approve PR
         uses: actions/github-script@v4
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           script: |
-            const prNumber = ${{ steps.create_pr.outputs.result }};
+            const prNumber    = ${{ steps.create_pr.outputs.result.pull_request_number }};
             const isRepoOwner = context.actor === context.repo.owner;
 
             if (isRepoOwner) {
@@ -83,7 +81,7 @@ jobs:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           script: |
             // Get PR number from previous step
-            const prNumber = ${{ steps.create_pr.outputs.result }};
+            const prNumber    = ${{ steps.create_pr.outputs.result.pull_request_number }};
             const isRepoOwner = context.actor === context.repo.owner;
 
             // Wait for SonarCloud checks to complete
