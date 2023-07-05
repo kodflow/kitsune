@@ -14,6 +14,27 @@ jobs:
       uses: actions/setup-go@v4
     - name: Build binaries for all platforms
       run: make tests
+    - name: Check for existing Pull Request
+      id: check_pr
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { data } = await github.pulls.list({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            head: 'develop',
+            base: 'main',
+            state: 'open'
+          });
+          if (data.length > 0) {
+            await github.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: data[0].number,
+              state: 'closed'
+            });
+          }
     - name: Create Pull Request
       id: create_pr
       uses: actions/github-script@v4
