@@ -32,7 +32,7 @@ jobs:
               state: 'open'
             });
 
-            for (const pr of data.prs) {
+            for (const pr of data) {
               if (pr.user.login === context.actor) {
                 await github.pulls.update({
                   owner: context.repo.owner,
