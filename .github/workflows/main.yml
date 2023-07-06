@@ -101,6 +101,7 @@ jobs:
         push: true
         build-args: |
           BINARY_NAME=${{ matrix.binary_name }}
+          BINARY_VERSION=${{ needs.Binary.outputs.version }}
         tags: |
           kodmain/kitsune.${{ matrix.binary_name }}:latest
           kodmain/kitsune.${{ matrix.binary_name }}:${{ needs.Binary.outputs.version }}
