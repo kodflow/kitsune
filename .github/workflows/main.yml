@@ -28,42 +28,12 @@ jobs:
         branch: main
         skipInvalidTags: true
 
-    - name: Create or update 'latest' tag
-      uses: actions/github-script@v4
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          // https://api.github.com/repos/OWNER/REPO/git/refs/REF
-          // https://api.github.com/repos/kodmain/kitsune/git/refs/tags/latest
-          try {
-            // Try to delete the 'latest' tag
-            await github.git.deleteRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'tags/latest'
-            });
-          } catch (error) {
-            // Ignore if the 'latest' tag does not exist
-          }      
-
     - name: Build Kitsune Framework
       uses: ncipollo/release-action@v1
       with:
         name: Kitsune Framework
         makeLatest: true
         tag: ${{ steps.semver.outputs.next }}
-        artifacts: ".generated/bin/*,.generated/services/*"
-        allowUpdates: true
-        replacesArtifacts: true
-        removeArtifacts: true
-        token: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Build Kitsune Framework
-      uses: ncipollo/release-action@v1
-      with:
-        name: Kitsune Framework
-        makeLatest: true
-        tag: latest
         artifacts: ".generated/bin/*,.generated/services/*"
         allowUpdates: true
         replacesArtifacts: true
@@ -101,6 +71,7 @@ jobs:
         push: true
         build-args: |
           BINARY_NAME=${{ matrix.binary_name }}
+          BINARY_VERSION=${{ needs.Binary.outputs.version }}
         tags: |
           kodmain/kitsune.${{ matrix.binary_name }}:latest
           kodmain/kitsune.${{ matrix.binary_name }}:${{ needs.Binary.outputs.version }}
