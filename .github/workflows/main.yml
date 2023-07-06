@@ -45,12 +45,14 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
+          // https://api.github.com/repos/OWNER/REPO/git/refs/REF
+          // https://api.github.com/repos/kodmain/kitsune/git/refs/tags/latest
           try {
             // Try to delete the 'latest' tag
             await github.git.deleteRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: 'tags/latest'
+              ref: '1338e3129cfd26852c9a30394fad4d06b8dcd4e7'
             });
             
           } catch (error) {
