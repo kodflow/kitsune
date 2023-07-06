@@ -27,18 +27,6 @@ jobs:
         token: ${{ github.token }}
         branch: main
         skipInvalidTags: true
-        
-    - name: Build Kitsune Framework
-      uses: ncipollo/release-action@v1
-      with:
-        name: Kitsune Framework
-        makeLatest: true
-        tag: ${{ steps.semver.outputs.next }}
-        artifacts: ".generated/bin/*,.generated/services/*"
-        allowUpdates: true
-        replacesArtifacts: true
-        removeArtifacts: true
-        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Create or update 'latest' tag
       uses: actions/github-script@v4
@@ -56,13 +44,31 @@ jobs:
             });
           } catch (error) {
             // Ignore if the 'latest' tag does not exist
-          }
-          await github.git.createRef({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            ref: "refs/tags/latest",
-            sha: context.sha
-          });
+          }      
+
+    - name: Build Kitsune Framework
+      uses: ncipollo/release-action@v1
+      with:
+        name: Kitsune Framework
+        makeLatest: true
+        tag: ${{ steps.semver.outputs.next }}
+        artifacts: ".generated/bin/*,.generated/services/*"
+        allowUpdates: true
+        replacesArtifacts: true
+        removeArtifacts: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build Kitsune Framework
+      uses: ncipollo/release-action@v1
+      with:
+        name: Kitsune Framework
+        makeLatest: true
+        tag: latest
+        artifacts: ".generated/bin/*,.generated/services/*"
+        allowUpdates: true
+        replacesArtifacts: true
+        removeArtifacts: true
+        token: ${{ secrets.GITHUB_TOKEN }}
 
   Services:
     needs: Binary
