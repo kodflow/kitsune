@@ -45,35 +45,27 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const { Octokit } = require("octokit");
-          const ref = `tags/latest`;
-          const sha = context.sha;
-    
           try {
-            const octokit = new Octokit({
-              auth: '${{ secrets.GITHUB_TOKEN }}'
-            })
-
-            await octokit.request('DELETE /repos/{owner}/{repo}/git/refs/{ref}', {
+            // Try to delete the 'latest' tag
+            await github.git.deleteRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: ref,
-              headers: {
-                'X-GitHub-Api-Version': '2022-11-28'
-              }
-            })
+              ref: 'tags/latest'
+            });
+            
           } catch (error) {
             if (error.status !== 404) {
               throw error;
             }
             // Ignore if the 'latest' tag does not exist
           }
+
           /*
           await github.git.createRef({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            ref,
-            sha
+            ref: "refs/tags/nightly",
+            sha: context.sha
           });
           */
 
