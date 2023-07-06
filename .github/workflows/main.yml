@@ -54,7 +54,7 @@ jobs:
             await github.git.deleteRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: 
+              ref
             });
           } catch (error) {
             if (error.status !== 404) {
@@ -69,7 +69,6 @@ jobs:
             ref,
             sha
           });
-      
 
   Services:
     needs: Binary
