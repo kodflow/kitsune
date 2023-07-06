@@ -1,0 +1,119 @@
+name: Develop
+
+on:
+  push:
+    branches: develop
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+      - name: Test
+        run: make tests
+  
+  merge:
+    name: PullRequest
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete old PRs
+        uses: actions/github-script@v4
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          script: |
+            const { data } = await github.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: 'develop',
+              base: 'main',
+              state: 'open'
+            });
+
+            for (const pr of data) {
+              await github.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                state: 'closed'
+              });
+            }
+      - name: Create PR using script
+        id: create_pr
+        uses: actions/github-script@v4
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          script: |
+            const { data } = await github.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Automated Pull Request from develop to main',
+              head: 'develop',
+              base: 'main',
+              body: 'Automated Pull Request created by GitHub Actions'
+            });
+            core.setOutput('pull_request_number', data.number);
+      - name: Approve PR
+        uses: actions/github-script@v4
+        with:
+          github-token: "${{ secrets.GH_OFA }}"
+          script: |
+            const prNumber    = ${{ steps.create_pr.outputs.pull_request_number }};
+            const isRepoOwner = context.actor === context.repo.owner;
+
+            if (isRepoOwner) {
+              await github.pulls.createReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                event: 'APPROVE'
+              });
+            }
+      - name: Wait all checks have passed and merge PR
+        uses: actions/github-script@v4
+        with:
+          github-token: "${{ secrets.GH_OFA }}"
+          script: |
+            // Get PR number from previous step
+            const prNumber    = ${{ steps.create_pr.outputs.pull_request_number }};
+            const isRepoOwner = context.actor === context.repo.owner;
+            let run           = 0
+            let isTimeout     = false
+            while (true) {
+              if (run >= 10){
+                isTimeout = true
+                break
+              }
+
+              const { data: { statuses } } = await github.repos.getCombinedStatusForRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `pull/${prNumber}/merge`,
+              });
+
+              const failedCheck = statuses.find(({ state }) => state !== 'success');
+              if (!failedCheck) {
+                break;
+              }
+
+              if (failedCheck.state === 'failure') {
+                core.setFailed('A check failed');
+                break;
+              }
+
+              // Sleep for 30 seconds
+              await new Promise(resolve => setTimeout(resolve, 30000));
+              run++
+            }
+
+            if (isRepoOwner && !isTimeout) {
+              await github.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+              });
+            }

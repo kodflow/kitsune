@@ -1,0 +1,30 @@
+## BUILDER
+FROM kodmain/builder:go AS builder
+USER root:root
+COPY ./src       /root/src
+COPY ./Makefile  /root/Makefile
+COPY ./go.mod    /root/go.mod
+
+WORKDIR /root
+RUN make build
+RUN make binary-only
+
+## RUNNER
+FROM scratch AS runner
+COPY --from=builder /root/.generated/services/* /etc/kitsune/services/
+COPY --from=builder /root/.generated/bin/* /usr/local/bin/
+ENTRYPOINT [ "/usr/local/bin/kitsune" ]
+CMD [ "service", "start", "-f" ]
+
+## DEBUG
+FROM kodmain/os:alpine AS debug
+COPY --from=builder /root/.generated/services/* /etc/kitsune/services/
+COPY --from=builder /root/.generated/bin/* /usr/local/bin/
+USER root:root
+RUN mkdir -p /var/log/kitsune /var/run/kitsune
+RUN chown nobody:nobody -R /etc/kitsune /var/log/kitsune /var/run/kitsune
+USER nobody:nobody
+RUN echo "kitsune service start"  > .zsh_history
+RUN echo "cat /var/log/kitsune/*" >> .zsh_history
+#ENTRYPOINT [ "/usr/local/bin/kitsune" ]
+#CMD [ "service", "start", "-f" ]

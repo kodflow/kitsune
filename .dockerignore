@@ -1,0 +1,8 @@
+go.work
+.generated
+.terraform*
+*.tfstate*
+.DS_store
+Thumbs.db
+
+

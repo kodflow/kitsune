@@ -1,0 +1,10 @@
+#!/bin/bash
+branch=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$branch" = "main" || "$branch" = *release* || "$branch" = "develop" ]]; then
+    echo "You cannot directly commit to the master branch, a release branch, or the develop branch."
+    exit 1
+fi
+
+exit 0
+
+

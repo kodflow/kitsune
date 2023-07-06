@@ -1,0 +1,14 @@
+#!/bin/bash
+protected_branches=("main" "release/*" "develop")
+while read local_ref local_sha remote_ref remote_sha
+do
+  if [ "$remote_ref" = "refs/heads/main" ]; then
+    for branch in "${protected_branches[@]}"; do
+      if [ "$remote_ref" = "refs/heads/$branch" ]; then
+        echo "Push directly prohibited on $branch!"
+        exit 1
+      fi
+    done
+  fi
+done
+exit 0

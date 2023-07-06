@@ -1,0 +1,12 @@
+## RUNNER
+FROM scratch AS runner
+
+ARG BINARY_NAME=NO_SERVICE
+ENV BINARY_NAME=${BINARY_NAME}
+
+ARG BINARY_VERSION=latest
+ENV BINARY_VERSION=${BINARY_VERSION}
+
+ADD https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/${BINARY_NAME} /bin/service
+WORKDIR /run
+ENTRYPOINT [ "/bin/service" ]
