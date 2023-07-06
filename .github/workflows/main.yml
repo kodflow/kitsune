@@ -45,7 +45,6 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const version = "${{ steps.semver.outputs.next }}";
           const ref = `tags/latest`;
           const sha = context.sha;
     
@@ -62,13 +61,6 @@ jobs:
             }
             // Ignore if the 'latest' tag does not exist
           }
-
-          await github.git.createRef({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            ref,
-            sha
-          });
 
   Services:
     needs: Binary
