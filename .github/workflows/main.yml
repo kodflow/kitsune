@@ -54,22 +54,15 @@ jobs:
               repo: context.repo.repo,
               ref: 'tags/latest'
             });
-            
           } catch (error) {
-            if (error.status !== 404) {
-              throw error;
-            }
             // Ignore if the 'latest' tag does not exist
           }
-
-          /*
           await github.git.createRef({
             owner: context.repo.owner,
             repo: context.repo.repo,
             ref: "refs/tags/latest",
             sha: context.sha
           });
-          */
 
   Services:
     needs: Binary
