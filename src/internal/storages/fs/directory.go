@@ -2,17 +2,34 @@ package fs
 
 import (
 	"os"
-	"path/filepath"
+	"os/user"
 )
 
 // Crée un dossier avec le chemin spécifié (récursivement si nécessaire)
-func CreateDirectory(dirPath string) error {
-	err := os.MkdirAll(dirPath, os.ModePerm)
+func CreateDirectory(dirPath string, options ...*CreateOption) error {
+	if ExistsDirectory(dirPath) {
+		return nil
+	}
+
+	var opts *CreateOption = nil
+	if len(options) > 0 {
+		opts = options[0]
+	} else {
+		u, _ := user.Current()
+		g, _ := user.LookupGroupId(u.Gid)
+		opts = &CreateOption{
+			User:  u,
+			Group: g,
+			Perms: 0755,
+		}
+	}
+
+	err := os.MkdirAll(dirPath, opts.Perms)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return perms(dirPath, opts)
 }
 
 func ExistsDirectory(filePath string) bool {
@@ -28,19 +45,6 @@ func DeleteDirectory(dirPath string) error {
 	err := os.RemoveAll(dirPath)
 	if err != nil {
 		return err
-	}
-
-	return nil
-}
-
-// Fonction privée pour créer le dossier parent d'un fichier si nécessaire
-func createParentDirectory(filePath string) error {
-	parentDir := filepath.Dir(filePath)
-	if _, err := os.Stat(parentDir); os.IsNotExist(err) {
-		err := os.MkdirAll(parentDir, os.ModePerm)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil

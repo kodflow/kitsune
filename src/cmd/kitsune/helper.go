@@ -1,6 +1,7 @@
 package kitsune
 
 import (
+	"github.com/kodmain/kitsune/src/cmd/kitsune/update"
 	"github.com/spf13/cobra"
 )
 
@@ -18,10 +19,12 @@ func init() {
 	Helper.AddCommand(initCmd)
 	Helper.AddCommand(buildCmd)
 	Helper.AddCommand(serviceCmd)
-	Helper.AddCommand(statusCmd)
+	Helper.AddCommand(update.Cmd)
+
 	serviceCmd.AddCommand(startCmd)
 	serviceCmd.AddCommand(stopCmd)
 	serviceCmd.AddCommand(logCmd)
+	serviceCmd.AddCommand(statusCmd)
 
 	Helper.CompletionOptions.DisableDefaultCmd = true
 	Helper.CompletionOptions.DisableNoDescFlag = true

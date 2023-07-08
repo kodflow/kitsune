@@ -29,14 +29,11 @@ help: #Pour générer automatiquement l'aide ## Display all commands available
 	echo '╚──────────────────────────────────────────────────>'
 	echo ''
 
-start: ## Start services
-	docker compose -f .github/build/compose.yml --profile=services up
-
-stop: ## Stop services
-	docker compose -f .github/build/compose.yml --profile=services down
-
 aio: ## Start services in portable version
-	docker compose -f .github/build/compose.yml --profile=standalone up
+	docker compose -f .github/build/compose.yml --profile=services up --build
+
+run: ## Run services in portable version
+	docker compose -f .github/build/compose.yml --profile=standalone run --build --rm kitsune.$(ARGS)
 
 #test: ## Run services in portable version
 #	docker compose -f .github/build/compose.yml --profile=standalone build
@@ -45,15 +42,12 @@ aio: ## Start services in portable version
 tests:
 	go test -v `go list ./...` -coverprofile=coverage.txt -covermode=atomic
 
-run: ## Run services in portable version
-	docker compose -f .github/build/compose.yml --profile=standalone run --rm kitsune.$(ARGS)
-
 update: ## Install/Update vendor
 	echo "Update all dependencies"
 	go get -u ./...
 	go mod tidy
 
-build: update build-framework build-services package ## Build all services
+build: update build-framework build-services ## Build all services
 
 build-services:
 	@for service in $(SERVICES); do \
@@ -66,7 +60,7 @@ binary-only:
 build-framework:
 	echo Build Kitsune;
 	CGO_ENABLED=0 go build -trimpath -buildvcs=false -ldflags="-s -w \
-		-X github.com/kodmain/kitsune/src/internal/env.BUILD_VERSION=$$(git describe --tags --abbrev=0) \
+		-X github.com/kodmain/kitsune/src/internal/env.BUILD_VERSION=$$VERSION \
 		-X github.com/kodmain/kitsune/src/internal/env.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
 		-X github.com/kodmain/kitsune/src/internal/env.BUILD_APP_NAME=kitsune" \
 		-o .generated/bin/kitsune $(CURDIR)/src/cmd/main.go;
@@ -76,7 +70,7 @@ build-framework:
 build-service:
 	echo Build service $(ARGS);
 	CGO_ENABLED=0 go build -trimpath -buildvcs=false -ldflags="-s -w \
-		-X github.com/kodmain/kitsune/src/internal/env.BUILD_VERSION=$$(git describe --tags --abbrev=0) \
+		-X github.com/kodmain/kitsune/src/internal/env.BUILD_VERSION=$$VERSION \
 		-X github.com/kodmain/kitsune/src/internal/env.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
 		-X github.com/kodmain/kitsune/src/internal/env.BUILD_APP_NAME=$(ARGS)" \
 		-o .generated/services/$(ARGS) $(CURDIR)/src/services/$(ARGS)/main.go;
