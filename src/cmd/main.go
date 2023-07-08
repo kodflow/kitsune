@@ -5,6 +5,5 @@ import (
 )
 
 func main() {
-	// on va y arriver ...
 	kitsune.Helper.Execute()
 }
