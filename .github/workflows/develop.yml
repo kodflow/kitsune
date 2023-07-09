@@ -30,7 +30,6 @@ jobs:
             -Dsonar.organization=kodmain
             -Dsonar.projectKey=kodmain_kitsune
             -Dsonar.sources=src
-            -Dsonar.tests=test
             -Dsonar.test.inclusions=**/*_test.go
             -Dsonar.test.exclusions=vendor/**
             -Dsonar.verbose=true
