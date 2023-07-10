@@ -28,7 +28,7 @@ jobs:
     - name: Build binaries for all platforms
       env:
         VERSION: ${{ steps.semver.outputs.next }}
-      run: make build project
+      run: make build
     - name: Build Kitsune Framework
       uses: ncipollo/release-action@v1
       with:

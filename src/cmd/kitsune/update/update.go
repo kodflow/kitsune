@@ -2,6 +2,7 @@ package update
 
 import (
 	"fmt"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -75,9 +76,9 @@ var Cmd = &cobra.Command{
 			for _, asset := range latest.Assets {
 				if !(strings.HasSuffix(asset.Name, ".md5") || strings.HasSuffix(asset.Name, ".sha1")) {
 					var err error = nil
-					if asset.Name == "kitsune" {
+					if strings.Contains(asset.Name, "kitsune-"+runtime.GOOS+"-"+runtime.GOARCH) {
 						err = asset.Download(env.PATH_BIN)
-					} else {
+					} else if strings.Contains(asset.Name, runtime.GOOS+"-"+runtime.GOARCH) {
 						err = asset.Download(env.PATH_SERVICES)
 					}
 
