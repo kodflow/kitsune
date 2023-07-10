@@ -1,4 +1,4 @@
-name: All
+name: Develop
 
 on:
   push:
@@ -24,3 +24,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: .
+          args: >
+            -Dsonar.organization=kodmain
+            -Dsonar.projectKey=kodmain_kitsune
+            -Dsonar.verbose=true
