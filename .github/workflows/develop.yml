@@ -15,10 +15,6 @@ jobs:
         uses: actions/setup-go@v4
       - name: Test
         run: make tests
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
   
   merge:
     name: PullRequest
