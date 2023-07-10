@@ -9,6 +9,8 @@
 .DEFAULT_GOAL = help
 ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 SERVICES := $(wildcard src/services/*)
+OS := linux darwin
+ARCH := amd64 arm64
 $(eval $(ARGS):;@:)
 $(eval GWD=$(shell git rev-parse --show-toplevel 2>/dev/null || pwd))
 $(shell git config core.hooksPath $(GWD)/.github/hooks 2>/dev/null || true)
@@ -49,35 +51,42 @@ update: ## Install/Update vendor
 	go get -u ./...
 	go mod tidy
 
-build: update build-framework build-services ## Build all services
+build: clear update build-framework build-services ## Build all services
+
+clear:
+	rm -rf .generated
+
+binary-only:
+	find . | grep -E 'sha1|md5' | xargs rm;
 
 build-services:
 	@for service in $(SERVICES); do \
 		make build-service $$(basename $$service);\
 	done
 
-binary-only:
-	find . | grep -E 'sha1|md5' | xargs rm;
-
 build-framework:
 	echo Build Kitsune;
-	CGO_ENABLED=0 go build -trimpath -buildvcs=false -ldflags="-s -w \
-		-X github.com/kodmain/kitsune/src/internal/env.BUILD_VERSION=$$VERSION \
-		-X github.com/kodmain/kitsune/src/internal/env.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
-		-X github.com/kodmain/kitsune/src/internal/env.BUILD_APP_NAME=kitsune" \
-		-o .generated/bin/kitsune $(CURDIR)/src/cmd/main.go;
-	sha1sum .generated/bin/kitsune | awk '{ print $$1 }' | tr -d '\n' >> .generated/bin/kitsune.sha1;
-	md5sum  .generated/bin/kitsune | awk '{ print $$1 }' | tr -d '\n' >> .generated/bin/kitsune.md5;
+	@for os in $(OS); do \
+		for arch in $(ARCH); do \
+			CGO_ENABLED=0 go build -trimpath -buildvcs=false -ldflags="-s -w \
+				-X github.com/kodmain/kitsune/src/internal/env.BUILD_VERSION=$$VERSION \
+				-X github.com/kodmain/kitsune/src/internal/env.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
+				-X github.com/kodmain/kitsune/src/internal/env.BUILD_APP_NAME=kitsune" \
+				-o .generated/bin/kitsune-$$os-$$arch $(CURDIR)/src/cmd/main.go; \
+			done \
+	done
 
 build-service:
 	echo Build service $(ARGS);
-	CGO_ENABLED=0 go build -trimpath -buildvcs=false -ldflags="-s -w \
-		-X github.com/kodmain/kitsune/src/internal/env.BUILD_VERSION=$$VERSION \
-		-X github.com/kodmain/kitsune/src/internal/env.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
-		-X github.com/kodmain/kitsune/src/internal/env.BUILD_APP_NAME=$(ARGS)" \
-		-o .generated/services/$(ARGS) $(CURDIR)/src/services/$(ARGS)/main.go;
-	sha1sum .generated/services/$(ARGS) | awk '{ print $$1 }'  | tr -d '\n' > .generated/services/$(ARGS).sha1;
-	md5sum  .generated/services/$(ARGS) | awk '{ print $$1 }'  | tr -d '\n' > .generated/services/$(ARGS).md5;
+	@for os in $(OS); do \
+		for arch in $(ARCH); do \
+			CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch go build -trimpath -buildvcs=false -ldflags="-s -w \
+			-X github.com/kodmain/kitsune/src/internal/env.BUILD_VERSION=$$VERSION \
+			-X github.com/kodmain/kitsune/src/internal/env.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
+			-X github.com/kodmain/kitsune/src/internal/env.BUILD_APP_NAME=$(ARGS)" \
+			-o .generated/services/$(ARGS)-$$os-$$arch $(CURDIR)/src/services/$(ARGS)/main.go; \
+		done \
+	done
 
 package:
-	find .generated -type f ! -name "*.md5" ! -name "*.sha1" | xargs upx --best --lzma;
+	find .generated -type f | xargs upx --best --lzma;
