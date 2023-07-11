@@ -83,9 +83,8 @@ var Cmd = &cobra.Command{
 					}
 
 					if err != nil {
-						fmt.Println("Failed to download asset:", asset.Name, err.Error())
-					} else {
-						fmt.Println("Downloaded asset:", asset.Name)
+						fmt.Println("Failed to do update", err.Error())
+						break
 					}
 				}
 			}
