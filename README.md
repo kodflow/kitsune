@@ -1,9 +1,9 @@
-# Kitsune [![Reference](https://pkg.go.dev/badge/github.com/kodmain/kitsune.svg)](https://pkg.go.dev/github.com/kodmain/kitsune) [![License](https://img.shields.io:/github/license/kodmain/kitsune)](https://github.com/kodmain/kitsune/src/blob/main/LICENSE.md) ![Linux](https://img.shields.io/badge/Linux%20(amd%7Carm)-595959?logo=linux&logoColor=F0F0F0)
+# Kitsune [![Reference](https://pkg.go.dev/badge/github.com/kodmain/kitsune.svg)](https://pkg.go.dev/github.com/kodmain/kitsune) [![License](https://img.shields.io:/github/license/kodmain/kitsune)](https://github.com/kodmain/kitsune/src/blob/main/LICENSE.md) [![Latest Stable Version](https://badge.fury.io/gh/kodmain%2Fkitsune.svg)](https://badge.fury.io/gh/kodmain%2Fkitsune)
 
 [![codecov](https://codecov.io/gh/kodmain/kitsune/branch/main/graph/badge.svg)](https://codecov.io/gh/kodmain/kitsune)
 [![Workflow](https://img.shields.io/github/actions/workflow/status/kodmain/kitsune/main.yml)](https://github.com/kodmain/kitsune/src/actions/workflows/main.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/kodmain/kitsune)](https://goreportcard.com/report/github.com/kodmain/kitsune)
-[![Maintainability](https://api.codeclimate.com/v1/badges/d5102bdf5504b9ce56ce/maintainability)](https://codeclimate.com/github/kodmain/kitsune/maintainability)
+[![Maintainability](https://api.codeclimate.com/v1/badges/06d21ae59b44e76b6713/maintainability)](https://codeclimate.com/github/kodmain/kitsune/maintainability)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/3a89526aa9624788a14e1d443a82a2f2)](https://www.codacy.com/gh/kodmain/kitsune/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=kodmain/kitsune&amp;utm_campaign=Badge_Grade)
 
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
