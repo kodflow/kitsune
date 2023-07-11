@@ -9,9 +9,9 @@ ENV BINARY_VERSION=${BINARY_VERSION}
 USER root:root
 
 RUN ARCHITECTURE=$(uname -m) && if [ "$architecture" = "aarch64" ] || [ "$architecture" = "arm64" ]; then \
-      curl -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/${BINARY_NAME}-linux-arm64; \
+      curl -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/kitsune-linux-arm64; \
     else \
-      curl -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/${BINARY_NAME}-linux-amd64; \
+      curl -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/kitsune-linux-amd64; \
     fi;
 
 RUN chmod +x /bin/kitsune
