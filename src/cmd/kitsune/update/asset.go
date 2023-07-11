@@ -2,9 +2,11 @@ package update
 
 import (
 	"io"
+	"log"
 	"net/http"
 	"os/user"
 	"path/filepath"
+	"strings"
 
 	"github.com/kodmain/kitsune/src/internal/storages/fs"
 )
@@ -31,7 +33,12 @@ func (a *asset) Download(destination string) error {
 		return err
 	}
 
-	out, err := fs.CreateFile(filepath.Join(destination, a.Name), &fs.CreateOption{
+	aNameSplit := strings.SplitN(a.Name, "-", 2)
+	if len(aNameSplit) < 2 {
+		log.Fatalf("invalid file name format: %s", a.Name)
+	}
+	binaryName := aNameSplit[0]
+	out, err := fs.CreateFile(filepath.Join(destination, binaryName), &fs.CreateOption{
 		User:  root,
 		Group: wheel,
 		Perms: 0755,
