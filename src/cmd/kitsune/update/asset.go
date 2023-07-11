@@ -1,8 +1,8 @@
 package update
 
 import (
+	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os/user"
 	"path/filepath"
@@ -17,11 +17,8 @@ type asset struct {
 }
 
 func (a *asset) Download(destination string) error {
-	resp, err := http.Get(a.BrowserDownloadURL)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+	aNameSplit := strings.SplitN(a.Name, "-", 2)
+	binaryPath := filepath.Join(destination, aNameSplit[0])
 
 	wheel, err := user.LookupGroup("wheel")
 	if err != nil {
@@ -33,12 +30,13 @@ func (a *asset) Download(destination string) error {
 		return err
 	}
 
-	aNameSplit := strings.SplitN(a.Name, "-", 2)
-	if len(aNameSplit) < 2 {
-		log.Fatalf("invalid file name format: %s", a.Name)
+	resp, err := http.Get(a.BrowserDownloadURL)
+	if err != nil {
+		return err
 	}
-	binaryName := aNameSplit[0]
-	out, err := fs.CreateFile(filepath.Join(destination, binaryName), &fs.CreateOption{
+	defer resp.Body.Close()
+
+	out, err := fs.CreateFile(binaryPath, &fs.CreateOption{
 		User:  root,
 		Group: wheel,
 		Perms: 0755,
@@ -50,5 +48,10 @@ func (a *asset) Download(destination string) error {
 	defer out.Close()
 
 	_, err = io.Copy(out, resp.Body)
+
+	if err == nil {
+		fmt.Println("Downloaded service:", aNameSplit[0])
+	}
+
 	return err
 }
