@@ -6,20 +6,21 @@ ENV BINARY_NAME=${BINARY_NAME}
 
 ARG BINARY_VERSION=latest
 ENV BINARY_VERSION=${BINARY_VERSION}
+USER root:root
 
-RUN if [ "$ARCHITECTURE" = "arm64" ]; then \
+RUN ARCHITECTURE=$(uname -m) && if [ "$architecture" = "aarch64" ] || [ "$architecture" = "arm64" ]; then \
       curl -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/${BINARY_NAME}-linux-arm64; \
-    elif [ "$ARCHITECTURE" = "amd64" ]; then \
-      curl -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/${BINARY_NAME}-linux-amd64; \
     else \
-      echo "Unsupported architecture: $ARCHITECTURE"; \
-      exit 1; \
-    fi
+      curl -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/${BINARY_NAME}-linux-amd64; \
+    fi;
+
+RUN chmod +x /bin/kitsune
+RUN /bin/kitsune update
 
 ## RUNNER
 FROM scratch AS runner
 COPY --from=builder /bin/kitsune /bin/kitsune
-RUN /bin/kitsune update
+COPY --from=builder /etc/kitsune /etc/kitsune
 WORKDIR /run
 ENTRYPOINT [ "/bin/kitsune" ]
 CMD [ "service", "start"]
