@@ -1,3 +1,14 @@
+## BUILDER
+FROM kodmain/os:alpine AS builder
+RUN if [ "$ARCHITECTURE" = "arm64" ]; then \
+      curl -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/${BINARY_NAME}-linux-arm64; \
+    elif [ "$ARCHITECTURE" = "amd64" ]; then \
+      curl -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/${BINARY_NAME}-linux-amd64; \
+    else \
+      echo "Unsupported architecture: $ARCHITECTURE"; \
+      exit 1; \
+    fi
+
 ## RUNNER
 FROM scratch AS runner
 

@@ -46,9 +46,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch:
-          - amd64
-          - arm64
         binary_name:
           - supervisor
           - gateway
@@ -72,12 +69,11 @@ jobs:
       with:
         file: .github/build/Dockerfile.service
         context: .
-        platforms: ${{ matrix.arch }}
+        platforms: linux/amd64,linux/arm64
         push: true
         build-args: |
           BINARY_NAME=${{ matrix.binary_name }}
           BINARY_VERSION=${{ needs.Binary.outputs.version }}
-          ARCH_NAME=${{ matrix.arch }}
         tags: |
           kodmain/kitsune.${{ matrix.binary_name }}:latest
           kodmain/kitsune.${{ matrix.binary_name }}:${{ needs.Binary.outputs.version }}
