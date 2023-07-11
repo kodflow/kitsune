@@ -24,9 +24,3 @@ COPY --from=builder /etc/kitsune /etc/kitsune
 WORKDIR /run
 ENTRYPOINT [ "/bin/kitsune" ]
 CMD [ "service", "start"]
-
-## RUNNER
-FROM alpine AS test
-COPY --from=builder /bin/kitsune /bin/kitsune
-COPY --from=builder /etc/kitsune /etc/kitsune
-WORKDIR /run
