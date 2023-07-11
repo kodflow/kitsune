@@ -1,5 +1,12 @@
 ## BUILDER
 FROM kodmain/os:alpine AS builder
+
+ARG BINARY_NAME=NO_SERVICE
+ENV BINARY_NAME=${BINARY_NAME}
+
+ARG BINARY_VERSION=latest
+ENV BINARY_VERSION=${BINARY_VERSION}
+
 RUN if [ "$ARCHITECTURE" = "arm64" ]; then \
       curl -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/${BINARY_NAME}-linux-arm64; \
     elif [ "$ARCHITECTURE" = "amd64" ]; then \
@@ -11,14 +18,7 @@ RUN if [ "$ARCHITECTURE" = "arm64" ]; then \
 
 ## RUNNER
 FROM scratch AS runner
-
-ARG BINARY_NAME=NO_SERVICE
-ENV BINARY_NAME=${BINARY_NAME}
-
-ARG BINARY_VERSION=latest
-ENV BINARY_VERSION=${BINARY_VERSION}
-
-ADD https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/${BINARY_NAME}-linux-${ARCH_NAME} /bin/kitsune
+COPY --from=builder /bin/kitsune /bin/kitsune
 RUN /bin/kitsune update
 WORKDIR /run
 ENTRYPOINT [ "/bin/kitsune" ]
