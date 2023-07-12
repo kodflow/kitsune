@@ -1,4 +1,5 @@
-# Kitsune [![Reference](https://pkg.go.dev/badge/github.com/kodmain/kitsune.svg)](https://pkg.go.dev/github.com/kodmain/kitsune) [![License](https://img.shields.io:/github/license/kodmain/kitsune)](https://github.com/kodmain/kitsune/src/blob/main/LICENSE.md) [![Latest Stable Version](https://badge.fury.io/gh/kodmain%2Fkitsune.svg)](https://badge.fury.io/gh/kodmain%2Fkitsune)
+# Kitsune [![Reference](https://pkg.go.dev/badge/github.com/kodmain/kitsune.svg)](https://pkg.go.dev/github.com/kodmain/kitsune) [![License](https://img.shields.io:/github/license/kodmain/kitsune)](https://github.com/kodmain/kitsune/src/blob/main/LICENSE.md) ![Latest Stable Version](https://img.shields.io/github/v/tag/kodmain/kitsune?label=version)
+
 
 [![codecov](https://codecov.io/gh/kodmain/kitsune/branch/main/graph/badge.svg)](https://codecov.io/gh/kodmain/kitsune)
 [![Workflow](https://img.shields.io/github/actions/workflow/status/kodmain/kitsune/main.yml)](https://github.com/kodmain/kitsune/src/actions/workflows/main.yml)
