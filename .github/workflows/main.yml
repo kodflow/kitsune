@@ -61,6 +61,8 @@ jobs:
       uses: docker/setup-buildx-action@v2
     - name: Build Image Kitsune
       uses: docker/build-push-action@v4
+      env:
+        BUILDX_NO_DEFAULT_ATTESTATIONS: 1
       with:
         file: .github/build/Dockerfile.service
         context: .
