@@ -6,6 +6,5 @@ import (
 )
 
 func main() {
-	// update
 	daemon.Start(process.Handler)
 }
