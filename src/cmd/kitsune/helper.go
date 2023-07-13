@@ -6,9 +6,10 @@ import (
 )
 
 var Helper *cobra.Command = &cobra.Command{
-	Use:   "kitsune",
-	Short: "Kitsune is a microservice-oriented framework in Go",
-	Long:  "Kitsune is a powerful and flexible framework for building microservices in Go.",
+	Use:     "kitsune",
+	Version: update.Version.TagName,
+	Short:   "Kitsune is a microservice-oriented framework in Go",
+	Long:    "Kitsune is a powerful and flexible framework for building microservices in Go.",
 
 	DisableAutoGenTag:     true,
 	DisableFlagsInUseLine: true,
@@ -19,7 +20,10 @@ func init() {
 	Helper.AddCommand(initCmd)
 	Helper.AddCommand(buildCmd)
 	Helper.AddCommand(serviceCmd)
-	Helper.AddCommand(update.Cmd)
+
+	if update.ShooldUpdate() {
+		Helper.AddCommand(update.Cmd)
+	}
 
 	serviceCmd.AddCommand(startCmd)
 	serviceCmd.AddCommand(stopCmd)
