@@ -11,22 +11,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var Version = getLatestRelease()
+
 func getLatestVersion() string {
 	if env.BUILD_VERSION == "" {
 		return color.YellowString("You are on a local build")
 	}
 
-	latest := getLatestRelease()
-
-	if latest.TagName == "" {
+	if Version.TagName == "" {
 		return color.RedString("Unable to compare versions.")
 	}
 
-	if env.BUILD_VERSION == latest.TagName {
+	if env.BUILD_VERSION == Version.TagName {
 		return color.GreenString("You are on the latest version.")
 	}
 
-	return fmt.Sprintf("From %s to %s", color.RedString(env.BUILD_VERSION), color.GreenString(latest.TagName))
+	return fmt.Sprintf("From %s to %s", color.RedString(env.BUILD_VERSION), color.GreenString(Version.TagName))
 }
 
 func compareVersions(version1, version2 string) bool {
@@ -61,9 +61,8 @@ func compareVersions(version1, version2 string) bool {
 	return len(v1Nums) > len(v2Nums)
 }
 
-func shooldUpdate() bool {
-	latest := getLatestRelease()
-	return compareVersions(env.BUILD_VERSION, latest.TagName)
+func ShooldUpdate() bool {
+	return compareVersions(env.BUILD_VERSION, Version.TagName)
 }
 
 var Cmd = &cobra.Command{
@@ -71,26 +70,21 @@ var Cmd = &cobra.Command{
 	Short: "Update kitsune (" + getLatestVersion() + ")",
 	Run: func(cmd *cobra.Command, args []string) {
 		// Logic for status command
-		if shooldUpdate() || true {
-			latest := getLatestRelease()
-			fmt.Println("update to", latest.TagName)
-			for _, asset := range latest.Assets {
-				if !(strings.HasSuffix(asset.Name, ".md5") || strings.HasSuffix(asset.Name, ".sha1")) {
-					var err error = nil
-					if strings.Contains(asset.Name, "kitsune-"+runtime.GOOS+"-"+runtime.GOARCH) {
-						err = asset.Download(env.PATH_BIN)
-					} else if strings.Contains(asset.Name, runtime.GOOS+"-"+runtime.GOARCH) {
-						err = asset.Download(env.PATH_SERVICES)
-					}
+		fmt.Println("update to", Version.TagName)
+		for _, asset := range Version.Assets {
+			if !(strings.HasSuffix(asset.Name, ".md5") || strings.HasSuffix(asset.Name, ".sha1")) {
+				var err error = nil
+				if strings.Contains(asset.Name, "kitsune-"+runtime.GOOS+"-"+runtime.GOARCH) {
+					err = asset.Download(env.PATH_BIN)
+				} else if strings.Contains(asset.Name, runtime.GOOS+"-"+runtime.GOARCH) {
+					err = asset.Download(env.PATH_SERVICES)
+				}
 
-					if err != nil {
-						fmt.Println("Failed to do update", err.Error())
-						break
-					}
+				if err != nil {
+					fmt.Println("Failed to do update", err.Error())
+					break
 				}
 			}
-		} else {
-			fmt.Println("can't update because:", getLatestVersion())
 		}
 	},
 }
