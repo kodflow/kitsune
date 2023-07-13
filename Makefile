@@ -68,11 +68,12 @@ build-framework:
 	echo Build Kitsune;
 	@for os in $(OS); do \
 		for arch in $(ARCH); do \
-			CGO_ENABLED=0 go build -trimpath -buildvcs=false -ldflags="-s -w \
+			CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch go build -trimpath -buildvcs=false -ldflags="-s -w \
 				-X github.com/kodmain/kitsune/src/internal/env.BUILD_VERSION=$$VERSION \
 				-X github.com/kodmain/kitsune/src/internal/env.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
 				-X github.com/kodmain/kitsune/src/internal/env.BUILD_APP_NAME=kitsune" \
 				-o .generated/bin/kitsune-$$os-$$arch $(CURDIR)/src/cmd/main.go; \
+				chmod +x .generated/bin/kitsune-$$os-$$arch; \
 			done \
 	done
 
@@ -85,6 +86,7 @@ build-service:
 			-X github.com/kodmain/kitsune/src/internal/env.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
 			-X github.com/kodmain/kitsune/src/internal/env.BUILD_APP_NAME=$(ARGS)" \
 			-o .generated/services/$(ARGS)-$$os-$$arch $(CURDIR)/src/services/$(ARGS)/main.go; \
+			chmod +x .generated/services/$(ARGS)-$$os-$$arch; \
 		done \
 	done
 
