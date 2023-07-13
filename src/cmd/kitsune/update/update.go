@@ -73,6 +73,7 @@ var Cmd = &cobra.Command{
 		// Logic for status command
 		if shooldUpdate() || true {
 			latest := getLatestRelease()
+			fmt.Println("update to", latest.TagName)
 			for _, asset := range latest.Assets {
 				if !(strings.HasSuffix(asset.Name, ".md5") || strings.HasSuffix(asset.Name, ".sha1")) {
 					var err error = nil
