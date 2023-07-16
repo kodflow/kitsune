@@ -2,13 +2,11 @@ package update
 
 import (
 	"fmt"
-	"runtime"
 	"strconv"
 	"strings"
 
 	"github.com/fatih/color"
 	"github.com/kodmain/kitsune/src/internal/env"
-	"github.com/spf13/cobra"
 )
 
 var Version = getLatestRelease()
@@ -59,32 +57,4 @@ func compareVersions(version1, version2 string) bool {
 	}
 
 	return len(v1Nums) > len(v2Nums)
-}
-
-func ShooldUpdate() bool {
-	return compareVersions(env.BUILD_VERSION, Version.TagName)
-}
-
-var Cmd = &cobra.Command{
-	Use:   "update",
-	Short: "Update kitsune (" + getLatestVersion() + ")",
-	Run: func(cmd *cobra.Command, args []string) {
-		// Logic for status command
-		fmt.Println("update to", Version.TagName)
-		for _, asset := range Version.Assets {
-			if !(strings.HasSuffix(asset.Name, ".md5") || strings.HasSuffix(asset.Name, ".sha1")) {
-				var err error = nil
-				if strings.Contains(asset.Name, "kitsune-"+runtime.GOOS+"-"+runtime.GOARCH) {
-					err = asset.Download(env.PATH_BIN)
-				} else if strings.Contains(asset.Name, runtime.GOOS+"-"+runtime.GOARCH) {
-					err = asset.Download(env.PATH_SERVICES)
-				}
-
-				if err != nil {
-					fmt.Println("Failed to do update", err.Error())
-					break
-				}
-			}
-		}
-	},
 }
