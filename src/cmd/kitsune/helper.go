@@ -21,9 +21,7 @@ func init() {
 	Helper.AddCommand(buildCmd)
 	Helper.AddCommand(serviceCmd)
 
-	if update.ShooldUpdate() {
-		Helper.AddCommand(update.Cmd)
-	}
+	Helper.AddCommand(update.Cmd)
 
 	serviceCmd.AddCommand(startCmd)
 	serviceCmd.AddCommand(stopCmd)
