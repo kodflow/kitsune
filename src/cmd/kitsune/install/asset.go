@@ -1,4 +1,4 @@
-package update
+package install
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/kodmain/kitsune/src/internal/env"
 	"github.com/kodmain/kitsune/src/internal/storages/fs"
 )
 
@@ -17,8 +18,14 @@ type asset struct {
 }
 
 func (a *asset) Download(destination string) error {
+
 	aNameSplit := strings.SplitN(a.Name, "-", 2)
 	binaryPath := filepath.Join(destination, aNameSplit[0])
+
+	if fs.ExistsFile(binaryPath) && fs.SHA1Sum(binaryPath) != env.BUILD_SERVICE[aNameSplit[0]] {
+		fmt.Printf("service %s already exist.\n", aNameSplit[0])
+		return nil
+	}
 
 	wheel, err := user.LookupGroup("wheel")
 	if err != nil {
@@ -50,7 +57,7 @@ func (a *asset) Download(destination string) error {
 	_, err = io.Copy(out, resp.Body)
 
 	if err == nil {
-		fmt.Println("Downloaded service:", aNameSplit[0])
+		fmt.Printf("Download %s.\n", aNameSplit[0])
 	}
 
 	return err
