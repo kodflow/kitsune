@@ -1,7 +1,11 @@
 package fs
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
+	"io"
 	"io/fs"
+	"log"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -43,6 +47,22 @@ func CreateFile(filePath string, options ...*CreateOption) (*os.File, error) {
 // Supprime un fichier avec le chemin spécifié
 func DeleteFile(filePath string) error {
 	return os.Remove(filePath)
+}
+
+func SHA1Sum(filePath string) string {
+	file, err := os.Open(filePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	hash := sha1.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		log.Fatal(err)
+	}
+
+	// Renvoyer le hash sous forme de chaîne hexadécimale
+	return hex.EncodeToString(hash.Sum(nil))
 }
 
 func ExistsFile(filePath string) bool {
