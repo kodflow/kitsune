@@ -1,5 +1,10 @@
 package install
 
+import (
+	"strconv"
+	"strings"
+)
+
 /*
 var Version *release = nil
 
@@ -25,6 +30,8 @@ func getLatestVersion() string {
 
 	return fmt.Sprintf("From %s to %s", color.RedString(env.BUILD_VERSION), color.GreenString(Version.TagName))
 }
+
+*/
 
 func compareVersions(version1, version2 string) bool {
 	v1Parts := strings.Split(strings.TrimPrefix(version1, "v"), ".")
@@ -57,4 +64,3 @@ func compareVersions(version1, version2 string) bool {
 
 	return len(v1Nums) > len(v2Nums)
 }
-*/
