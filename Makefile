@@ -49,9 +49,9 @@ tests:
 update: ## Install/Update vendor
 	echo "Update all dependencies"
 	go get -u ./...
-	go mod tidy
+	go mod vendor
 
-build: clear update build-framework build-services ## Build all services
+build: clear update build-services build-framework ## Build all services
 
 clear:
 	rm -rf .generated
@@ -68,13 +68,18 @@ build-framework:
 	echo Build Kitsune;
 	@for os in $(OS); do \
 		for arch in $(ARCH); do \
-			CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch go build -trimpath -buildvcs=false -ldflags="-s -w \
+			ldflags="-s -w \
 				-X github.com/kodmain/kitsune/src/internal/env.BUILD_VERSION=$$VERSION \
 				-X github.com/kodmain/kitsune/src/internal/env.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
-				-X github.com/kodmain/kitsune/src/internal/env.BUILD_APP_NAME=kitsune" \
+				-X github.com/kodmain/kitsune/src/internal/env.BUILD_APP_NAME=kitsune"; \
+			for binary in $$(find .generated -type f -name "*$$os-$$arch.sha1" | awk -F "/" '{print $$3}' | awk -F "-" '{print $$1}' | sort | uniq); do \
+				cap_binary=$$(echo $$binary | tr '[:lower:]' '[:upper:]'); \
+				ldflags+=" -X github.com/kodmain/kitsune/src/internal/env.BUILD_SERVICE_$$cap_binary=$$(cat .generated/services/$$binary-$$os-$$arch.sha1)"; \
+			done; \
+			CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch go build -trimpath -buildvcs=false -ldflags="$$ldflags" \
 				-o .generated/bin/kitsune-$$os-$$arch $(CURDIR)/src/cmd/main.go; \
 				chmod +x .generated/bin/kitsune-$$os-$$arch; \
-			done \
+		done \
 	done
 
 build-service:
@@ -87,6 +92,7 @@ build-service:
 			-X github.com/kodmain/kitsune/src/internal/env.BUILD_APP_NAME=$(ARGS)" \
 			-o .generated/services/$(ARGS)-$$os-$$arch $(CURDIR)/src/services/$(ARGS)/main.go; \
 			chmod +x .generated/services/$(ARGS)-$$os-$$arch; \
+			sha1sum .generated/services/$(ARGS)-$$os-$$arch | awk '{ print $$1 }'  | tr -d '\n' > .generated/services/$(ARGS)-$$os-$$arch.sha1; \
 		done \
 	done
 

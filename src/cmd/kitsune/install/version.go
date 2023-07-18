@@ -1,16 +1,15 @@
-package update
+package install
 
-import (
-	"fmt"
-	"strconv"
-	"strings"
+/*
+var Version *release = nil
 
-	"github.com/fatih/color"
-	"github.com/kodmain/kitsune/src/internal/env"
-)
+func getVersion() {
 
-var Version = getLatestRelease()
+	if Version == nil {
 
+	}
+
+}
 func getLatestVersion() string {
 	if env.BUILD_VERSION == "" {
 		return color.YellowString("You are on a local build")
@@ -58,3 +57,4 @@ func compareVersions(version1, version2 string) bool {
 
 	return len(v1Nums) > len(v2Nums)
 }
+*/

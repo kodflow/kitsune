@@ -1,20 +1,27 @@
-package update
+package install
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 )
 
-type release struct {
+var data *meta = nil
+
+type meta struct {
 	TagName string  `json:"tag_name"`
 	Assets  []asset `json:"assets"`
 }
 
-func getLatestRelease() *release {
+func latest() *meta {
+	if data != nil {
+		return data
+	}
 
 	resp, err := http.Get("https://api.github.com/repos/kodmain/kitsune/releases/latest")
 	if err != nil || resp.StatusCode != http.StatusOK {
+		fmt.Println(err.Error())
 		return nil
 	}
 	defer resp.Body.Close()
@@ -24,11 +31,10 @@ func getLatestRelease() *release {
 		return nil
 	}
 
-	var version *release
-	err = json.Unmarshal(body, &version)
+	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return nil
 	}
 
-	return version
+	return data
 }
