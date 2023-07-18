@@ -23,7 +23,7 @@ func (a *asset) Download(destination string) error {
 	binaryPath := filepath.Join(destination, aNameSplit[0])
 
 	if fs.ExistsFile(binaryPath) && fs.SHA1Sum(binaryPath) != env.BUILD_SERVICE[aNameSplit[0]] {
-		fmt.Printf("service %s already exist.\n", aNameSplit[0])
+		fmt.Printf("service %s already exist %s.\n", aNameSplit[0], a.Name)
 		return nil
 	}
 
