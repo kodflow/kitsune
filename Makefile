@@ -81,6 +81,7 @@ build-framework:
 				chmod +x .generated/bin/kitsune-$$os-$$arch; \
 		done \
 	done
+	find .generated | grep "sha1" | xargs rm 
 
 build-service:
 	echo Build service $(ARGS);
