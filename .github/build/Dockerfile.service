@@ -12,7 +12,7 @@ RUN ARCHITECTURE=$(uname -m) && if [ "$architecture" = "aarch64" ] || [ "$archit
     fi;
 
 RUN chmod +x /bin/kitsune
-RUN /bin/kitsune update
+RUN /bin/kitsune install
 
 ## RUNNER
 FROM scratch AS runner
