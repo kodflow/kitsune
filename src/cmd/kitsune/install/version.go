@@ -59,12 +59,12 @@ func compareVersions(version1, version2 string) bool {
 	}
 
 	for i := 0; i < len(v1Nums) && i < len(v2Nums); i++ {
-		if v1Nums[i] > v2Nums[i] {
+		if v1Nums[i] < v2Nums[i] {
 			return true
-		} else if v1Nums[i] < v2Nums[i] {
+		} else if v1Nums[i] > v2Nums[i] {
 			return false
 		}
 	}
 
-	return len(v1Nums) < len(v2Nums)
+	return len(v1Nums) > len(v2Nums)
 }
