@@ -66,5 +66,5 @@ func compareVersions(version1, version2 string) bool {
 		}
 	}
 
-	return len(v1Nums) > len(v2Nums)
+	return len(v1Nums) < len(v2Nums)
 }
