@@ -34,6 +34,10 @@ func getLatestVersion() string {
 */
 
 func compareVersions(version1, version2 string) bool {
+	if version1 == "" || version2 == "" {
+		return true
+	}
+
 	v1Parts := strings.Split(strings.TrimPrefix(version1, "v"), ".")
 	v2Parts := strings.Split(strings.TrimPrefix(version2, "v"), ".")
 

@@ -2,6 +2,7 @@ package install
 
 import (
 	"fmt"
+	"os/user"
 	"runtime"
 	"strings"
 
@@ -10,8 +11,25 @@ import (
 )
 
 var Cmd = &cobra.Command{
-	Use:   "install",
-	Short: "Install kitsune",
+	Use:                   "install <service1> <service2> ... (all by default)",
+	Short:                 "Install kitsune",
+	Long:                  "Install all kitsune services or specifie what you want",
+	DisableFlagParsing:    true,
+	DisableAutoGenTag:     true,
+	DisableFlagsInUseLine: true,
+	DisableSuggestions:    true,
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		current, err := user.Current()
+		if err != nil {
+			return err
+		}
+
+		if current.Uid != "0" {
+			return fmt.Errorf("require admin privilege")
+		}
+
+		return nil
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 
 		// Convert arguments to map for efficient lookup
@@ -21,8 +39,8 @@ var Cmd = &cobra.Command{
 		}
 
 		// Logic for status command
-		fmt.Println("install to", latest().TagName)
 		if compareVersions(env.BUILD_VERSION, latest().TagName) {
+			fmt.Println("kitsune install to latest version", latest().TagName)
 			for _, asset := range latest().Assets {
 				var err error = nil
 				isKitsune := strings.Contains(asset.Name, "kitsune-"+runtime.GOOS+"-"+runtime.GOARCH)
@@ -40,6 +58,8 @@ var Cmd = &cobra.Command{
 					break
 				}
 			}
+		} else {
+			fmt.Println("kitsune is up to date")
 		}
 	},
 }
