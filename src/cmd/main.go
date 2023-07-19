@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	// test update
+	// test update1
 	kitsune.Helper.Execute()
 }
