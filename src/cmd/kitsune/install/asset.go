@@ -25,11 +25,6 @@ func (a *asset) Download(destination string) error {
 	aNameSplit := strings.SplitN(a.Name, "-", 2)
 	binaryPath := filepath.Join(destination, aNameSplit[0])
 
-	wheel, err := user.LookupGroup("wheel")
-	if err != nil {
-		return err
-	}
-
 	root, err := user.Lookup("root")
 	if err != nil {
 		return err
@@ -43,7 +38,6 @@ func (a *asset) Download(destination string) error {
 
 	out, err := fs.CreateFile(binaryPath, &fs.Options{
 		User:  root,
-		Group: wheel,
 		Perms: 0755,
 	})
 
