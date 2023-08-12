@@ -1,10 +1,15 @@
 package main
 
 import (
+	"os"
+
 	"github.com/kodmain/kitsune/src/cmd/kitsune"
 )
 
 func main() {
-	// test update1
-	kitsune.Helper.Execute()
+	if err := kitsune.Helper.Execute(); err != nil {
+		os.Exit(1)
+	}
+
+	os.Exit(0)
 }

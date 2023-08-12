@@ -7,8 +7,9 @@ import (
 )
 
 var buildCmd = &cobra.Command{
-	Use:   "build",
-	Short: "Build project",
+	Use:     "build",
+	Short:   "Build project",
+	GroupID: "project",
 	Run: func(cmd *cobra.Command, args []string) {
 		// Logic for build command
 		fmt.Println("Building the microservice project...")
