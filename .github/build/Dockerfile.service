@@ -15,7 +15,7 @@ RUN chmod +x /bin/kitsune
 RUN /bin/kitsune install
 
 ## RUNNER
-FROM alpine AS runner
+FROM scratch AS runner
 COPY --from=builder /bin/kitsune /bin/kitsune
 #COPY --from=builder /etc/kitsune /etc/kitsune
 WORKDIR /run
