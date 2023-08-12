@@ -17,7 +17,7 @@ RUN /bin/kitsune install
 ## RUNNER
 FROM scratch AS runner
 COPY --from=builder /bin/kitsune /bin/kitsune
-COPY --from=builder /etc/kitsune /etc/kitsune
+#COPY --from=builder /etc/kitsune /etc/kitsune
 WORKDIR /run
 ENTRYPOINT [ "/bin/kitsune" ]
 CMD [ "service", "start"]
