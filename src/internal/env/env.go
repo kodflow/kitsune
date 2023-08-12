@@ -1,8 +1,10 @@
 package env
 
 import (
+	"fmt"
 	"os"
 	"os/user"
+	"runtime"
 )
 
 var (
@@ -15,6 +17,9 @@ var (
 )
 
 func init() {
+
+	fmt.Println("runtime", runtime.GOOS)
+
 	if user, err := user.Current(); err == nil {
 		USER = user
 	}
