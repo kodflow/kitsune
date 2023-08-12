@@ -9,8 +9,6 @@ import (
 
 var (
 	USER          *user.User
-	GROUP         *user.Group
-	HOME          string
 	CWD           string
 	HOSTNAME      string
 	SERVICE_TOKEN string
@@ -19,21 +17,15 @@ var (
 func init() {
 
 	fmt.Println("runtime", runtime.GOOS)
-
-	if user, err := user.Current(); err == nil {
+	user, err := user.Current()
+	if err == nil {
 		USER = user
-	}
-
-	if group, err := user.LookupGroupId(USER.Gid); err == nil {
-		GROUP = group
+	} else {
+		fmt.Println(err)
 	}
 
 	if hostname, err := os.Hostname(); err == nil {
 		HOSTNAME = hostname
-	}
-
-	if home, err := os.UserHomeDir(); err == nil {
-		HOME = home
 	}
 
 	if cwd, err := os.Getwd(); err == nil {

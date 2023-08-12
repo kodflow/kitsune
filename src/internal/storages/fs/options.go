@@ -10,24 +10,24 @@ import (
 )
 
 type Options struct {
-	User     *user.User
-	Group    *user.Group
+	User *user.User
+	//Group    *user.Group
 	Perms    fs.FileMode
 	fromFile bool
 }
 
 func defaultOptions() (*Options, error) {
 	return &Options{
-		User:  env.USER,
-		Group: env.GROUP,
+		User: env.USER,
+		//Group: env.GROUP,
 		Perms: 0644,
 	}, nil
 }
 
 func (co *Options) Fork() *Options {
 	return &Options{
-		User:  co.User,
-		Group: co.Group,
+		User: co.User,
+		//Group: co.Group,
 		Perms: co.Perms,
 	}
 }
@@ -50,7 +50,7 @@ func perms(path string, options *Options) error {
 		return err
 	}
 
-	gid, err := strconv.Atoi(options.Group.Gid)
+	gid, err := strconv.Atoi(options.User.Gid)
 	if err != nil {
 		return err
 	}
