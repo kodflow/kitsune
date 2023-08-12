@@ -1,4 +1,4 @@
-package kitsune
+package services
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var statusCmd = &cobra.Command{
+var status = &cobra.Command{
 	Use:   "status",
 	Short: "Display project status",
 	Run: func(cmd *cobra.Command, args []string) {

@@ -1,4 +1,4 @@
-package kitsune
+package services
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var stopCmd = &cobra.Command{
+var stop = &cobra.Command{
 	Use:   "stop",
 	Short: "Stop all kitsune-services",
 	Run: func(cmd *cobra.Command, args []string) {

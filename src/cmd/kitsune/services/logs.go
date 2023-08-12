@@ -1,4 +1,4 @@
-package kitsune
+package services
 
 import (
 	"fmt"
@@ -6,8 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var logCmd = &cobra.Command{
-	Use:   "log",
+var logs = &cobra.Command{
+	Use:   "logs",
 	Short: "display all kitsune-services logs",
 	Run: func(cmd *cobra.Command, args []string) {
 		// Logic for down command

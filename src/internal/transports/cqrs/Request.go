@@ -1,4 +1,4 @@
-package query
+package cqrs
 
 type Request struct {
 	Service string

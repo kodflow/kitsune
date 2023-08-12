@@ -5,27 +5,46 @@ import (
 	"os"
 	"os/user"
 	"strconv"
+
+	"github.com/kodmain/kitsune/src/internal/env"
 )
 
-type CreateOption struct {
-	User  *user.User
-	Group *user.Group
-	Perms fs.FileMode
+type Options struct {
+	User     *user.User
+	Group    *user.Group
+	Perms    fs.FileMode
+	fromFile bool
 }
 
-func (co *CreateOption) AddRead() {
-	co.Perms |= 0444 // Ajoute les permissions de lecture pour le propriétaire, le groupe et les autres
+func defaultOptions() (*Options, error) {
+	return &Options{
+		User:  env.USER,
+		Group: env.GROUP,
+		Perms: 0644,
+	}, nil
 }
 
-func (co *CreateOption) AddWrite() {
-	co.Perms |= 0222 // Ajoute les permissions d'écriture pour le propriétaire, le groupe et les autres
+func (co *Options) Fork() *Options {
+	return &Options{
+		User:  co.User,
+		Group: co.Group,
+		Perms: co.Perms,
+	}
 }
 
-func (co *CreateOption) AddExecutable() {
-	co.Perms |= 0111 // Ajoute les permissions d'exécution pour le propriétaire, le groupe et les autres
+func (co *Options) AddRead() {
+	co.Perms |= 0444
 }
 
-func perms(path string, options *CreateOption) error {
+func (co *Options) AddWrite() {
+	co.Perms |= 0222
+}
+
+func (co *Options) AddExecutable() {
+	co.Perms |= 0111
+}
+
+func perms(path string, options *Options) error {
 	uid, err := strconv.Atoi(options.User.Uid)
 	if err != nil {
 		return err

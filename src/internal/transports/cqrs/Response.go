@@ -1,4 +1,4 @@
-package query
+package cqrs
 
 type Response struct {
 	Head any

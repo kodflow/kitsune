@@ -2,29 +2,33 @@ package fs
 
 import (
 	"os"
-	"os/user"
 )
 
 // Crée un dossier avec le chemin spécifié (récursivement si nécessaire)
-func CreateDirectory(dirPath string, options ...*CreateOption) error {
+func CreateDirectory(dirPath string, options ...*Options) error {
+	var err error = nil
+
 	if ExistsDirectory(dirPath) {
-		return nil
+		return err
 	}
 
-	var opts *CreateOption = nil
+	var opts *Options = nil
+
 	if len(options) > 0 {
 		opts = options[0]
+		if opts.fromFile {
+			opts = opts.Fork()
+		}
 	} else {
-		u, _ := user.Current()
-		g, _ := user.LookupGroupId(u.Gid)
-		opts = &CreateOption{
-			User:  u,
-			Group: g,
-			Perms: 0755,
+		opts, err = defaultOptions()
+		if err != nil {
+			return err
 		}
 	}
 
-	err := os.MkdirAll(dirPath, opts.Perms)
+	opts.AddExecutable()
+
+	err = os.MkdirAll(dirPath, opts.Perms)
 	if err != nil {
 		return err
 	}
@@ -37,6 +41,7 @@ func ExistsDirectory(filePath string) bool {
 	if os.IsNotExist(err) {
 		return false
 	}
+
 	return info.IsDir()
 }
 
