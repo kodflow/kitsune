@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/kodmain/kitsune/src/internal/env"
+	"github.com/kodmain/kitsune/src/internal/observability/logger"
 )
 
 type Handler struct {
@@ -47,8 +48,9 @@ func Stop() {
 }
 
 func handleErrorAndExit(err error) {
-	fmt.Println(err.Error())
-	os.Exit(1)
+	if logger.Default().Fatal(err) {
+		os.Exit(1)
+	}
 }
 
 func handleSignal() {
@@ -62,10 +64,11 @@ func processHandler(handler *Handler) {
 	startTime := time.Now()
 
 	for {
-		fmt.Println(env.BUILD_APP_NAME, handler.Name, "start")
+		logger.Default().Info(env.BUILD_APP_NAME + " " + handler.Name + " start")
 		if err := handler.Call(); err != nil {
-			fmt.Println(env.BUILD_APP_NAME, handler.Name, "fail")
+			logger.Default().Warn(env.BUILD_APP_NAME + " " + handler.Name + " fail")
 			if count >= 2 && shouldExit(count, startTime) {
+				logger.Default().Error(fmt.Errorf(env.BUILD_APP_NAME + " " + handler.Name + " won't start"))
 				done <- true
 				break
 			}

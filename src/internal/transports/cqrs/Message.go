@@ -1,4 +1,4 @@
-package query
+package cqrs
 
 import "github.com/google/uuid"
 

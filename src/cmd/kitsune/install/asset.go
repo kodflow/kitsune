@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/kodmain/kitsune/src/internal/env"
 	"github.com/kodmain/kitsune/src/internal/storages/fs"
 )
 
@@ -19,13 +18,12 @@ type asset struct {
 
 func (a *asset) Download(destination string) error {
 
+	if err := fs.CreateDirectory(destination); err != nil {
+		return err
+	}
+
 	aNameSplit := strings.SplitN(a.Name, "-", 2)
 	binaryPath := filepath.Join(destination, aNameSplit[0])
-
-	if fs.ExistsFile(binaryPath) && fs.SHA1Sum(binaryPath) == env.BUILD_SERVICE[aNameSplit[0]] {
-		fmt.Printf("service %s already exist.\n", aNameSplit[0])
-		return nil
-	}
 
 	wheel, err := user.LookupGroup("wheel")
 	if err != nil {
@@ -43,7 +41,7 @@ func (a *asset) Download(destination string) error {
 	}
 	defer resp.Body.Close()
 
-	out, err := fs.CreateFile(binaryPath, &fs.CreateOption{
+	out, err := fs.CreateFile(binaryPath, &fs.Options{
 		User:  root,
 		Group: wheel,
 		Perms: 0755,

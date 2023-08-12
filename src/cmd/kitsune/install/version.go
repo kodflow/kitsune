@@ -5,34 +5,6 @@ import (
 	"strings"
 )
 
-/*
-var Version *release = nil
-
-func getVersion() {
-
-	if Version == nil {
-
-	}
-
-}
-func getLatestVersion() string {
-	if env.BUILD_VERSION == "" {
-		return color.YellowString("You are on a local build")
-	}
-
-	if Version.TagName == "" {
-		return color.RedString("Unable to compare versions.")
-	}
-
-	if env.BUILD_VERSION == Version.TagName {
-		return color.GreenString("You are on the latest version.")
-	}
-
-	return fmt.Sprintf("From %s to %s", color.RedString(env.BUILD_VERSION), color.GreenString(Version.TagName))
-}
-
-*/
-
 func compareVersions(version1, version2 string) bool {
 	if version1 == "" || version2 == "" {
 		return true

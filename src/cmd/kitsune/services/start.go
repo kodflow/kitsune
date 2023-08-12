@@ -1,4 +1,4 @@
-package kitsune
+package services
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 var forceRun bool
 
 func init() {
-	startCmd.Flags().BoolVarP(&forceRun, "forground", "f", false, "run service in forground")
+	start.Flags().BoolVarP(&forceRun, "forground", "f", false, "run service in forground")
 }
 
 func createLog(logName string) *os.File {
@@ -27,30 +27,24 @@ func createLog(logName string) *os.File {
 	return file
 }
 
-var startCmd = &cobra.Command{
+var start = &cobra.Command{
 	Use:   "start",
 	Short: "Start all kitsune-services",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 
 		var serviceSupervisor string = filepath.Join(env.PATH_SERVICES, "supervisor")
 		var exec *exec.Cmd = exec.Command(serviceSupervisor)
-		var err error = nil
 
 		if forceRun {
 			fmt.Println("Starting the kitsune")
 			exec.Stdout = os.Stdout
 			exec.Stderr = os.Stderr
-			err = exec.Run()
+			return exec.Run()
 		} else {
 			fmt.Println("Starting the kitsune as a services")
 			exec.Stdout = createLog("kitsune.log")
 			exec.Stderr = createLog("errors.log")
-			err = exec.Start()
-		}
-
-		if err != nil {
-			fmt.Println(err.Error())
-			os.Exit(1)
+			return exec.Start()
 		}
 	},
 }
