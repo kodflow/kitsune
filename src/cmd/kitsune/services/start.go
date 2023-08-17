@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/kodmain/kitsune/src/internal/env"
-	"github.com/kodmain/kitsune/src/internal/storages/fs"
+	"github.com/kodmain/kitsune/src/internal/kernel/storages/fs"
 	"github.com/spf13/cobra"
 )
 

@@ -10,24 +10,21 @@ import (
 )
 
 type Options struct {
-	User *user.User
-	//Group    *user.Group
+	User     *user.User
 	Perms    fs.FileMode
 	fromFile bool
 }
 
 func defaultOptions() (*Options, error) {
 	return &Options{
-		User: env.USER,
-		//Group: env.GROUP,
+		User:  env.USER,
 		Perms: 0644,
 	}, nil
 }
 
 func (co *Options) Fork() *Options {
 	return &Options{
-		User: co.User,
-		//Group: co.Group,
+		User:  co.User,
 		Perms: co.Perms,
 	}
 }

@@ -7,7 +7,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/kodmain/kitsune/src/internal/env"
-	"github.com/kodmain/kitsune/src/internal/observability/logger"
+	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -33,27 +33,26 @@ var Cmd = &cobra.Command{
 			argsMap[arg+"-"+runtime.GOOS+"-"+runtime.GOARCH] = true
 		}
 
-		if compareVersions(env.BUILD_VERSION, latest().TagName) {
-			logger.Default().Message("looking for latest version " + color.CyanString(latest().TagName))
-			var err error = nil
-			for _, asset := range latest().Assets {
-				isKitsune := strings.Contains(asset.Name, "kitsune-"+runtime.GOOS+"-"+runtime.GOARCH)
-				isService := strings.Contains(asset.Name, runtime.GOOS+"-"+runtime.GOARCH)
+		logger.Message("looking for latest version " + color.CyanString(latest().TagName))
+		var err error = nil
 
-				if len(args) == 0 || argsMap[asset.Name] || isKitsune {
-					if isKitsune {
-						err = asset.Download(env.PATH_BIN)
-					} else if isService {
-						err = asset.Download(env.PATH_SERVICES)
-					}
+		for _, asset := range latest().Assets {
+			isKitsune := strings.Contains(asset.Name, "kitsune-"+runtime.GOOS+"-"+runtime.GOARCH)
+			isService := strings.Contains(asset.Name, runtime.GOOS+"-"+runtime.GOARCH)
 
-					if err != nil {
-						return err
-					}
+			if len(args) == 0 || argsMap[asset.Name] || isKitsune {
+				if isKitsune {
+					err = asset.Download(env.PATH_BIN)
+				} else if isService {
+					err = asset.Download(env.PATH_SERVICES)
+				}
+
+				if err != nil {
+					return err
 				}
 			}
 		}
 
-		return nil
+		return err
 	},
 }

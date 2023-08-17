@@ -1,4 +1,4 @@
-package fs
+package permission
 
 import "os"
 
@@ -16,7 +16,7 @@ const (
 	PERMS_RWX = os.FileMode(read | write | execution)
 )
 
-func Permission(filePath string, perms os.FileMode) bool {
+func Validate(filePath string, perms os.FileMode) bool {
 	info, err := os.Stat(filePath)
 	if err != nil {
 		return false

@@ -6,7 +6,7 @@ import (
 	"path"
 
 	"github.com/kodmain/kitsune/src/internal/env"
-	"github.com/kodmain/kitsune/src/internal/storages/fs"
+	"github.com/kodmain/kitsune/src/internal/kernel/storages/fs"
 )
 
 type TYPE uint8

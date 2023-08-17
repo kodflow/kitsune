@@ -6,13 +6,11 @@ import (
 	"runtime/debug"
 
 	"github.com/Code-Hex/dd"
-	"github.com/kodmain/kitsune/src/internal/observability/logger/levels"
-	"github.com/kodmain/kitsune/src/internal/observability/logger/writers"
+	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger/levels"
+	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger/writers"
 )
 
 const PATH = "| \033[38;5;%sm%s\033[39;49m |"
-
-var instance *Logger = nil
 
 type Logger struct {
 	level   levels.TYPE
@@ -20,11 +18,12 @@ type Logger struct {
 	failure *log.Logger
 }
 
-func Default() *Logger {
-	if instance == nil {
-		instance = New(writers.DEFAULT, levels.DEFAULT)
+func New(t writers.TYPE, l levels.TYPE) *Logger {
+	return &Logger{
+		level:   l,
+		success: log.New(writers.Make(t, writers.SUCCESS), "", log.Ldate|log.Ltime),
+		failure: log.New(writers.Make(t, writers.FAILURE), "", log.Ldate|log.Ltime),
 	}
-	return instance
 }
 
 func (l *Logger) Write(level levels.TYPE, messages ...any) {
@@ -93,12 +92,4 @@ func (l *Logger) Debug(v ...any) {
 
 func (l *Logger) Trace() {
 	l.Write(levels.TRACE, string(debug.Stack()))
-}
-
-func New(t writers.TYPE, l levels.TYPE) *Logger {
-	return &Logger{
-		level:   l,
-		success: log.New(writers.Make(t, writers.SUCCESS), "", log.Ldate|log.Ltime),
-		failure: log.New(writers.Make(t, writers.FAILURE), "", log.Ldate|log.Ltime),
-	}
 }
