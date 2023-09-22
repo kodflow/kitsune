@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kodmain/kitsune/src/internal/env"
+	"github.com/kodmain/kitsune/src/config"
 	"github.com/kodmain/kitsune/src/internal/kernel/daemon"
 )
 
@@ -27,7 +27,7 @@ func (p *Process) Kill() error {
 			return fmt.Errorf("failed to kill process: %v", err)
 		}
 
-		err = os.Remove(filepath.Join(env.PATH_RUN, p.Name+".pid"))
+		err = os.Remove(filepath.Join(config.PATH_RUN, p.Name+".pid"))
 
 		if err != nil {
 			return fmt.Errorf("failed to remove PID file: %v", err)

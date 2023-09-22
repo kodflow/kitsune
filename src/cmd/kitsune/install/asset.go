@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/kodmain/kitsune/src/internal/storages/fs"
+	"github.com/kodmain/kitsune/src/internal/kernel/storages/fs"
 )
 
 type asset struct {
