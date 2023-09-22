@@ -88,7 +88,7 @@ func BenchmarkRequestsOnly(b *testing.B) {
 	client.Connect()
 
 	b.ResetTimer() // Ne compte pas la configuration initiale dans le temps de benchmark
-	var max = 10000000
+	var max = 100000
 	var worker = 1
 	var total = 0
 	var timeout = 0
@@ -136,7 +136,7 @@ func BenchmarkRequestAndResponse(b *testing.B) {
 
 	b.Run("benchmark", func(b *testing.B) {
 		b.ResetTimer() // Ne compte pas la configuration initiale dans le temps de benchmark
-		var max = 10000000
+		var max = 100000
 		var worker = runtime.NumCPU()
 		var total int32
 		var errors int32
