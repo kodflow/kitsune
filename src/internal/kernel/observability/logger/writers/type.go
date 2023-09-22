@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/kodmain/kitsune/src/internal/env"
+	"github.com/kodmain/kitsune/src/config"
 	"github.com/kodmain/kitsune/src/internal/kernel/storages/fs"
 )
 
@@ -36,11 +36,11 @@ func Make(t TYPE, sof SOF) io.Writer {
 
 	if t&FILE != 0 {
 		if sof {
-			if f, err := fs.OpenFile(path.Join(env.PATH_LOGS, env.BUILD_APP_NAME+".log")); err == nil {
+			if f, err := fs.OpenFile(path.Join(config.PATH_LOGS, config.BUILD_APP_NAME+".log")); err == nil {
 				ws = append(ws, f)
 			}
 		} else {
-			if f, err := fs.OpenFile(path.Join(env.PATH_LOGS, env.BUILD_APP_NAME+".err")); err == nil {
+			if f, err := fs.OpenFile(path.Join(config.PATH_LOGS, config.BUILD_APP_NAME+".err")); err == nil {
 				ws = append(ws, f)
 			}
 		}

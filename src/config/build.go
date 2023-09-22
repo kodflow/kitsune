@@ -1,7 +1,7 @@
-package env
+package config
 
 const (
-	DEFAULT_APP_NAME = "debug.kitsune"
+	DEFAULT_APP_NAME = "kitsune"
 	DEFAULT_VERSION  = "local"
 )
 

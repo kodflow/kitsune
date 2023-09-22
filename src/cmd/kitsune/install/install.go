@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/kodmain/kitsune/src/internal/env"
+	"github.com/kodmain/kitsune/src/config"
 	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
 	"github.com/spf13/cobra"
 )
@@ -21,7 +21,7 @@ var Cmd = &cobra.Command{
 	DisableSuggestions:    true,
 	GroupID:               "framework",
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if env.USER.Uid != "0" {
+		if config.USER.Uid != "0" {
 			return fmt.Errorf("require admin access")
 		}
 
@@ -42,9 +42,9 @@ var Cmd = &cobra.Command{
 
 			if len(args) == 0 || argsMap[asset.Name] || isKitsune {
 				if isKitsune {
-					err = asset.Download(env.PATH_BIN)
+					err = asset.Download(config.PATH_BIN)
 				} else if isService {
-					err = asset.Download(env.PATH_SERVICES)
+					err = asset.Download(config.PATH_SERVICES)
 				}
 
 				if err != nil {

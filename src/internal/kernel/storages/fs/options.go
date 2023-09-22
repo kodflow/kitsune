@@ -6,39 +6,34 @@ import (
 	"os/user"
 	"strconv"
 
-	"github.com/kodmain/kitsune/src/internal/env"
+	"github.com/kodmain/kitsune/src/config"
 )
 
 type Options struct {
-	User     *user.User
-	Perms    fs.FileMode
-	fromFile bool
+	User  *user.User
+	Perms fs.FileMode
 }
 
 func defaultOptions() (*Options, error) {
 	return &Options{
-		User:  env.USER,
+		User:  config.USER,
 		Perms: 0644,
 	}, nil
 }
 
-func (co *Options) Fork() *Options {
-	return &Options{
-		User:  co.User,
-		Perms: co.Perms,
+func resolveOptions(options ...*Options) (*Options, error) {
+	if len(options) > 0 && options[0] != nil {
+		return options[0], nil
 	}
+	return defaultOptions()
 }
 
-func (co *Options) AddRead() {
-	co.Perms |= 0444
+func (co *Options) AddPerms(perms fs.FileMode) {
+	co.Perms |= perms
 }
 
-func (co *Options) AddWrite() {
-	co.Perms |= 0222
-}
-
-func (co *Options) AddExecutable() {
-	co.Perms |= 0111
+func (co *Options) RemovePerms(perms fs.FileMode) {
+	co.Perms &^= perms
 }
 
 func perms(path string, options *Options) error {

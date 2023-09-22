@@ -10,61 +10,35 @@ import (
 )
 
 func CreateFile(filePath string, options ...*Options) (*os.File, error) {
-	var opts *Options
-	var err error
-
-	if len(options) > 0 {
-		opts = options[0]
-	} else {
-		opts, err = defaultOptions()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	opts.fromFile = true
-
-	err = CreateDirectory(filepath.Dir(filePath), opts)
-	if err != nil {
-		return nil, err
-	}
-
-	file, err := os.Create(filePath)
-	if err != nil {
-		return nil, err
-	}
-
-	perms(filePath, opts)
-
-	return file, nil
+	return createOrOpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, options)
 }
 
 func OpenFile(filePath string, options ...*Options) (*os.File, error) {
-	var opts *Options
-	var err error
+	return createOrOpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, options)
+}
 
-	if len(options) > 0 {
-		opts = options[0]
-	} else {
-		opts, err = defaultOptions()
-		if err != nil {
-			return nil, err
-		}
+func createOrOpenFile(filePath string, flag int, options []*Options) (*os.File, error) {
+	opts, err := resolveOptions(options...)
+	if err != nil {
+		return nil, err
 	}
-
-	opts.fromFile = true
 
 	err = CreateDirectory(filepath.Dir(filePath), opts)
 	if err != nil {
 		return nil, err
 	}
 
-	file, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, opts.Perms)
+	file, err := os.OpenFile(filePath, flag, opts.Perms)
 	if err != nil {
 		return nil, err
 	}
 
-	perms(filePath, opts)
+	err = perms(filePath, opts)
+
+	if err != nil {
+		file.Close()
+		return nil, err
+	}
 
 	return file, nil
 }
@@ -110,10 +84,5 @@ func WriteFile(filePath string, content string) error {
 		return err
 	}
 
-	err = os.WriteFile(filePath, []byte(content), 0644)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return os.WriteFile(filePath, []byte(content), 0644)
 }

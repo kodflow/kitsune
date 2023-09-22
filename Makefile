@@ -41,6 +41,19 @@ run: ## Run services in portable version
 #	docker compose -f .github/build/compose.yml --profile=standalone build
 #	docker compose -f .github/build/compose.yml --profile=standalone run --rm kitsune.$(ARGS)
 
+test:
+	go test -v `go list ./...` -coverprofile=coverage.txt -covermode=atomic
+
+ssl:
+	echo "Generating SSL certificates..."
+	rm -rf ./.generated/ssl/*
+	mkdir -p ./.generated/ssl/
+	openssl genpkey -algorithm RSA -out ./.generated/ssl/localhost.key
+	openssl req -new -key ./.generated/ssl/localhost.key -out ./.generated/ssl/localhost.csr -subj "/CN=localhost"
+	openssl req -x509 -days 365 -key ./.generated/ssl/localhost.key -in ./.generated/ssl/localhost.csr -out ./.generated/ssl/localhost.crt
+	openssl req -x509 -days 365 -nodes -newkey rsa:2048 -keyout ./.generated/ssl/localhost-ca.key -out ./.generated/ssl/localhost-ca.crt -subj "/CN=Certificate Authority"
+	echo "SSL certificates generated successfully!"
+
 tests:
 	find src -name "*.go" | grep -v "_test.go$$" | while read -r file; do test -f "$${file%.*}_test.go" || echo "package $$(grep -m 1 'package ' $$file | awk '{print $$2}')\n\nimport \"testing\"\n\nfunc TestNotExistInThisFile$$(basename $$file .go)(t *testing.T) {}\n" > "$${file%.*}_test.go"; done
 	go test -v `go list ./...` -coverprofile=coverage.txt -covermode=atomic
@@ -69,12 +82,12 @@ build-framework:
 	@for os in $(OS); do \
 		for arch in $(ARCH); do \
 			ldflags="-s -w \
-				-X github.com/kodmain/kitsune/src/internal/env.BUILD_VERSION=$$VERSION \
-				-X github.com/kodmain/kitsune/src/internal/env.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
-				-X github.com/kodmain/kitsune/src/internal/env.BUILD_APP_NAME=kitsune"; \
+				-X github.com/kodmain/kitsune/src/config/config.BUILD_VERSION=$$VERSION \
+				-X github.com/kodmain/kitsune/src/config/config.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
+				-X github.com/kodmain/kitsune/src/config/config.BUILD_APP_NAME=kitsune"; \
 			for binary in $$(find .generated -type f -name "*$$os-$$arch.sha1" | awk -F "/" '{print $$3}' | awk -F "-" '{print $$1}' | sort | uniq); do \
 				cap_binary=$$(echo $$binary | tr '[:lower:]' '[:upper:]'); \
-				ldflags+=" -X github.com/kodmain/kitsune/src/internal/env.BUILD_SERVICE_$$cap_binary=$$(cat .generated/services/$$binary-$$os-$$arch.sha1)"; \
+				ldflags+=" -X github.com/kodmain/kitsune/src/config/config.BUILD_SERVICE_$$cap_binary=$$(cat .generated/services/$$binary-$$os-$$arch.sha1)"; \
 			done; \
 			CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch go build -trimpath -buildvcs=false -ldflags="$$ldflags" \
 				-o .generated/bin/kitsune-$$os-$$arch $(CURDIR)/src/cmd/main.go; \
@@ -88,14 +101,20 @@ build-service:
 	@for os in $(OS); do \
 		for arch in $(ARCH); do \
 			CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch go build -trimpath -buildvcs=false -ldflags="-s -w \
-			-X github.com/kodmain/kitsune/src/internal/env.BUILD_VERSION=$$VERSION \
-			-X github.com/kodmain/kitsune/src/internal/env.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
-			-X github.com/kodmain/kitsune/src/internal/env.BUILD_APP_NAME=$(ARGS)" \
+			-X github.com/kodmain/kitsune/src/config/config.BUILD_VERSION=$$VERSION \
+			-X github.com/kodmain/kitsune/src/config/config.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
+			-X github.com/kodmain/kitsune/src/config/config.BUILD_APP_NAME=$(ARGS)" \
 			-o .generated/services/$(ARGS)-$$os-$$arch $(CURDIR)/src/services/$(ARGS)/main.go; \
 			chmod +x .generated/services/$(ARGS)-$$os-$$arch; \
 			sha1sum .generated/services/$(ARGS)-$$os-$$arch | awk '{ print $$1 }'  | tr -d '\n' > .generated/services/$(ARGS)-$$os-$$arch.sha1; \
 		done \
 	done
+
+
+generate:
+#protoc --proto_path=$(CURDIR)/src/internal/data --go_out=$(CURDIR) $(CURDIR)/src/internal/data/proto/*
+#protoc --proto_path=$(CURDIR) --go_out=$(CURDIR) $(CURDIR)/src/internal/core/server/transport/proto/*
+	find ${CURDIR} -name '*.proto' -exec protoc --proto_path=${CURDIR} --go_out=${CURDIR} {} \;
 
 package:
 	find .generated -type f | xargs upx --best --lzma;

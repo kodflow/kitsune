@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package transport;
+
+option go_package = "src/internal/core/server/transport";
+
+message Request {
+  bool answer = 1;
+  string id = 2;
+  bytes body = 3;
+}

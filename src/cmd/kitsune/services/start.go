@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/kodmain/kitsune/src/internal/env"
+	"github.com/kodmain/kitsune/src/config"
 	"github.com/kodmain/kitsune/src/internal/kernel/storages/fs"
 	"github.com/spf13/cobra"
 )
@@ -18,7 +18,7 @@ func init() {
 }
 
 func createLog(logName string) *os.File {
-	file, err := fs.CreateFile(filepath.Join(env.PATH_LOGS, logName))
+	file, err := fs.CreateFile(filepath.Join(config.PATH_LOGS, logName))
 	if err != nil {
 		fmt.Println("Impossible de créer le fichier kitsune.log :", err)
 		os.Exit(1)
@@ -32,7 +32,7 @@ var start = &cobra.Command{
 	Short: "Start all kitsune-services",
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		var serviceSupervisor string = filepath.Join(env.PATH_SERVICES, "supervisor")
+		var serviceSupervisor string = filepath.Join(config.PATH_SERVICES, "supervisor")
 		var exec *exec.Cmd = exec.Command(serviceSupervisor)
 
 		if forceRun {

@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestCheck_Positive(t *testing.T) {
+func TestCheck_Success(t *testing.T) {
 	dir, err := os.MkdirTemp("", "test")
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
@@ -23,7 +23,7 @@ func TestCheck_Positive(t *testing.T) {
 	}
 }
 
-func TestCheck_Negative(t *testing.T) {
+func TestCheck_Fail(t *testing.T) {
 	if err := Check("/fake/path"); err != nil {
 		t.Log("expected failure, error:", err)
 	} else {

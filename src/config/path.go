@@ -1,4 +1,4 @@
-package env
+package config
 
 const (
 	PATH_SERVICES = "/etc/kitsune/"
