@@ -7,16 +7,16 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kodmain/kitsune/src/internal/env"
-	"github.com/kodmain/kitsune/src/internal/storages/fs"
+	"github.com/kodmain/kitsune/src/config"
+	"github.com/kodmain/kitsune/src/internal/kernel/storages/fs"
 )
 
 func getPIDFilePath(processName string) string {
-	return filepath.Join(env.PATH_RUN, processName+".pid")
+	return filepath.Join(config.PATH_RUN, processName+".pid")
 }
 
 func SetPID() error {
-	return fs.WriteFile(getPIDFilePath(env.BUILD_APP_NAME), strconv.Itoa(os.Getpid()))
+	return fs.WriteFile(getPIDFilePath(config.BUILD_APP_NAME), strconv.Itoa(os.Getpid()))
 }
 
 func ClearProcess(process *os.Process, name string) error {

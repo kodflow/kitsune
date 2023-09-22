@@ -7,8 +7,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kodmain/kitsune/src/internal/env"
-	"github.com/kodmain/kitsune/src/internal/observability/logger"
+	"github.com/kodmain/kitsune/src/config"
+	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
 )
 
 type Handler struct {
@@ -20,9 +20,7 @@ var sigs chan os.Signal = make(chan os.Signal, 1)
 var done chan bool = make(chan bool, 1)
 
 func Start(handlers ...*Handler) {
-	fmt.Println(env.BUILD_APP_NAME, "start")
-
-	if _, err := GetPID(env.BUILD_APP_NAME); err != nil {
+	if _, err := GetPID(config.BUILD_APP_NAME); err != nil {
 		handleErrorAndExit(err)
 	}
 
@@ -39,23 +37,21 @@ func Start(handlers ...*Handler) {
 	}
 
 	<-done
-	fmt.Println(env.BUILD_APP_NAME, "exit")
 }
 
 func Stop() {
-	fmt.Println(env.BUILD_APP_NAME, "stop")
 	sigs <- syscall.SIGTERM
 }
 
 func handleErrorAndExit(err error) {
-	if logger.Default().Fatal(err) {
+	if logger.Fatal(err) {
 		os.Exit(1)
 	}
 }
 
 func handleSignal() {
 	<-sigs
-	ClearPID(env.BUILD_APP_NAME)
+	ClearPID(config.BUILD_APP_NAME)
 	done <- true
 }
 
@@ -64,11 +60,11 @@ func processHandler(handler *Handler) {
 	startTime := time.Now()
 
 	for {
-		logger.Default().Info(env.BUILD_APP_NAME + " " + handler.Name + " start")
+		logger.Info(config.BUILD_APP_NAME + " " + handler.Name + " start")
 		if err := handler.Call(); err != nil {
-			logger.Default().Warn(env.BUILD_APP_NAME + " " + handler.Name + " fail")
+			logger.Warn(config.BUILD_APP_NAME + " " + handler.Name + " fail")
 			if count >= 2 && shouldExit(count, startTime) {
-				logger.Default().Error(fmt.Errorf(env.BUILD_APP_NAME + " " + handler.Name + " won't start"))
+				logger.Error(fmt.Errorf(config.BUILD_APP_NAME + " " + handler.Name + " won't start"))
 				done <- true
 				break
 			}
