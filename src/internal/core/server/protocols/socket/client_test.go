@@ -206,5 +206,3 @@ func BenchmarkRequestAndResponse(b *testing.B) {
 	client.Disconnect()
 	server.Stop()
 }
-
-// ok
