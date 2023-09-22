@@ -5,12 +5,12 @@ ARG BINARY_VERSION=latest
 ENV BINARY_VERSION=${BINARY_VERSION}
 USER root:root
 
-RUN ARCHITECTURE=$(uname -m) && if [ "$architecture" = "aarch64" ] || [ "$architecture" = "arm64" ]; then \
+RUN ARCHITECTURE=$(uname -m) && if [ "$ARCHITECTURE" = "aarch64" ] || [ "$ARCHITECTURE" = "arm64" ]; then \
       curl -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/kitsune-linux-arm64; \
-      echo $architecture > /etc/kitsune/arch; \
+      echo $ARCHITECTURE > /etc/kitsune/arch; \
     else \
       curl -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/kitsune-linux-amd64; \
-      echo $architecture > /etc/kitsune/arch; \
+      echo $ARCHITECTURE > /etc/kitsune/arch; \
     fi;
 
 RUN chmod +x /bin/kitsune
