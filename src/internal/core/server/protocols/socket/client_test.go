@@ -10,6 +10,8 @@ import (
 
 	"github.com/kodmain/kitsune/src/internal/core/server/protocols/socket"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
+	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
+	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger/levels"
 	"github.com/stretchr/testify/assert"
 
 	_ "net/http/pprof"
@@ -18,6 +20,7 @@ import (
 )
 
 func TestClient(t *testing.T) {
+	logger.SetLevel(levels.OFF)
 	server := socket.NewServer("localhost:8080")
 	server.Start()
 	defer server.Stop()
@@ -80,6 +83,7 @@ func TestClient(t *testing.T) {
 }
 
 func BenchmarkRequestsOnly(b *testing.B) {
+	logger.SetLevel(levels.OFF)
 	runtime.GOMAXPROCS(2)
 	server := socket.NewServer("localhost:8080")
 	server.Start()
@@ -88,7 +92,7 @@ func BenchmarkRequestsOnly(b *testing.B) {
 	client.Connect()
 
 	b.ResetTimer() // Ne compte pas la configuration initiale dans le temps de benchmark
-	var max = 10000000
+	var max = 100000
 	var worker = 1
 	var total = 0
 	var timeout = 0
@@ -126,6 +130,7 @@ func bToMb(b uint64) uint64 {
 }
 
 func BenchmarkRequestAndResponse(b *testing.B) {
+	logger.SetLevel(levels.OFF)
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	server := socket.NewServer("localhost:8080")
@@ -136,7 +141,7 @@ func BenchmarkRequestAndResponse(b *testing.B) {
 
 	b.Run("benchmark", func(b *testing.B) {
 		b.ResetTimer() // Ne compte pas la configuration initiale dans le temps de benchmark
-		var max = 10000000
+		var max = 100000
 		var worker = runtime.NumCPU()
 		var total int32
 		var errors int32

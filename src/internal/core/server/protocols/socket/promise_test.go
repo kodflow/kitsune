@@ -5,10 +5,13 @@ import (
 
 	"github.com/kodmain/kitsune/src/internal/core/server/protocols/socket"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
+	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
+	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger/levels"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestPromise(t *testing.T) {
+	logger.SetLevel(levels.OFF)
 	server := socket.NewServer("localhost:8080")
 	server.Start()
 	defer server.Stop()

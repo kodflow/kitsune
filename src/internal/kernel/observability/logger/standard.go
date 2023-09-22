@@ -14,6 +14,10 @@ func standard() *Logger {
 	return instance
 }
 
+func SetLevel(l levels.TYPE) {
+	standard().level = l
+}
+
 func Panic(err error) bool {
 	return standard().Panic(err)
 }
