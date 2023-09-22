@@ -206,3 +206,76 @@ func BenchmarkRequestAndResponse(b *testing.B) {
 	client.Disconnect()
 	server.Stop()
 }
+
+func BenchmarkLocal(b *testing.B) {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	client := socket.NewClient("localhost:9999")
+	client.Connect()
+
+	b.Run("benchmark", func(b *testing.B) {
+		b.ResetTimer() // Ne compte pas la configuration initiale dans le temps de benchmark
+		var max = 100000
+		var worker = runtime.NumCPU()
+		var total int32
+		var errors int32
+		var rps int32
+		var rpw = max / worker
+		var mu sync.Mutex
+
+		for j := 0; j < worker; j++ {
+			go func(j int) {
+				var i int
+				for i = 0; i < rpw; i++ {
+					req := transport.CreateRequest()
+					res, err := client.SendSync(req)
+					if err != nil {
+						log.Println(err)
+						mu.Lock()
+						errors++
+						mu.Unlock()
+						continue
+					}
+
+					if res.Id != req.Id {
+						log.Println("Mismatch ID")
+						mu.Lock()
+						errors++
+						mu.Unlock()
+					}
+
+					mu.Lock()
+					total++
+					rps++
+					mu.Unlock()
+				}
+
+				log.Printf("Finished worker %d after %d requests", j, i)
+			}(j)
+		}
+
+		ticker := time.NewTicker(time.Second)
+		for range ticker.C {
+			var m runtime.MemStats
+			runtime.ReadMemStats(&m)
+			percent, err := cpu.Percent(0, false)
+			if err != nil {
+				log.Println("Erreur lors de la récupération de l'utilisation du CPU:", err)
+			}
+
+			cpuUsage := 0.0
+			if len(percent) > 0 {
+				cpuUsage = percent[0]
+			}
+
+			log.Printf("Request/Sec: %d, REQS: %d/%d, Go Routine: %d, MemoryUsage: %d Mb, CPU Usage: %.2f%%", rps, total, max, runtime.NumGoroutine(), bToMb(m.Alloc), cpuUsage)
+			rps = 0
+			if int(total) >= max {
+				ticker.Stop()
+				break
+			}
+		}
+	})
+
+	client.Disconnect()
+}
