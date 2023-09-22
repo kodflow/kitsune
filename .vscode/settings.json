@@ -4,6 +4,6 @@
         "compile_on_save": false,
         "options": [
             "--proto_path=src/internal/data/proto",
-        ]
+        ],
     }
 }
