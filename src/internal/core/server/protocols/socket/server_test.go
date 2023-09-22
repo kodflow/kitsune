@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/kodmain/kitsune/src/internal/core/server/protocols/socket"
+	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
+	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger/levels"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,6 +15,7 @@ func setup() *socket.Server {
 }
 
 func TestServer(t *testing.T) {
+	logger.SetLevel(levels.OFF)
 	t.Run("New", func(t *testing.T) {
 		server := setup()
 		assert.NotNil(t, server)
@@ -59,5 +62,4 @@ func TestServer(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.Equal(t, "server is not active", err.Error())
 	})
-
 }

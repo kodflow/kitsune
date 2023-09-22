@@ -10,6 +10,8 @@ import (
 
 	"github.com/kodmain/kitsune/src/internal/core/server/protocols/socket"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
+	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
+	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger/levels"
 	"github.com/stretchr/testify/assert"
 
 	_ "net/http/pprof"
@@ -18,6 +20,7 @@ import (
 )
 
 func TestClient(t *testing.T) {
+	logger.SetLevel(levels.OFF)
 	server := socket.NewServer("localhost:8080")
 	server.Start()
 	defer server.Stop()
@@ -80,6 +83,7 @@ func TestClient(t *testing.T) {
 }
 
 func BenchmarkRequestsOnly(b *testing.B) {
+	logger.SetLevel(levels.OFF)
 	runtime.GOMAXPROCS(2)
 	server := socket.NewServer("localhost:8080")
 	server.Start()
@@ -126,6 +130,7 @@ func bToMb(b uint64) uint64 {
 }
 
 func BenchmarkRequestAndResponse(b *testing.B) {
+	logger.SetLevel(levels.OFF)
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	server := socket.NewServer("localhost:8080")
