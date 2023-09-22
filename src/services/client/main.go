@@ -12,11 +12,11 @@ import (
 )
 
 func main() {
-	var max = 100000
+	var max = 10000000
 	var total = 0
 	var rps = 0
 	var mu sync.Mutex
-	var worker = runtime.NumCPU()
+	var worker = runtime.NumCPU() * 10
 
 	client := socket.NewClient("localhost:9999")
 	client.Connect()
