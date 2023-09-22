@@ -7,8 +7,10 @@ USER root:root
 
 RUN ARCHITECTURE=$(uname -m) && if [ "$architecture" = "aarch64" ] || [ "$architecture" = "arm64" ]; then \
       curl -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/kitsune-linux-arm64; \
+      echo $architecture > /etc/kitsune/arch; \
     else \
       curl -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/kitsune-linux-amd64; \
+      echo $architecture > /etc/kitsune/arch; \
     fi;
 
 RUN chmod +x /bin/kitsune
@@ -17,6 +19,7 @@ RUN /bin/kitsune install
 ## RUNNER
 FROM alpine AS runner
 COPY --from=builder /bin/kitsune /bin/kitsune
+COPY --from=builder /etc/kitsune /etc/kitsune
 COPY --from=builder /etc/kitsune /etc/kitsune
 WORKDIR /run
 ENTRYPOINT [ "/etc/kitsune/gateway" ]
