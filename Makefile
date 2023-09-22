@@ -41,9 +41,6 @@ run: ## Run services in portable version
 #	docker compose -f .github/build/compose.yml --profile=standalone build
 #	docker compose -f .github/build/compose.yml --profile=standalone run --rm kitsune.$(ARGS)
 
-test:
-	go test -v `go list ./...` -coverprofile=coverage.txt -covermode=atomic
-
 ssl:
 	echo "Generating SSL certificates..."
 	rm -rf ./.generated/ssl/*
@@ -55,8 +52,11 @@ ssl:
 	echo "SSL certificates generated successfully!"
 
 tests:
-	find src -name "*.go" | grep -v "_test.go$$" | while read -r file; do test -f "$${file%.*}_test.go" || echo "package $$(grep -m 1 'package ' $$file | awk '{print $$2}')\n\nimport \"testing\"\n\nfunc TestNotExistInThisFile$$(basename $$file .go)(t *testing.T) {}\n" > "$${file%.*}_test.go"; done
-	go test -vvv `go list ./...` -coverprofile=coverage.txt -covermode=atomic
+	echo "create file"
+	find src -name "*.go" | grep -vE "(_test.go$$|.pb.go$$)" | while read -r file; do test -f "$${file%.*}_test.go" || echo "package $$(grep -m 1 'package ' $$file | awk '{print $$2}')\n\nimport \"testing\"\n\nfunc TestNotExistInThisFile$$(basename $$file .go)(t *testing.T) {}\n" > "$${file%.*}_test.go"; done
+	echo "tests files"
+	go test -v `go list ./...` -coverprofile=coverage.txt -covermode=atomic
+	echo "clear files"
 	find . -name "*_test.go" | xargs grep -l "func TestNotExistInThisFile" | xargs rm 
 
 update: ## Install/Update vendor
