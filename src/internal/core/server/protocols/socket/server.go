@@ -15,6 +15,7 @@ import (
 	"net"
 	"runtime"
 
+	"github.com/kodmain/kitsune/src/config"
 	"github.com/kodmain/kitsune/src/internal/core/server/router"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
 	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
@@ -57,7 +58,7 @@ func (s *Server) Start() error {
 
 	connections := make(chan net.Conn, runtime.NumCPU())
 
-	for i := 0; i < runtime.NumCPU(); i++ {
+	for i := 0; i < runtime.NumCPU()*config.DEFAULT_IO_BOUND; i++ {
 		go s.worker(connections)
 	}
 
