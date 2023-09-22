@@ -17,7 +17,7 @@ RUN /bin/kitsune install
 ## RUNNER
 FROM alpine AS runner
 COPY --from=builder /bin/kitsune /bin/kitsune
-#COPY --from=builder /etc/kitsune /etc/kitsune
+COPY --from=builder /etc/kitsune /etc/kitsune
 WORKDIR /run
-ENTRYPOINT [ "ash" ]
+ENTRYPOINT [ "/etc/kitsune/gateway" ]
 #CMD [ "services", "start"]
