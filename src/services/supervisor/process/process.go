@@ -4,31 +4,34 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"syscall"
 	"time"
 
-	"github.com/kodmain/kitsune/src/config"
 	"github.com/kodmain/kitsune/src/internal/kernel/daemon"
 )
 
 type Process struct {
-	Name      string
-	args      []string
-	command   string
-	IsRunning bool
-	Proc      *exec.Cmd
+	Name       string
+	args       []string
+	command    string
+	IsRunning  bool
+	Proc       *exec.Cmd
+	pidHandler *daemon.PIDHandler
 }
 
 func (p *Process) Kill() error {
-	if process, _ := daemon.GetPID(p.Name); process != nil {
-		err := process.Kill()
+	if pid, _ := p.pidHandler.GetPID(); pid != 0 {
+		process, err := os.FindProcess(pid)
+		if err != nil {
+			return err
+		}
+
+		err = process.Kill()
 		if err != nil {
 			return fmt.Errorf("failed to kill process: %v", err)
 		}
 
-		err = os.Remove(filepath.Join(config.PATH_RUN, p.Name+".pid"))
-
+		err = p.pidHandler.ClearPID()
 		if err != nil {
 			return fmt.Errorf("failed to remove PID file: %v", err)
 		}

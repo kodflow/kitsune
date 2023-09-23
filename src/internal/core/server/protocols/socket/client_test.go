@@ -11,11 +11,8 @@ import (
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
 	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
 	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger/levels"
-	"github.com/stretchr/testify/assert"
-
-	_ "net/http/pprof"
-
 	"github.com/shirou/gopsutil/cpu"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestClient(t *testing.T) {

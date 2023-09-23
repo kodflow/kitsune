@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/kodmain/kitsune/src/config"
 	"github.com/kodmain/kitsune/src/internal/kernel/daemon"
 )
 
@@ -25,10 +26,9 @@ func (m *Manager) CreateProcess(name string, command string, args ...string) (*P
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	if process, _ := daemon.GetPID(name); process != nil {
-		if err := daemon.ClearProcess(process, name); err != nil {
-			return nil, err
-		}
+	pidHandler := daemon.NewPIDHandler(name, config.PATH_RUN)
+	if pid, _ := pidHandler.GetPID(); pid != 0 {
+		return nil, fmt.Errorf("process with name %s is already running", name)
 	}
 
 	_, exists := m.processes[name]
@@ -37,13 +37,13 @@ func (m *Manager) CreateProcess(name string, command string, args ...string) (*P
 	}
 
 	proc := &Process{
-		Name:    name,
-		command: command,
-		args:    args,
+		Name:       name,
+		command:    command,
+		args:       args,
+		pidHandler: pidHandler,
 	}
 
 	err := proc.Start()
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to start process: %v", err)
 	}
