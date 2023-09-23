@@ -13,13 +13,3 @@ var PATHS = []string{
 	PATH_BIN,
 	PATH_LOGS,
 }
-
-/*
-func init() {
-	for _, p := range PATHS {
-		if fs.ExistsDirectory(p) && !fs.Permission(p, fs.PERMS_RWX) {
-			fmt.Println("PERMISSION: =====>", p)
-		}
-	}
-}
-*/

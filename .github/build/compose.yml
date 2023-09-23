@@ -6,13 +6,13 @@ services:
       - services
     build:
       context: ../../
-      dockerfile: .github/build/Dockerfile.service
+      dockerfile: .github/build/Dockerfile.alpine
 
   kitsune.gateway:
     <<: *common
     build:
       context: ../../
-      dockerfile: .github/build/Dockerfile.service
+      dockerfile: .github/build/Dockerfile.alpine
       args:
         - BINARY_NAME=gateway
 
@@ -20,6 +20,6 @@ services:
     <<: *common
     build:
       context: ../../
-      dockerfile: .github/build/Dockerfile.service
+      dockerfile: .github/build/Dockerfile.alpine
       args:
         - BINARY_NAME=cache
