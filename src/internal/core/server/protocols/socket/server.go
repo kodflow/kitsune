@@ -15,6 +15,7 @@ import (
 	"net"
 	"runtime"
 
+	"github.com/kodmain/kitsune/src/config"
 	"github.com/kodmain/kitsune/src/internal/core/server/router"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
 	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
@@ -57,7 +58,7 @@ func (s *Server) Start() error {
 
 	connections := make(chan net.Conn, runtime.NumCPU())
 
-	for i := 0; i < runtime.NumCPU(); i++ {
+	for i := 0; i < runtime.NumCPU()*config.DEFAULT_IO_BOUND; i++ {
 		go s.worker(connections)
 	}
 
@@ -95,7 +96,6 @@ func (s *Server) Stop() error {
 // worker is a dedicated goroutine that serves incoming connections.
 // It reads from the connections channel and spawns a new goroutine to handle each connection.
 func (s *Server) worker(conns chan net.Conn) {
-	logger.Info("create worker")
 	for conn := range conns {
 		go s.handleConnection(conn)
 	}
@@ -104,7 +104,6 @@ func (s *Server) worker(conns chan net.Conn) {
 // handleConnection manages the lifecycle of a single client connection.
 // It reads incoming data, processes it, and sends back responses.
 func (s *Server) handleConnection(conn net.Conn) {
-	logger.Info("handleConnection")
 	defer conn.Close()
 
 	reader := bufio.NewReader(conn)
@@ -137,7 +136,6 @@ func (s *Server) handleConnection(conn net.Conn) {
 // handleRequest processes an incoming request from a client connection.
 // It reads the data, decodes it, and returns the data as bytes.
 func (s *Server) handleRequest(reader *bufio.Reader) ([]byte, error) {
-	logger.Info("handleRequest")
 	var length uint32
 	if err := binary.Read(reader, binary.LittleEndian, &length); err != nil {
 		return nil, err
@@ -151,7 +149,6 @@ func (s *Server) handleRequest(reader *bufio.Reader) ([]byte, error) {
 // handleResponse sends a response back to the client after processing the incoming request.
 // It encodes the data and writes it to the client connection.
 func (s *Server) handleResponse(conn net.Conn, b []byte) {
-	logger.Info("handleResponse")
 	req := transport.RequestFromBytes(b)
 	res := router.Resolve(req)
 	if req.Answer {
