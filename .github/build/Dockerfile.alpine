@@ -22,9 +22,3 @@ RUN uname -m > /etc/kitsune/arch;
 WORKDIR /run
 ENTRYPOINT [ "/etc/kitsune/gateway" ]
 #CMD [ "services", "start"]
-
-FROM scratch
-COPY --from=builder /bin/kitsune /bin/kitsune
-COPY --from=builder /etc/kitsune /etc/kitsune
-ENTRYPOINT [ "/etc/kitsune/gateway" ]
-#CMD [ "services", "start"]
