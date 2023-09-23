@@ -129,7 +129,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 			logger.Error(fmt.Errorf("server lost connection with %s", cid))
 			break
 		}
-		s.handleResponse(conn, data)
+		go s.handleResponse(conn, data)
 	}
 }
 
