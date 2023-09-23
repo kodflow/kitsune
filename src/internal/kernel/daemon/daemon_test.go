@@ -7,26 +7,22 @@ import (
 	"github.com/kodmain/kitsune/src/internal/kernel/daemon"
 )
 
-func TestStartStop(t *testing.T) {
-	handler := &daemon.Handler{
-		Name: "TestHandler",
+func TestDaemonHandler_StartStop(t *testing.T) {
+	handler := daemon.New(testProcessName, testPathRun)
+	testHandler := &daemon.Handler{
+		Name: "test",
 		Call: func() error {
-			time.Sleep(2 * time.Second) // Simuler un travail qui prend du temps
+			time.Sleep(10 * time.Second)
 			return nil
 		},
 	}
 
-	// Lancez les handlers en arrière-plan
-	go daemon.Start(handler)
+	time.AfterFunc(0*time.Second, func() {
+		time.AfterFunc(3*time.Second, func() {
+			t.Error("Daemon did not stop in the expected time")
+		})
+		handler.Stop()
+	})
 
-	// Donnez un peu de temps pour démarrer le handler
-	time.Sleep(1 * time.Second)
-
-	// Stoppez les handlers
-	daemon.Stop()
-
-	// Vérifiez si le fichier PID a bien été supprimé
-	if _, err := daemon.GetPID("TestHandler"); err == nil {
-		t.Fatal("Expected error due to missing PID, got nil")
-	}
+	handler.Start(testHandler)
 }
