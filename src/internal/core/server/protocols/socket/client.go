@@ -24,11 +24,12 @@ import (
 
 // Client represents a TCP client with functionalities such as sending requests and waiting for responses.
 type Client struct {
-	ClientID  string                              // ClientID is a unique identifier for the client.
-	Address   string                              // Address is the TCP address of the client.
-	conn      net.Conn                            // conn is the active connection instance.
-	responses map[string]chan *transport.Response // responses store channels for awaiting responses based on request ID.
-	mu        sync.Mutex                          // mu is a mutex for handling concurrent access to the responses map.
+	ClientID    string                              // ClientID is a unique identifier for the client.
+	Address     string                              // Address is the TCP address of the client.
+	conn        net.Conn                            // conn is the active connection instance.
+	responses   map[string]chan *transport.Response // responses store channels for awaiting responses based on request ID.
+	mu          sync.Mutex                          // mu is a mutex for handling concurrent access to the responses map.
+	Established bool
 }
 
 // NewClient initializes and returns a new Client instance.
@@ -48,7 +49,6 @@ func NewClient(address string) *Client {
 	return c
 }
 
-// connect establishes a connection to a TCP server with retries.
 func (c *Client) Connect() error {
 	if c.conn != nil {
 		return fmt.Errorf("already connected")
@@ -58,22 +58,11 @@ func (c *Client) Connect() error {
 	for i := 0; i < config.DEFAULT_RETRY_MAX; i++ {
 		c.conn, err = net.DialTimeout("tcp", c.Address, time.Second*config.DEFAULT_TIMEOUT)
 
-		logger.Error(err)
-
 		if err == nil {
-			req := transport.CreateRequestOnly()
-			req.Body = []byte(c.ClientID)
-			_, err := c.Send(req)
-
-			if err == nil {
-				go c.listen()
-				return nil
-			}
-
-			c.Disconnect()
+			c.Established = true // Connexion établie
+			go c.handleServerResponses()
+			return nil
 		}
-
-		logger.Error(err)
 
 		time.Sleep(config.DEFAULT_RETRY_INTERVAL)
 	}
@@ -81,15 +70,11 @@ func (c *Client) Connect() error {
 	return fmt.Errorf("failed to connect after %d attempts", config.DEFAULT_RETRY_MAX)
 }
 
-// Close terminates the active connection if it exists.
+// Disconnect terminates the active connection if it exists.
 func (c *Client) Disconnect() error {
 	if c.conn == nil {
 		return errors.New("connection already closed")
 	}
-
-	req := transport.CreateRequestOnly()
-	req.Body = []byte(c.ClientID)
-	c.Send(req)
 
 	err := c.conn.Close()
 	if err != nil {
@@ -97,7 +82,7 @@ func (c *Client) Disconnect() error {
 	}
 
 	c.conn = nil
-
+	c.Established = false // Connexion fermée
 	return nil
 }
 
@@ -159,14 +144,31 @@ func (c *Client) SendSync(req *transport.Request) (*transport.Response, error) {
 	return res, nil
 }
 
-// listen continuously reads responses from the server and forwards them to the appropriate channels.
-func (c *Client) listen() {
+func (c *Client) reconnect() {
+	if c.Established {
+		return
+	}
+
+	retryCount := 0
+	for retryCount < config.DEFAULT_RETRY_MAX && !c.Established {
+		retryCount++
+		err := c.Connect()
+		if err == nil {
+			break
+		}
+		time.Sleep(config.DEFAULT_RETRY_INTERVAL)
+	}
+}
+
+// handleServerResponses continuously reads responses from the server and forwards them to the appropriate channels.
+func (c *Client) handleServerResponses() {
 	reader := bufio.NewReader(c.conn)
 
 	for {
 		if c.conn == nil {
 			logger.Error(fmt.Errorf("lost connection with server"))
-			break
+			c.reconnect()
+			continue
 		}
 
 		var length uint32

@@ -1,9 +1,7 @@
 package main
 
-import (
-	"github.com/kodmain/kitsune/src/internal/kernel/daemon"
-)
+import "fmt"
 
 func main() {
-	daemon.Start()
+	fmt.Println("OKI")
 }
