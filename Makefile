@@ -110,6 +110,35 @@ build-service:
 		done \
 	done
 
+# Build and push multi-architecture Docker images using buildx
+build-images:
+	docker buildx create --use
+	docker buildx inspect --bootstrap
+	for file in .generated/services/*; do \
+		name=$$(basename $$file | cut -d '-' -f1); \
+		os=$$(basename $$file | cut -d '-' -f2); \
+		arch=$$(basename $$file | cut -d '-' -f3); \
+		\
+		if [ "$$os" = "linux" ]; then \
+			echo "Construit l'image pour : name=$$name, os=$$os, arch=$$arch, file=$$file"; \
+			docker buildx build \
+			--platform $$os/$$arch \
+			--file .github/build/Dockerfile.scratch \
+			--tag kitsune:$$name \
+			--build-arg FILE=$$file \
+			--load .; \
+		fi \
+	done;
+	docker images
+
+build-images-clear:
+	for instance in $$(docker ps | grep 'moby/buildkit' | awk '{print $$1}'); do \
+		docker kill $$instance; \
+		docker rm $$instance; \
+	done
+
+	docker image rm $$(docker images | grep 'moby/buildkit' | awk '{print $$3}')
+
 
 generate:
 #protoc --proto_path=$(CURDIR)/src/internal/data --go_out=$(CURDIR) $(CURDIR)/src/internal/data/proto/*

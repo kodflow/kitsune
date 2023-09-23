@@ -1,0 +1,5 @@
+## BUILDER
+FROM scratch
+ARG FILE
+COPY $FILE /service
+ENTRYPOINT [ "/service" ]
