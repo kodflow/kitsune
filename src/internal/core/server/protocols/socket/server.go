@@ -1,4 +1,3 @@
-/*
 // Package socket provides functionalities for both a TCP client and a TCP server.
 // It enables the creation, management, and communication between clients and the server over TCP.
 // Messages sent between the client and server are serialized using protobuf.
@@ -11,7 +10,6 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"io"
 	"net"
 	"runtime"
@@ -71,7 +69,7 @@ func (s *Server) Start() error {
 
 			conn, err := s.listener.Accept()
 			if err != nil {
-				continue
+				break
 			}
 
 			connections <- conn
@@ -109,8 +107,12 @@ func (s *Server) handleConnection(conn net.Conn) {
 	for {
 		data, err := s.handleRequest(reader)
 		if err != nil {
-			logger.Error(fmt.Errorf("server lost connection with %s", conn.RemoteAddr().String()))
-			continue //break
+			if err == io.EOF {
+				logger.Info("Connection closed by the client: " + conn.RemoteAddr().String())
+			} else {
+				logger.Warn("Error reading from client:", err)
+			}
+			break
 		}
 		s.handleResponse(conn, data)
 	}
@@ -131,116 +133,6 @@ func (s *Server) handleRequest(reader *bufio.Reader) ([]byte, error) {
 
 // handleResponse sends a response back to the client after processing the incoming request.
 // It encodes the data and writes it to the client connection.
-func (s *Server) handleResponse(conn net.Conn, b []byte) {
-	req := transport.RequestFromBytes(b)
-	res := router.Resolve(req)
-	if req.Answer {
-		data, _ := transport.ResponseToBytes(res)
-		binary.Write(conn, binary.LittleEndian, uint32(len(data)))
-		conn.Write(data)
-	}
-}
-*/
-
-// Package socket provides functionalities for both a TCP client and a TCP server.
-// It enables the creation, management, and communication between clients and the server over TCP.
-// Messages sent between the client and server are serialized using protobuf.
-
-package socket
-
-import (
-	"bufio"
-	"context"
-	"encoding/binary"
-	"errors"
-	"fmt"
-	"io"
-	"net"
-
-	"github.com/kodmain/kitsune/src/internal/core/server/router"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
-)
-
-type Server struct {
-	Address  string             // Address specifies the TCP address for the server to listen on.
-	ctx      context.Context    // ctx represents the server's context to manage its lifecycle.
-	cancel   context.CancelFunc // cancel function to signal the termination of the server's operations.
-	listener net.Listener       // listener is the actual TCP listener for the server.
-}
-
-func NewServer(address string) *Server {
-	ctx, cancel := context.WithCancel(context.Background())
-	return &Server{
-		Address: address,
-		ctx:     ctx,
-		cancel:  cancel,
-	}
-}
-
-func (s *Server) Start() error {
-	if s.listener != nil {
-		return errors.New("server already started")
-	}
-
-	var err error
-	s.listener, err = net.Listen("tcp", s.Address)
-	if err != nil {
-		return err
-	}
-
-	go func() {
-		for {
-			if s.listener == nil {
-				return
-			}
-
-			conn, err := s.listener.Accept()
-			if err != nil {
-				continue
-			}
-
-			go s.handleConnection(conn)
-		}
-	}()
-
-	return nil
-}
-
-func (s *Server) Stop() error {
-	if s.listener == nil {
-		return errors.New("server is not active")
-	}
-
-	err := s.listener.Close()
-	s.listener = nil
-	return err
-}
-
-func (s *Server) handleConnection(conn net.Conn) {
-	defer conn.Close()
-	reader := bufio.NewReader(conn)
-	for {
-		data, err := s.handleRequest(reader)
-		if err != nil {
-			logger.Error(fmt.Errorf("server lost connection with %s", conn.RemoteAddr().String()))
-			return // J'ai remplacé 'continue' par 'return' pour fermer la connexion en cas d'erreur.
-		}
-		s.handleResponse(conn, data)
-	}
-}
-
-func (s *Server) handleRequest(reader *bufio.Reader) ([]byte, error) {
-	var length uint32
-	if err := binary.Read(reader, binary.LittleEndian, &length); err != nil {
-		return nil, err
-	}
-
-	data := make([]byte, length)
-	_, err := io.ReadFull(reader, data)
-	return data, err
-}
-
 func (s *Server) handleResponse(conn net.Conn, b []byte) {
 	req := transport.RequestFromBytes(b)
 	res := router.Resolve(req)

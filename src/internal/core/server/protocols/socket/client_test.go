@@ -83,7 +83,6 @@ func TestClient(t *testing.T) {
 
 func BenchmarkRequestsOnly(b *testing.B) {
 	logger.SetLevel(levels.OFF)
-
 	server := socket.NewServer("localhost:8080")
 	server.Start()
 
