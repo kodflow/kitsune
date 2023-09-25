@@ -85,10 +85,6 @@ build-framework:
 				-X github.com/kodmain/kitsune/src/config/config.BUILD_VERSION=$$VERSION \
 				-X github.com/kodmain/kitsune/src/config/config.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
 				-X github.com/kodmain/kitsune/src/config/config.BUILD_APP_NAME=kitsune"; \
-			for binary in $$(find .generated -type f -name "*$$os-$$arch.sha1" | awk -F "/" '{print $$3}' | awk -F "-" '{print $$1}' | sort | uniq); do \
-				cap_binary=$$(echo $$binary | tr '[:lower:]' '[:upper:]'); \
-				ldflags+=" -X github.com/kodmain/kitsune/src/config/config.BUILD_SERVICE_$$cap_binary=$$(cat .generated/services/$$binary-$$os-$$arch.sha1)"; \
-			done; \
 			CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch go build -trimpath -buildvcs=false -ldflags="$$ldflags" \
 				-o .generated/bin/kitsune-$$os-$$arch $(CURDIR)/src/cmd/main.go; \
 				chmod +x .generated/bin/kitsune-$$os-$$arch; \
@@ -111,7 +107,7 @@ build-service:
 	done
 
 # Build and push multi-architecture Docker images using buildx
-build-images:
+build-images: build
 	docker buildx create --use
 	docker buildx inspect --bootstrap
 	for file in .generated/services/*; do \

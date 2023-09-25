@@ -18,7 +18,7 @@ func main() {
 	var mu sync.Mutex
 	var worker = runtime.NumCPU() * 10
 
-	client := socket.NewClient("youka-PRODUCTION-9de5d4b457bad9c7.elb.eu-west-3.amazonaws.com:9999") // youka-PRODUCTION-9de5d4b457bad9c7.elb.eu-west-3.amazonaws.com
+	client := socket.NewClient("127.0.0.1:9999") // youka-PRODUCTION-9de5d4b457bad9c7.elb.eu-west-3.amazonaws.com
 	client.Connect()
 
 	for j := 0; j < worker; j++ {
