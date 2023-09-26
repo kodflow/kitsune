@@ -67,13 +67,8 @@ func (c *Client) Disconnect() error {
 	}
 
 	err := c.conn.Close()
-	if err != nil {
-		return err
-	}
-
 	c.conn = nil
-
-	return nil
+	return err
 }
 
 // Send transmits a request to the server and returns a promise for the response.

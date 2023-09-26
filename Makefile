@@ -119,22 +119,25 @@ build-images: build
 			echo "Construit l'image pour : name=$$name, os=$$os, arch=$$arch, file=$$file"; \
 			docker buildx build \
 			--platform $$os/$$arch \
-			--file .github/build/Dockerfile.scratch \
-			--tag kitsune:$$name \
+			--file .github/local/Dockerfile.debug \
+			--tag kodmain/debug:$$name \
 			--build-arg FILE=$$file \
-			--load .; \
+			--push .; \
 		fi \
 	done;
-	docker images
-
-build-images-clear:
 	for instance in $$(docker ps | grep 'moby/buildkit' | awk '{print $$1}'); do \
 		docker kill $$instance; \
 		docker rm $$instance; \
 	done
 
+build-images-clear:
 	docker image rm $$(docker images | grep 'moby/buildkit' | awk '{print $$3}')
 
+run-images-with-publish: build-images run-images
+
+run-images:
+	docker compose -f .github/local/compose.yml pull
+	docker compose -f .github/local/compose.yml up
 
 generate:
 #protoc --proto_path=$(CURDIR)/src/internal/data --go_out=$(CURDIR) $(CURDIR)/src/internal/data/proto/*
