@@ -10,8 +10,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kodmain/kitsune/src/config"
-	"github.com/kodmain/kitsune/src/internal/core/server/promise"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
+	"github.com/kodmain/kitsune/src/internal/core/server/transport/promise"
 	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
 	"google.golang.org/protobuf/proto"
 )
@@ -59,6 +59,12 @@ func (mp *Multi) Connect() error {
 	if err != nil {
 		return fmt.Errorf("can't establish connection")
 	}
+	/*
+		mp.response, err = net.DialTimeout(mp.protocol, mp.address+":"+mp.service, time.Second*config.DEFAULT_TIMEOUT)
+		if err != nil {
+			return fmt.Errorf("can't establish connection")
+		}
+	*/
 
 	mp.connected = true
 
@@ -74,6 +80,13 @@ func (mp *Multi) Disconnect() error {
 		mp.connected = true
 		return err
 	}
+
+	/*
+		if err := mp.response.Close(); err != nil {
+			mp.connected = true
+			return err
+		}
+	*/
 
 	return nil
 }

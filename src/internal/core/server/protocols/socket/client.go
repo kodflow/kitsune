@@ -12,31 +12,11 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/kodmain/kitsune/src/internal/core/server/promise"
 	"github.com/kodmain/kitsune/src/internal/core/server/service"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
+	"github.com/kodmain/kitsune/src/internal/core/server/transport/promise"
 	"google.golang.org/protobuf/proto"
 )
-
-/*
-func init() {
-	var address, port, protocol string = "", "", ""
-
-	client := NewClient()
-	service1, _ := client.Connect(address, port, protocol)
-	service2, _ := client.Connect(address, port, protocol)
-	service3, _ := client.Connect(address, port, protocol)
-
-	req1 := service1.MakeRequestWithResponse()
-	req2 := service2.MakeRequestWithResponse()
-	req3 := service2.MakeRequestWithResponse()
-	req4 := service3.MakeRequestOnly()
-
-	client.Send(func(responses ...*transport.Response) {
-		fmt.Println(responses)
-	}, req1, req2, req3, req4)
-}
-*/
 
 // Client represents a TCP client with functionalities such as sending requests and waiting for responses.
 type Client struct {
@@ -129,12 +109,10 @@ func (c *Client) Send(callback func(...*transport.Response), queries ...*service
 				return err
 			}
 
-			// Écrire la longueur du message
 			if err := binary.Write(&buffer, binary.LittleEndian, uint32(len(data))); err != nil {
 				return err
 			}
 
-			// Écrire les données du message
 			if _, err := buffer.Write(data); err != nil {
 				return err
 			}
@@ -149,25 +127,3 @@ func (c *Client) Send(callback func(...*transport.Response), queries ...*service
 
 	return nil
 }
-
-/*
-// SendSync envoie une requête de manière synchrone et attend la réponse avant de retourner.
-func (c *Client) SendSync(req *transport.Request) (*transport.Response, error) {
-	p, err := c.Send(req)
-	if err != nil {
-		return nil, err
-	}
-
-	if !req.Answer {
-		return nil, errors.New("you send a non answer query")
-	}
-
-	// Attendre la réponse de manière synchrone
-	res := p.Wait()
-	if res == nil {
-		return nil, errors.New("no response received")
-	}
-
-	return res, nil
-}
-*/

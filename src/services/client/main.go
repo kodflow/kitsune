@@ -2,14 +2,12 @@ package main
 
 import (
 	"log"
-	"os"
 	"runtime"
 	"sync"
 	"time"
 
 	"github.com/kodmain/kitsune/src/internal/core/server/protocols/socket"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
 	"github.com/shirou/gopsutil/cpu"
 )
 
@@ -53,26 +51,18 @@ func main() {
 
 func run(port string) {
 	client := socket.NewClient() // youka-PRODUCTION-9de5d4b457bad9c7.elb.eu-west-3.amazonaws.com
-	err := client.Connect("127.0.0.1", "9999")
-
-	if logger.Error(err) {
-		os.Exit(1)
-	}
+	service1, _ := client.Connect("localhost", "8080", "tcp")
+	query1 := service1.MakeRequestWithResponse()
 
 	for j := 0; j < worker; j++ {
 		go func(j int) {
 			for i := 0; i < max; i++ {
-				req := transport.CreateRequest()
-
-				start := time.Now() // Record the start time
-				client.SendSync(req)
-				elapsed := time.Since(start) // Calculate elapsed time
-
-				mu.Lock()
-				total++
-				rps++
-				totalTime += elapsed // Update total time
-				mu.Unlock()
+				client.Send(func(responses ...*transport.Response) {
+					mu.Lock()
+					rps++
+					total++
+					mu.Unlock()
+				}, query1)
 			}
 		}(j)
 	}

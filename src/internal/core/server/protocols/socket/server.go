@@ -12,9 +12,7 @@ import (
 	"errors"
 	"io"
 	"net"
-	"runtime"
 
-	"github.com/kodmain/kitsune/src/config"
 	"github.com/kodmain/kitsune/src/internal/core/server/router"
 )
 
@@ -49,14 +47,7 @@ func (s *Server) Start() error {
 		return err
 	}
 
-	connections := make(chan net.Conn, runtime.NumCPU()*config.DEFAULT_IO_BOUND)
-
-	for i := 0; i < runtime.NumCPU()*config.DEFAULT_IO_BOUND; i++ {
-		go s.worker(connections)
-	}
-
 	go func() {
-		defer close(connections)
 		for {
 			if s.listener == nil {
 				break
@@ -68,8 +59,6 @@ func (s *Server) Start() error {
 			}
 
 			s.handleConnection(conn)
-
-			connections <- conn
 		}
 	}()
 
@@ -85,13 +74,6 @@ func (s *Server) Stop() error {
 	err := s.listener.Close()
 	s.listener = nil
 	return err
-}
-
-// worker is a dedicated goroutine that serves incoming connections.
-func (s *Server) worker(conns chan net.Conn) {
-	for conn := range conns {
-		go s.handleConnection(conn)
-	}
 }
 
 // handleConnection manages a single client connection.
