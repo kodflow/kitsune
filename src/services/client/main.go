@@ -52,6 +52,34 @@ func main() {
 }
 
 func run(port string) {
+	client := socket.NewClient() // youka-PRODUCTION-9de5d4b457bad9c7.elb.eu-west-3.amazonaws.com
+	err := client.Connect("127.0.0.1", "9999")
+
+	if logger.Error(err) {
+		os.Exit(1)
+	}
+
+	for j := 0; j < worker; j++ {
+		go func(j int) {
+			for i := 0; i < max; i++ {
+				req := transport.CreateRequest()
+
+				start := time.Now() // Record the start time
+				client.SendSync(req)
+				elapsed := time.Since(start) // Calculate elapsed time
+
+				mu.Lock()
+				total++
+				rps++
+				totalTime += elapsed // Update total time
+				mu.Unlock()
+			}
+		}(j)
+	}
+}
+
+/*
+func run(port string) {
 	client := socket.NewClient("127.0.0.1:" + port) // youka-PRODUCTION-9de5d4b457bad9c7.elb.eu-west-3.amazonaws.com
 	err := client.Connect()
 
@@ -77,6 +105,7 @@ func run(port string) {
 		}(j)
 	}
 }
+*/
 
 func bToMb(b uint64) uint64 {
 	return b / 1024 / 1024

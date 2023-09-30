@@ -6,109 +6,151 @@
 package socket
 
 import (
-	"bufio"
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"io"
-	"net"
 	"sync"
-	"time"
 
-	"github.com/kodmain/kitsune/src/config"
+	"github.com/kodmain/kitsune/src/internal/core/server/promise"
+	"github.com/kodmain/kitsune/src/internal/core/server/service"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
 	"google.golang.org/protobuf/proto"
 )
 
+/*
+func init() {
+	var address, port, protocol string = "", "", ""
+
+	client := NewClient()
+	service1, _ := client.Connect(address, port, protocol)
+	service2, _ := client.Connect(address, port, protocol)
+	service3, _ := client.Connect(address, port, protocol)
+
+	req1 := service1.MakeRequestWithResponse()
+	req2 := service2.MakeRequestWithResponse()
+	req3 := service2.MakeRequestWithResponse()
+	req4 := service3.MakeRequestOnly()
+
+	client.Send(func(responses ...*transport.Response) {
+		fmt.Println(responses)
+	}, req1, req2, req3, req4)
+}
+*/
+
 // Client represents a TCP client with functionalities such as sending requests and waiting for responses.
 type Client struct {
-	Address   string                              // Address is the TCP address of the client.
-	conn      net.Conn                            // conn is the active connection instance.
-	responses map[string]chan *transport.Response // responses store channels for awaiting responses based on request ID.
-	mu        sync.Mutex                          // mu is a mutex for handling concurrent access to the responses map.
+	mu       sync.Mutex
+	services map[string]*service.Service
 }
 
 // NewClient initializes and returns a new Client instance.
 // address is the TCP address for the client.
-func NewClient(address string) *Client {
+func NewClient() *Client {
 	c := &Client{
-		Address:   address,
-		responses: make(map[string]chan *transport.Response),
+		services: map[string]*service.Service{},
 	}
 
 	return c
 }
 
-func (c *Client) Connect() error {
-	if c.conn != nil {
-		return fmt.Errorf("already connected")
+func (c *Client) Connect(address, port, protocol string) (*service.Service, error) {
+	s, err := service.Create(address, port, protocol)
+	if err != nil {
+		return s, err
 	}
 
-	var err error
-	for i := 0; i < config.DEFAULT_RETRY_MAX; i++ {
-		c.conn, err = net.DialTimeout("tcp", c.Address, time.Second*config.DEFAULT_TIMEOUT)
+	c.mu.Lock()
+	c.services[s.Name] = s
+	c.mu.Unlock()
 
-		if err == nil {
-			go c.handleServerResponses()
-			return nil
-		}
-
-		time.Sleep(config.DEFAULT_RETRY_INTERVAL)
-	}
-
-	return fmt.Errorf("failed to connect after %d attempts", config.DEFAULT_RETRY_MAX)
+	return s, nil
 }
 
 // Disconnect terminates the active connection if it exists.
-func (c *Client) Disconnect() error {
-	if c.conn == nil {
-		return errors.New("connection already closed")
+func (c *Client) Disconnect(services ...string) error {
+	if len(c.services) == 0 {
+		return errors.New("no connection")
 	}
 
-	err := c.conn.Close()
-	c.conn = nil
-	return err
+	if len(services) == 0 {
+		for service, mp := range c.services {
+			if err := mp.Disconnect(); err != nil {
+				continue
+			}
+			delete(c.services, service)
+		}
+
+		return nil
+	}
+
+	for _, service := range services {
+		delete(c.services, service)
+	}
+
+	return nil
 }
 
 // Send transmits a request to the server and returns a promise for the response.
 // req is the request to be sent.
-func (c *Client) Send(req *transport.Request) (*promise, error) {
-	data, err := proto.Marshal(req)
-	if err != nil {
-		return nil, err
+func (c *Client) Send(callback func(...*transport.Response), queries ...*service.Query) error {
+	if len(queries) == 0 {
+		return fmt.Errorf("no request")
 	}
 
-	p := Promise()
-	if req.Answer {
-		p.Init()
-		c.mu.Lock()
-		if _, exists := c.responses[req.Id]; exists {
-			c.mu.Unlock()
-			return nil, fmt.Errorf("request ID %s is already in use", req.Id)
-		}
-		c.responses[req.Id] = p.wait
-		c.mu.Unlock()
-	}
+	dispatch := map[string][]*service.Query{}
+	buffers := map[string]bytes.Buffer{}
 
 	c.mu.Lock()
-	defer c.mu.Unlock()
-	if c.conn == nil {
-		return nil, errors.New("connection is closed")
+	services := c.services
+	c.mu.Unlock()
+
+	for _, query := range queries {
+		if _, ok := services[query.Service]; ok {
+			dispatch[query.Service] = append(dispatch[query.Service], query)
+		}
 	}
 
-	if err := binary.Write(c.conn, binary.LittleEndian, uint32(len(data))); err != nil {
-		return nil, err
-	}
-
-	_, err = c.conn.Write(data)
+	p, err := promise.Create(callback)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return p, nil
+	for service, queries := range dispatch {
+		var buffer bytes.Buffer
+
+		for _, query := range queries {
+			if query.Answer {
+				p.Add(query.Req)
+			}
+
+			data, err := proto.Marshal(query.Req)
+			if err != nil {
+				return err
+			}
+
+			// Écrire la longueur du message
+			if err := binary.Write(&buffer, binary.LittleEndian, uint32(len(data))); err != nil {
+				return err
+			}
+
+			// Écrire les données du message
+			if _, err := buffer.Write(data); err != nil {
+				return err
+			}
+
+			buffers[service] = buffer
+		}
+	}
+
+	for service, buffer := range buffers {
+		services[service].Write(buffer)
+	}
+
+	return nil
 }
 
+/*
 // SendSync envoie une requête de manière synchrone et attend la réponse avant de retourner.
 func (c *Client) SendSync(req *transport.Request) (*transport.Response, error) {
 	p, err := c.Send(req)
@@ -128,44 +170,4 @@ func (c *Client) SendSync(req *transport.Request) (*transport.Response, error) {
 
 	return res, nil
 }
-
-// handleServerResponses continuously reads responses from the server and forwards them to the appropriate channels.
-func (c *Client) handleServerResponses() {
-	reader := bufio.NewReader(c.conn)
-
-	for {
-		if c.conn == nil {
-			break
-		}
-
-		var length uint32
-		if err := binary.Read(reader, binary.LittleEndian, &length); err != nil {
-			break
-		}
-
-		data := make([]byte, length)
-		_, err := io.ReadFull(reader, data)
-		if err != nil {
-			if err == io.EOF {
-				logger.Info("connection closed by the server.")
-			} else {
-				logger.Error(err)
-			}
-			break
-		}
-
-		res := &transport.Response{}
-		err = proto.Unmarshal(data, res)
-		if logger.Error(err) {
-			continue
-		}
-
-		c.mu.Lock()
-		if ch, exists := c.responses[res.Id]; exists {
-			ch <- res
-			close(ch)
-			delete(c.responses, res.Id)
-		}
-		c.mu.Unlock()
-	}
-}
+*/

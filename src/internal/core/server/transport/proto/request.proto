@@ -5,7 +5,7 @@ package transport;
 option go_package = "src/internal/core/server/transport";
 
 message Request {
-  bool answer = 1;
-  string id = 2;
+  string id = 1;
+  string pid = 2;
   bytes body = 3;
 }

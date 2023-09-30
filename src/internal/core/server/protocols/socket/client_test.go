@@ -1,6 +1,7 @@
 package socket_test
 
 import (
+	"fmt"
 	"log"
 	"runtime"
 	"sync"
@@ -9,11 +10,133 @@ import (
 
 	"github.com/kodmain/kitsune/src/internal/core/server/protocols/socket"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger/levels"
 	"github.com/shirou/gopsutil/cpu"
-	"github.com/stretchr/testify/assert"
 )
+
+func TestClient(t *testing.T) {
+	server1 := socket.NewServer("localhost:8080")
+	server1.Start()
+	defer server1.Stop()
+
+	server2 := socket.NewServer("localhost:8081")
+	server2.Start()
+	defer server2.Stop()
+
+	client := socket.NewClient()
+	service1, _ := client.Connect("localhost", "8080", "tcp")
+	query1 := service1.MakeRequestWithResponse()
+
+	service2, _ := client.Connect("localhost", "8081", "tcp")
+	query2 := service2.MakeRequestWithResponse()
+
+	client.Send(func(responses ...*transport.Response) {
+		fmt.Println("result:", responses)
+	}, query1)
+
+	client.Send(func(responses ...*transport.Response) {
+		fmt.Println("result:", responses)
+	}, query2)
+
+	client.Send(func(responses ...*transport.Response) {
+		fmt.Println("result:", responses)
+	}, query1, query2)
+
+}
+
+func BenchmarkLocal(b *testing.B) {
+	server1 := socket.NewServer("localhost:8080")
+	server1.Start()
+	defer server1.Stop()
+
+	server2 := socket.NewServer("localhost:8081")
+	server2.Start()
+	defer server2.Stop()
+
+	client := socket.NewClient()
+	service1, _ := client.Connect("localhost", "8080", "tcp")
+	service2, _ := client.Connect("localhost", "8081", "tcp")
+
+	/*
+		query2 := service1.MakeRequestWithResponse()
+
+		result := make(chan bool)
+		fmt.Println("send:start")
+		err := client.Send(func(responses ...*transport.Response) {
+			//fmt.Println("send:result", responses)
+			result <- true
+		}, query1, query2)
+		logger.Error(err)
+		fmt.Println("send:stop")
+	*/
+
+	query1 := service1.MakeRequestWithResponse()
+	query2 := service2.MakeRequestWithResponse()
+
+	b.Run("benchmark", func(b *testing.B) {
+		b.ResetTimer() // Ne compte pas la configuration initiale dans le temps de benchmark
+		var max = 1000000
+		var rps = 0
+		var total = 0
+		var mu sync.Mutex
+
+		go func() {
+			for i := 0; i < max; i++ {
+				client.Send(func(responses ...*transport.Response) {
+					mu.Lock()
+					rps++
+					total++
+					mu.Unlock()
+				}, query1)
+			}
+		}()
+
+		go func() {
+			for i := 0; i < max; i++ {
+				client.Send(func(responses ...*transport.Response) {
+					mu.Lock()
+					rps++
+					total++
+					mu.Unlock()
+				}, query2)
+			}
+		}()
+
+		ticker := time.NewTicker(time.Second)
+		for range ticker.C {
+			var m runtime.MemStats
+			runtime.ReadMemStats(&m)
+			percent, err := cpu.Percent(0, false)
+			if err != nil {
+				log.Println("Erreur lors de la récupération de l'utilisation du CPU:", err)
+			}
+
+			cpuUsage := 0.0
+			if len(percent) > 0 {
+				cpuUsage = percent[0]
+			}
+
+			log.Printf("Request/Sec: %d, REQS: %d/%d, Go Routine: %d, MemoryUsage: %d Mb, CPU Usage: %.2f%%", rps, total, max, runtime.NumGoroutine(), bToMb(m.Alloc), cpuUsage)
+			rps = 0
+			if int(total) >= max {
+				ticker.Stop()
+				break
+			}
+		}
+	})
+}
+
+func bToMb(b uint64) uint64 {
+	return b / 1024 / 1024
+}
+
+/*
+
+
+
+	var address, port, protocol string = "", "", ""
+
+
+
 
 func TestClient(t *testing.T) {
 	logger.SetLevel(levels.OFF)
@@ -166,7 +289,7 @@ func BenchmarkRequestAndResponse(b *testing.B) {
 	b.Run("benchmark", func(b *testing.B) {
 		b.ResetTimer() // Ne compte pas la configuration initiale dans le temps de benchmark
 		var max = 1000000
-		var worker = runtime.NumCPU()
+		var worker = 1
 		var total int32
 		var errors int32
 		var rps int32

@@ -30,3 +30,4 @@ coverage.txt
 report.xml
 .github/deploy
 .github/local
+*.zip

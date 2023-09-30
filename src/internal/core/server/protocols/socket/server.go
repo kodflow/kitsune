@@ -16,7 +16,6 @@ import (
 
 	"github.com/kodmain/kitsune/src/config"
 	"github.com/kodmain/kitsune/src/internal/core/server/router"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport"
 )
 
 // Server represents a TCP server with the capability to manage multiple clients.
@@ -68,6 +67,8 @@ func (s *Server) Start() error {
 				break
 			}
 
+			s.handleConnection(conn)
+
 			connections <- conn
 		}
 	}()
@@ -102,7 +103,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 		if err != nil {
 			break
 		}
-		s.handleResponse(conn, data)
+		s.sendResponse(conn, data)
 	}
 }
 
@@ -119,15 +120,13 @@ func (s *Server) handleRequest(reader *bufio.Reader) ([]byte, error) {
 	return data, err
 }
 
-// handleResponse sends a response back to the client.
+// sendResponse sends a response back to the client.
 // conn: The client connection instance.
 // b: The byte array containing the request.
-func (s *Server) handleResponse(conn net.Conn, b []byte) {
-	req := transport.RequestFromBytes(b)
-	res := router.Resolve(req)
-	if req.Answer {
-		data, _ := transport.ResponseToBytes(res)
-		binary.Write(conn, binary.LittleEndian, uint32(len(data)))
-		conn.Write(data)
+func (s *Server) sendResponse(conn net.Conn, b []byte) {
+	res := router.Handler(b)
+	if len(res) > 0 {
+		binary.Write(conn, binary.LittleEndian, uint32(len(res)))
+		conn.Write(res)
 	}
 }
