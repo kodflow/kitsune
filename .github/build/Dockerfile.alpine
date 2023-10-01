@@ -5,15 +5,16 @@ ARG BINARY_VERSION=latest
 ENV BINARY_VERSION=${BINARY_VERSION}
 USER root:root
 
-RUN curl -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/kitsune-linux-$ARCHITECTURE;
+RUN curl --silent -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/kitsune-linux-$ARCHITECTURE;
 
 RUN chmod +x /bin/kitsune
 RUN /bin/kitsune install
 
 ## RUNNER
-FROM alpine AS runner
-COPY --from=builder /bin/kitsune /bin/kitsune
-COPY --from=builder /etc/kitsune /etc/kitsune
-WORKDIR /run
-ENTRYPOINT [ "ash" ]
+#FROM alpine AS runner
+#COPY --from=builder /bin/kitsune /bin/kitsune
+#COPY --from=builder /etc/kitsune /etc/kitsune
+#WORKDIR /run
+#ENTRYPOINT [ "ash" ]
 #CMD [ "services", "start"]
+
