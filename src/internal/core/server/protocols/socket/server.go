@@ -58,7 +58,7 @@ func (s *Server) Start() error {
 				break
 			}
 
-			s.handleConnection(conn)
+			go s.handleConnection(conn)
 		}
 	}()
 
@@ -80,12 +80,13 @@ func (s *Server) Stop() error {
 func (s *Server) handleConnection(conn net.Conn) {
 	defer conn.Close()
 	reader := bufio.NewReader(conn)
+	writer := bufio.NewWriter(conn)
 	for {
 		data, err := s.handleRequest(reader)
 		if err != nil {
 			break
 		}
-		s.sendResponse(conn, data)
+		s.sendResponse(writer, data)
 	}
 }
 
@@ -105,10 +106,11 @@ func (s *Server) handleRequest(reader *bufio.Reader) ([]byte, error) {
 // sendResponse sends a response back to the client.
 // conn: The client connection instance.
 // b: The byte array containing the request.
-func (s *Server) sendResponse(conn net.Conn, b []byte) {
+func (s *Server) sendResponse(writer *bufio.Writer, b []byte) {
 	res := router.Handler(b)
 	if len(res) > 0 {
-		binary.Write(conn, binary.LittleEndian, uint32(len(res)))
-		conn.Write(res)
+		binary.Write(writer, binary.LittleEndian, uint32(len(res)))
+		writer.Write(res)
+		writer.Flush()
 	}
 }
