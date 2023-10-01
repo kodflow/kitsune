@@ -81,7 +81,7 @@ jobs:
     - name: Build Image Kitsune
       uses: docker/build-push-action@v5
       with:
-        file: .github/build/Dockerfile.service
+        file: .github/build/Dockerfile.scratch
         context: .
         platforms: linux/amd64,linux/arm64
         push: true
