@@ -16,16 +16,20 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+var (
+	REQ_BYTES = []byte("I")
+	RES_BYTES = []byte("O")
+)
+
 type Multi struct {
 	connected bool
 
 	service  string
 	address  string
 	protocol string
-	id       string
+	id       []byte
 
-	request net.Conn
-	//response net.Conn
+	plex *Plexer
 }
 
 func NewMulti(address, service, protocol string) (*Multi, error) {
@@ -38,7 +42,8 @@ func NewMulti(address, service, protocol string) (*Multi, error) {
 		address:  address,
 		service:  service,
 		protocol: protocol,
-		id:       v4.String(),
+		id:       []byte(v4.String()),
+		plex:     &Plexer{},
 	}
 
 	if err := mp.Connect(); err != nil {
@@ -55,16 +60,18 @@ func (mp *Multi) Connect() error {
 		return fmt.Errorf("already connected")
 	}
 
-	mp.request, err = net.DialTimeout(mp.protocol, mp.address+":"+mp.service, time.Second*config.DEFAULT_TIMEOUT)
+	mp.plex.ReqConn, err = net.DialTimeout(mp.protocol, mp.address+":"+mp.service, time.Second*config.DEFAULT_TIMEOUT)
 	if err != nil {
 		return fmt.Errorf("can't establish connection")
 	}
-	/*
-		mp.response, err = net.DialTimeout(mp.protocol, mp.address+":"+mp.service, time.Second*config.DEFAULT_TIMEOUT)
-		if err != nil {
-			return fmt.Errorf("can't establish connection")
-		}
-	*/
+
+	mp.plex.ResConn, err = net.DialTimeout(mp.protocol, mp.address+":"+mp.service, time.Second*config.DEFAULT_TIMEOUT)
+	if err != nil {
+		return fmt.Errorf("can't establish connection")
+	}
+
+	mp.plex.ReqConn.Write(mp.id)
+	mp.plex.ResConn.Write(mp.id)
 
 	mp.connected = true
 
@@ -76,28 +83,26 @@ func (mp *Multi) Connect() error {
 func (mp *Multi) Disconnect() error {
 	mp.connected = false
 
-	if err := mp.request.Close(); err != nil {
+	if err := mp.plex.ReqConn.Close(); err != nil {
 		mp.connected = true
 		return err
 	}
 
-	/*
-		if err := mp.response.Close(); err != nil {
-			mp.connected = true
-			return err
-		}
-	*/
+	if err := mp.plex.ResConn.Close(); err != nil {
+		mp.connected = true
+		return err
+	}
 
 	return nil
 }
 
 func (mp *Multi) Write(data []byte) (int, error) {
-	return mp.request.Write(data)
+	return mp.plex.ReqConn.Write(data)
 }
 
 // handleServerResponses continuously reads responses from the server and forwards them to the appropriate channels.
 func (mp *Multi) handleServerResponses() {
-	reader := bufio.NewReader(mp.request)
+	reader := bufio.NewReader(mp.plex.ResConn)
 	for {
 		if !mp.connected {
 			fmt.Println("break:!mp.connected")

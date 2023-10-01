@@ -14,6 +14,7 @@ import (
 	"net"
 
 	"github.com/kodmain/kitsune/src/internal/core/server/router"
+	"github.com/kodmain/kitsune/src/internal/core/server/transport/plexer"
 )
 
 // Server represents a TCP server with the capability to manage multiple clients.
@@ -22,6 +23,7 @@ type Server struct {
 	ctx      context.Context    // ctx represents the server's context to manage its lifecycle.
 	cancel   context.CancelFunc // cancel function to signal the termination of the server's operations.
 	listener net.Listener       // listener is the actual TCP listener for the server.
+	conns    map[string]*plexer.Plexer
 }
 
 // NewServer initializes a new server instance.
@@ -32,6 +34,7 @@ func NewServer(address string) *Server {
 		Address: address,
 		ctx:     ctx,
 		cancel:  cancel,
+		conns:   map[string]*plexer.Plexer{},
 	}
 }
 
@@ -58,11 +61,37 @@ func (s *Server) Start() error {
 				break
 			}
 
-			s.handleConnection(conn)
+			reader := bufio.NewReader(conn)
+			writer := bufio.NewWriter(conn)
+
+			cid, err := s.GetMessage(reader, 36)
+			if err == nil {
+				conn.Close()
+				break
+			}
+
+			if _, ok := s.conns[cid]; ok {
+				s.conns[cid].Response = writer
+			} else {
+				p := &plexer.Plexer{Request: reader}
+				go s.handleConnection(p)
+				s.conns[cid] = p
+			}
 		}
 	}()
 
 	return nil
+}
+
+func (s *Server) GetMessage(reader io.Reader, length int) (string, error) {
+	data := make([]byte, length)
+
+	_, err := io.ReadFull(reader, data)
+	if err != nil {
+		return "", err
+	}
+
+	return string(data), nil
 }
 
 // Stop terminates the server's operations.
@@ -77,15 +106,14 @@ func (s *Server) Stop() error {
 }
 
 // handleConnection manages a single client connection.
-func (s *Server) handleConnection(conn net.Conn) {
-	defer conn.Close()
-	reader := bufio.NewReader(conn)
+func (s *Server) handleConnection(p *plexer.Plexer) {
+	defer p.Close()
 	for {
-		data, err := s.handleRequest(reader)
+		data, err := s.handleRequest(p.Request)
 		if err != nil {
 			break
 		}
-		s.sendResponse(conn, data)
+		s.sendResponse(p.Response, data)
 	}
 }
 
@@ -105,10 +133,11 @@ func (s *Server) handleRequest(reader *bufio.Reader) ([]byte, error) {
 // sendResponse sends a response back to the client.
 // conn: The client connection instance.
 // b: The byte array containing the request.
-func (s *Server) sendResponse(conn net.Conn, b []byte) {
+func (s *Server) sendResponse(writer *bufio.Writer, b []byte) {
 	res := router.Handler(b)
 	if len(res) > 0 {
-		binary.Write(conn, binary.LittleEndian, uint32(len(res)))
-		conn.Write(res)
+		binary.Write(writer, binary.LittleEndian, uint32(len(res)))
+		writer.Write(res)
+		writer.Flush()
 	}
 }

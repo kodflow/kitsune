@@ -39,7 +39,7 @@ func BenchmarkLocal(b *testing.B) {
 
 	b.Run("benchmark", func(b *testing.B) {
 		b.ResetTimer() // Ne compte pas la configuration initiale dans le temps de benchmark
-		var max = 10000000
+		var max = 1000000
 		var rps = 0
 		var total = 0
 		var mu sync.Mutex
