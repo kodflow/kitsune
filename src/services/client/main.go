@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"os"
 	"runtime"
 	"sync"
 	"time"
@@ -51,17 +53,23 @@ func main() {
 
 func run(port string) {
 	client := socket.NewClient() // youka-PRODUCTION-9de5d4b457bad9c7.elb.eu-west-3.amazonaws.com
-	service1, _ := client.Connect("localhost", "8080", "tcp")
-	query1 := service1.MakeRequestWithResponse()
+	service1, err := client.Connect("ec2-13-38-48-22.eu-west-3.compute.amazonaws.com", "9999", "tcp")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	for j := 0; j < worker; j++ {
 		go func(j int) {
 			for i := 0; i < max; i++ {
+				query1 := service1.MakeRequestWithResponse()
 				client.Send(func(responses ...*transport.Response) {
-					mu.Lock()
-					rps++
-					total++
-					mu.Unlock()
+					if query1.Req.Id == responses[0].Id {
+						mu.Lock()
+						rps++
+						total++
+						mu.Unlock()
+					}
 				}, query1)
 			}
 		}(j)
