@@ -50,14 +50,21 @@ ssl:
 	openssl req -x509 -days 365 -key ./.generated/ssl/localhost.key -in ./.generated/ssl/localhost.csr -out ./.generated/ssl/localhost.crt
 	openssl req -x509 -days 365 -nodes -newkey rsa:2048 -keyout ./.generated/ssl/localhost-ca.key -out ./.generated/ssl/localhost-ca.crt -subj "/CN=Certificate Authority"
 	echo "SSL certificates generated successfully!"
-
 tests:
 	echo "create file"
 	find src -name "*.go" | grep -vE "(_test.go$$|.pb.go$$)" | while read -r file; do test -f "$${file%.*}_test.go" || echo "package $$(grep -m 1 'package ' $$file | awk '{print $$2}')\n\nimport \"testing\"\n\nfunc TestNotExistInThisFile$$(basename $$file .go)(t *testing.T) {}\n" > "$${file%.*}_test.go"; done
 	echo "tests files"
 	go test -v `go list ./...` -coverprofile=coverage.txt -covermode=atomic
 	echo "clear files"
-	find . -name "*_test.go" | xargs grep -l "func TestNotExistInThisFile" | xargs rm 
+	find . -name "*_test.go" | xargs grep -l "func TestNotExistInThisFile" | xargs rm
+
+testsum: install-gotestsum
+	gotestsum -- -v `go list ./...` -coverprofile=coverage.txt -covermode=atomic
+
+install-gotestsum:
+	@if ! command -v gotestsum > /dev/null; then \
+		go install gotest.tools/gotestsum@latest; \
+	fi
 
 update: ## Install/Update vendor
 	echo "Update all dependencies"
@@ -85,10 +92,6 @@ build-framework:
 				-X github.com/kodmain/kitsune/src/config/config.BUILD_VERSION=$$VERSION \
 				-X github.com/kodmain/kitsune/src/config/config.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
 				-X github.com/kodmain/kitsune/src/config/config.BUILD_APP_NAME=kitsune"; \
-			for binary in $$(find .generated -type f -name "*$$os-$$arch.sha1" | awk -F "/" '{print $$3}' | awk -F "-" '{print $$1}' | sort | uniq); do \
-				cap_binary=$$(echo $$binary | tr '[:lower:]' '[:upper:]'); \
-				ldflags+=" -X github.com/kodmain/kitsune/src/config/config.BUILD_SERVICE_$$cap_binary=$$(cat .generated/services/$$binary-$$os-$$arch.sha1)"; \
-			done; \
 			CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch go build -trimpath -buildvcs=false -ldflags="$$ldflags" \
 				-o .generated/bin/kitsune-$$os-$$arch $(CURDIR)/src/cmd/main.go; \
 				chmod +x .generated/bin/kitsune-$$os-$$arch; \
@@ -111,7 +114,7 @@ build-service:
 	done
 
 # Build and push multi-architecture Docker images using buildx
-build-images:
+build-images: build
 	docker buildx create --use
 	docker buildx inspect --bootstrap
 	for file in .generated/services/*; do \
@@ -123,22 +126,25 @@ build-images:
 			echo "Construit l'image pour : name=$$name, os=$$os, arch=$$arch, file=$$file"; \
 			docker buildx build \
 			--platform $$os/$$arch \
-			--file .github/build/Dockerfile.scratch \
-			--tag kitsune:$$name \
+			--file .github/local/Dockerfile.debug \
+			--tag kodmain/debug:$$name \
 			--build-arg FILE=$$file \
-			--load .; \
+			--push .; \
 		fi \
 	done;
-	docker images
-
-build-images-clear:
 	for instance in $$(docker ps | grep 'moby/buildkit' | awk '{print $$1}'); do \
 		docker kill $$instance; \
 		docker rm $$instance; \
 	done
 
+build-images-clear:
 	docker image rm $$(docker images | grep 'moby/buildkit' | awk '{print $$3}')
 
+run-images-with-publish: build-images run-images
+
+run-images:
+	docker compose -f .github/local/compose.yml pull
+	docker compose -f .github/local/compose.yml up
 
 generate:
 #protoc --proto_path=$(CURDIR)/src/internal/data --go_out=$(CURDIR) $(CURDIR)/src/internal/data/proto/*

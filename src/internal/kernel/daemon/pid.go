@@ -1,3 +1,4 @@
+// Package daemon provides functionalities for handling process identifiers (PID).
 package daemon
 
 import (
@@ -8,63 +9,69 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/kodmain/kitsune/src/config"
 	"github.com/kodmain/kitsune/src/internal/kernel/storages/fs"
 )
 
-func getPIDFilePath(processName string) string {
-	return filepath.Join(config.PATH_RUN, processName+".pid")
+// PIDHandler handles the creation, retrieval, and deletion of PID files.
+type PIDHandler struct {
+	// processName represents the name of the process for which the PID file is managed.
+	processName string
+
+	// pathRun represents the path to the directory containing the PID file.
+	pathRun string
 }
 
-// SetPID writes the PID of the current process to a file
-func SetPID() error {
-	return fs.WriteFile(getPIDFilePath(config.BUILD_APP_NAME), strconv.Itoa(os.Getpid()))
+// NewPIDHandler creates and returns a new instance of PIDHandler for a given process name and path.
+func NewPIDHandler(processName, pathRun string) *PIDHandler {
+	return &PIDHandler{processName: processName, pathRun: pathRun}
 }
 
-// ClearProcess kills the given process and clears its PID file
-func ClearProcess(process *os.Process, name string) error {
-	if err := process.Kill(); err != nil {
-		return err
+// getPIDFilePath constructs the full path of the PID file based on the process name and path.
+func (p *PIDHandler) getPIDFilePath() string {
+	return filepath.Join(p.pathRun, p.processName+".pid")
+}
+
+// SetPID creates or updates the PID file with the provided PID.
+func (p *PIDHandler) SetPID(pid int) error {
+	return fs.WriteFile(p.getPIDFilePath(), strconv.Itoa(pid))
+}
+
+// ClearPID deletes the PID file associated with the process.
+func (p *PIDHandler) ClearPID() error {
+	return fs.DeleteFile(p.getPIDFilePath())
+}
+
+// GetPID retrieves the PID from the PID file.
+// If the associated process is running, it returns the PID and an error indicating the process is already running.
+// If the PID file exists but the process isn't running, it deletes the PID file and returns 0 without error.
+func (p *PIDHandler) GetPID() (int, error) {
+	if !fs.ExistsFile(p.getPIDFilePath()) {
+		return 0, nil
 	}
 
-	return ClearPID(name)
-}
-
-// ClearPID deletes the PID file associated with the given process name
-func ClearPID(name string) error {
-	return fs.DeleteFile(getPIDFilePath(name))
-}
-
-// GetPID returns the os.Process if the process is running, otherwise it returns an error
-func GetPID(processName string) (*os.Process, error) {
-	if !fs.ExistsFile(getPIDFilePath(processName)) {
-		return nil, nil
-	}
-
-	pidBytes, err := fs.ReadFile(getPIDFilePath(processName))
+	pidBytes, err := fs.ReadFile(p.getPIDFilePath())
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
 	pidStr := strings.TrimSpace(string(pidBytes))
 	pid, _ := strconv.Atoi(pidStr)
-	process, _ := os.FindProcess(pid)
 
-	// Check if the process is actually running
-	if isProcessRunning(pid) {
-		return process, fmt.Errorf("process is already running")
+	// Check if the process is effectively running
+	if IsProcessRunning(pid) {
+		return pid, fmt.Errorf("process is already running")
 	}
 
-	// If process isn't running but PID file exists, delete the PID file
-	if err := fs.DeleteFile(getPIDFilePath(processName)); err != nil {
-		return nil, fmt.Errorf("can't read process on pid file")
+	// If the process isn't running but the PID file exists, delete the PID file
+	if err := p.ClearPID(); err != nil {
+		return 0, fmt.Errorf("can't read process on pid file")
 	}
 
-	return nil, nil
+	return 0, nil
 }
 
-// isProcessRunning checks if a process with the given PID is currently running
-func isProcessRunning(pid int) bool {
+// IsProcessRunning checks if the process with the given PID is running.
+func IsProcessRunning(pid int) bool {
 	process, err := os.FindProcess(pid)
 	if err != nil {
 		return false

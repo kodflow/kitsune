@@ -16,31 +16,43 @@ type Handler struct {
 	Call func() error
 }
 
-var sigs chan os.Signal = make(chan os.Signal, 1)
-var done chan bool = make(chan bool, 1)
-
-func Start(handlers ...*Handler) {
-	if _, err := GetPID(config.BUILD_APP_NAME); err != nil {
-		handleErrorAndExit(err)
-	}
-
-	if err := SetPID(); err != nil {
-		handleErrorAndExit(err)
-	}
-
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-	go handleSignal()
-
-	for _, handler := range handlers {
-		go processHandler(handler)
-	}
-
-	<-done
+type DaemonHandler struct {
+	PIDHandler *PIDHandler
+	sigs       chan os.Signal
+	done       chan bool
 }
 
-func Stop() {
-	sigs <- syscall.SIGTERM
+func New(processName, pathRun string) *DaemonHandler {
+	return &DaemonHandler{
+		PIDHandler: NewPIDHandler(processName, pathRun),
+		sigs:       make(chan os.Signal, 1),
+		done:       make(chan bool, 1),
+	}
+}
+
+func (d *DaemonHandler) Start(handlers ...*Handler) {
+	pid := os.Getpid()
+	if _, err := d.PIDHandler.GetPID(); err != nil {
+		handleErrorAndExit(err)
+	}
+
+	if err := d.PIDHandler.SetPID(pid); err != nil {
+		handleErrorAndExit(err)
+	}
+
+	signal.Notify(d.sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	go d.handleSignal()
+
+	for _, handler := range handlers {
+		go d.processHandler(handler)
+	}
+
+	<-d.done
+}
+
+func (d *DaemonHandler) Stop() {
+	d.sigs <- syscall.SIGTERM
 }
 
 func handleErrorAndExit(err error) {
@@ -49,13 +61,13 @@ func handleErrorAndExit(err error) {
 	}
 }
 
-func handleSignal() {
-	<-sigs
-	ClearPID(config.BUILD_APP_NAME)
-	done <- true
+func (d *DaemonHandler) handleSignal() {
+	<-d.sigs
+	d.PIDHandler.ClearPID()
+	d.done <- true
 }
 
-func processHandler(handler *Handler) {
+func (d *DaemonHandler) processHandler(handler *Handler) {
 	count := 0
 	startTime := time.Now()
 
@@ -63,9 +75,9 @@ func processHandler(handler *Handler) {
 		logger.Info(config.BUILD_APP_NAME + " " + handler.Name + " start")
 		if err := handler.Call(); err != nil {
 			logger.Warn(config.BUILD_APP_NAME + " " + handler.Name + " fail")
-			if count >= 2 && shouldExit(count, startTime) {
+			if count >= 2 && d.shouldExit(count, startTime) {
 				logger.Error(fmt.Errorf(config.BUILD_APP_NAME + " " + handler.Name + " won't start"))
-				done <- true
+				d.done <- true
 				break
 			}
 			count++
@@ -75,7 +87,7 @@ func processHandler(handler *Handler) {
 	}
 }
 
-func shouldExit(count int, startTime time.Time) bool {
+func (d *DaemonHandler) shouldExit(count int, startTime time.Time) bool {
 	elapsedTime := time.Since(startTime)
 	return elapsedTime < time.Minute
 }

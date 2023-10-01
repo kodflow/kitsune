@@ -4,40 +4,40 @@ import (
 	"os"
 	"testing"
 
-	"github.com/kodmain/kitsune/src/config"
 	"github.com/kodmain/kitsune/src/internal/kernel/daemon"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestSetAndGetPID(t *testing.T) {
-	err := daemon.SetPID()
-	if err != nil {
-		t.Fatalf("Failed to set PID: %s", err)
-	}
+const testPathRun = "/tmp"
+const testProcessName = "testProcess"
 
-	process, err := daemon.GetPID(config.BUILD_APP_NAME)
-	if err != nil {
-		t.Fatalf("Error getting PID: %s", err)
-	}
+func TestPIDHandler(t *testing.T) {
+	handler := daemon.NewPIDHandler(testProcessName, testPathRun)
 
-	if process == nil {
-		t.Fatal("Expected a process, got nil")
-	}
+	// Test SetPID
+	err := handler.SetPID(os.Getpid())
+	assert.Nil(t, err)
 
-	currentPID := os.Getpid()
-	if process.Pid != currentPID {
-		t.Fatalf("Expected PID %d, got %d", currentPID, process.Pid)
-	}
+	// Test GetPID
+	pid, err := handler.GetPID()
+	assert.NotEqual(t, 0, pid)
+	assert.Equal(t, os.Getpid(), pid)
+	assert.Error(t, err, "Expected an error since process is already running")
+
+	// Test ClearPID
+	err = handler.ClearPID()
+	assert.Nil(t, err)
+
+	// Test GetPID again, now expecting 0 PID since it was cleared
+	pid, err = handler.GetPID()
+	assert.Equal(t, 0, pid)
+	assert.Nil(t, err)
 }
 
-func TestClearPID(t *testing.T) {
-	daemon.SetPID()
-	err := daemon.ClearPID(config.BUILD_APP_NAME)
-	if err != nil {
-		t.Fatalf("Failed to clear PID: %s", err)
-	}
+func TestIsProcessRunning(t *testing.T) {
+	// Using PID of the current test process
+	assert.True(t, daemon.IsProcessRunning(os.Getpid()))
 
-	_, err = daemon.GetPID(config.BUILD_APP_NAME)
-	if err == nil {
-		t.Fatal("Expected error due to missing PID, got nil")
-	}
+	// Using invalid PID
+	assert.False(t, daemon.IsProcessRunning(999999))
 }

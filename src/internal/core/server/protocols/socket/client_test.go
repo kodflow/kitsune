@@ -2,6 +2,7 @@ package socket_test
 
 import (
 	"log"
+	"math"
 	"runtime"
 	"sync"
 	"testing"
@@ -9,14 +10,101 @@ import (
 
 	"github.com/kodmain/kitsune/src/internal/core/server/protocols/socket"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger/levels"
-	"github.com/stretchr/testify/assert"
-
-	_ "net/http/pprof"
-
 	"github.com/shirou/gopsutil/cpu"
 )
+
+func TestClient(t *testing.T) {
+	server1 := socket.NewServer("localhost:8080")
+	server1.Start()
+	defer server1.Stop()
+
+	client := socket.NewClient()
+	service1, _ := client.Connect("localhost", "8080", "tcp")
+	query1 := service1.MakeRequestWithResponse()
+	response := make(chan bool)
+
+	client.Send(func(responses ...*transport.Response) {
+		response <- true
+	}, query1)
+	<-response
+}
+
+func BenchmarkLocal(b *testing.B) {
+	server1 := socket.NewServer("localhost:8080")
+	server1.Start()
+	defer server1.Stop()
+
+	client := socket.NewClient()
+	service1, _ := client.Connect("localhost", "8080", "tcp")
+
+	b.Run("benchmark", func(b *testing.B) {
+		b.ResetTimer() // Ne compte pas la configuration initiale dans le temps de benchmark
+		var max = 10000000
+		var rps = 0
+		var total = 0
+		var mu sync.Mutex
+
+		var rpsHistory []int
+		var minRPS int = math.MaxInt64
+		var maxRPS int = math.MinInt64
+		var sumRPS int = 0
+
+		go func() {
+			for i := 0; i < max; i++ {
+				query1 := service1.MakeRequestWithResponse()
+				client.Send(func(responses ...*transport.Response) {
+					mu.Lock()
+					rps++
+					total++
+					mu.Unlock()
+				}, query1)
+			}
+		}()
+
+		ticker := time.NewTicker(time.Second)
+		for range ticker.C {
+			var m runtime.MemStats
+			runtime.ReadMemStats(&m)
+			percent, _ := cpu.Percent(0, false)
+			cpuUsage := 0.0
+			if len(percent) > 0 {
+				cpuUsage = percent[0]
+			}
+
+			rpsHistory = append(rpsHistory, rps)
+			if rps < minRPS {
+				minRPS = rps
+			}
+			if rps > maxRPS {
+				maxRPS = rps
+			}
+			sumRPS += rps
+
+			avgRPS := sumRPS / len(rpsHistory)
+			deltaRPS := maxRPS - minRPS
+
+			log.Printf("Request/Sec: %d, Avg: %d, Min: %d, Max: %d, Delta: %d, REQS: %d/%d, Go Routine: %d, MemoryUsage: %d Mb, CPU Usage: %.2f%%", rps, avgRPS, minRPS, maxRPS, deltaRPS, total, max, runtime.NumGoroutine(), bToMb(m.Alloc), cpuUsage)
+			rps = 0
+			if int(total) >= max {
+				ticker.Stop()
+				break
+			}
+		}
+	})
+}
+
+func bToMb(b uint64) uint64 {
+	return b / 1024 / 1024
+}
+
+/*
+
+
+
+	var address, port, protocol string = "", "", ""
+
+
+
 
 func TestClient(t *testing.T) {
 	logger.SetLevel(levels.OFF)
@@ -86,7 +174,6 @@ func TestClient(t *testing.T) {
 
 func BenchmarkRequestsOnly(b *testing.B) {
 	logger.SetLevel(levels.OFF)
-
 	server := socket.NewServer("localhost:8080")
 	server.Start()
 
@@ -170,7 +257,7 @@ func BenchmarkRequestAndResponse(b *testing.B) {
 	b.Run("benchmark", func(b *testing.B) {
 		b.ResetTimer() // Ne compte pas la configuration initiale dans le temps de benchmark
 		var max = 1000000
-		var worker = runtime.NumCPU()
+		var worker = 1
 		var total int32
 		var errors int32
 		var rps int32

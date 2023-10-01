@@ -5,11 +5,7 @@ ARG BINARY_VERSION=latest
 ENV BINARY_VERSION=${BINARY_VERSION}
 USER root:root
 
-RUN ARCHITECTURE=$(uname -m) && if [ "$ARCHITECTURE" = "aarch64" ] || [ "$ARCHITECTURE" = "arm64" ]; then \
-      curl -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/kitsune-linux-arm64; \
-    else \
-      curl -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/kitsune-linux-amd64; \
-    fi;
+RUN curl -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/kitsune-linux-${ARCHITECTURE};
 
 RUN chmod +x /bin/kitsune
 RUN /bin/kitsune install
@@ -18,7 +14,6 @@ RUN /bin/kitsune install
 FROM alpine AS runner
 COPY --from=builder /bin/kitsune /bin/kitsune
 COPY --from=builder /etc/kitsune /etc/kitsune
-RUN uname -m > /etc/kitsune/arch;
 WORKDIR /run
-ENTRYPOINT [ "/etc/kitsune/gateway" ]
+ENTRYPOINT [ "ash" ]
 #CMD [ "services", "start"]

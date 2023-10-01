@@ -1,4 +1,3 @@
-/*
 // Package socket provides functionalities for both a TCP client and a TCP server.
 // It enables the creation, management, and communication between clients and the server over TCP.
 // Messages sent between the client and server are serialized using protobuf.
@@ -11,19 +10,13 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"io"
 	"net"
-	"runtime"
 
-	"github.com/kodmain/kitsune/src/config"
 	"github.com/kodmain/kitsune/src/internal/core/server/router"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
 )
 
 // Server represents a TCP server with the capability to manage multiple clients.
-// It contains a listener to accept incoming connections, and a concurrent map to keep track of connected clients.
 type Server struct {
 	Address  string             // Address specifies the TCP address for the server to listen on.
 	ctx      context.Context    // ctx represents the server's context to manage its lifecycle.
@@ -31,8 +24,8 @@ type Server struct {
 	listener net.Listener       // listener is the actual TCP listener for the server.
 }
 
-// NewServer initializes a new server instance with the specified listening address.
-// It returns an instance of the Server.
+// NewServer initializes a new server instance.
+// address: The listening address for the server.
 func NewServer(address string) *Server {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &Server{
@@ -43,8 +36,6 @@ func NewServer(address string) *Server {
 }
 
 // Start initiates the server to begin listening for incoming connections.
-// It spins up worker goroutines equivalent to the number of available CPUs and starts the listener.
-// Returns an error if the server is already running or if there's an issue starting the listener.
 func (s *Server) Start() error {
 	if s.listener != nil {
 		return errors.New("server already started")
@@ -56,14 +47,7 @@ func (s *Server) Start() error {
 		return err
 	}
 
-	connections := make(chan net.Conn, runtime.NumCPU()*config.DEFAULT_IO_BOUND)
-
-	for i := 0; i < runtime.NumCPU()*config.DEFAULT_IO_BOUND; i++ {
-		go s.worker(connections)
-	}
-
 	go func() {
-		defer close(connections)
 		for {
 			if s.listener == nil {
 				break
@@ -71,133 +55,7 @@ func (s *Server) Start() error {
 
 			conn, err := s.listener.Accept()
 			if err != nil {
-				continue
-			}
-
-			connections <- conn
-		}
-	}()
-
-	return nil
-}
-
-// Stop terminates the server's operations, closes the listener, and clears the client map.
-// Returns an error if there's an issue closing the listener or if the server is not active.
-func (s *Server) Stop() error {
-	if s.listener == nil {
-		return errors.New("server is not active")
-	}
-
-	err := s.listener.Close()
-	s.listener = nil
-	return err
-}
-
-// worker is a dedicated goroutine that serves incoming connections.
-// It reads from the connections channel and spawns a new goroutine to handle each connection.
-func (s *Server) worker(conns chan net.Conn) {
-	for conn := range conns {
-		go s.handleConnection(conn)
-	}
-}
-
-// handleConnection manages the lifecycle of a single client connection.
-// It reads incoming data, processes it, and sends back responses.
-func (s *Server) handleConnection(conn net.Conn) {
-	defer conn.Close()
-	reader := bufio.NewReader(conn)
-	for {
-		data, err := s.handleRequest(reader)
-		if err != nil {
-			logger.Error(fmt.Errorf("server lost connection with %s", conn.RemoteAddr().String()))
-			continue //break
-		}
-		s.handleResponse(conn, data)
-	}
-}
-
-// handleRequest processes an incoming request from a client connection.
-// It reads the data, decodes it, and returns the data as bytes.
-func (s *Server) handleRequest(reader *bufio.Reader) ([]byte, error) {
-	var length uint32
-	if err := binary.Read(reader, binary.LittleEndian, &length); err != nil {
-		return nil, err
-	}
-
-	data := make([]byte, length)
-	_, err := io.ReadFull(reader, data)
-	return data, err
-}
-
-// handleResponse sends a response back to the client after processing the incoming request.
-// It encodes the data and writes it to the client connection.
-func (s *Server) handleResponse(conn net.Conn, b []byte) {
-	req := transport.RequestFromBytes(b)
-	res := router.Resolve(req)
-	if req.Answer {
-		data, _ := transport.ResponseToBytes(res)
-		binary.Write(conn, binary.LittleEndian, uint32(len(data)))
-		conn.Write(data)
-	}
-}
-*/
-
-// Package socket provides functionalities for both a TCP client and a TCP server.
-// It enables the creation, management, and communication between clients and the server over TCP.
-// Messages sent between the client and server are serialized using protobuf.
-
-package socket
-
-import (
-	"bufio"
-	"context"
-	"encoding/binary"
-	"errors"
-	"fmt"
-	"io"
-	"net"
-
-	"github.com/kodmain/kitsune/src/internal/core/server/router"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
-)
-
-type Server struct {
-	Address  string             // Address specifies the TCP address for the server to listen on.
-	ctx      context.Context    // ctx represents the server's context to manage its lifecycle.
-	cancel   context.CancelFunc // cancel function to signal the termination of the server's operations.
-	listener net.Listener       // listener is the actual TCP listener for the server.
-}
-
-func NewServer(address string) *Server {
-	ctx, cancel := context.WithCancel(context.Background())
-	return &Server{
-		Address: address,
-		ctx:     ctx,
-		cancel:  cancel,
-	}
-}
-
-func (s *Server) Start() error {
-	if s.listener != nil {
-		return errors.New("server already started")
-	}
-
-	var err error
-	s.listener, err = net.Listen("tcp", s.Address)
-	if err != nil {
-		return err
-	}
-
-	go func() {
-		for {
-			if s.listener == nil {
-				return
-			}
-
-			conn, err := s.listener.Accept()
-			if err != nil {
-				continue
+				break
 			}
 
 			go s.handleConnection(conn)
@@ -207,6 +65,7 @@ func (s *Server) Start() error {
 	return nil
 }
 
+// Stop terminates the server's operations.
 func (s *Server) Stop() error {
 	if s.listener == nil {
 		return errors.New("server is not active")
@@ -217,19 +76,22 @@ func (s *Server) Stop() error {
 	return err
 }
 
+// handleConnection manages a single client connection.
 func (s *Server) handleConnection(conn net.Conn) {
 	defer conn.Close()
 	reader := bufio.NewReader(conn)
+	writer := bufio.NewWriter(conn)
 	for {
 		data, err := s.handleRequest(reader)
 		if err != nil {
-			logger.Error(fmt.Errorf("server lost connection with %s", conn.RemoteAddr().String()))
-			return // J'ai remplacé 'continue' par 'return' pour fermer la connexion en cas d'erreur.
+			break
 		}
-		s.handleResponse(conn, data)
+		s.sendResponse(writer, data)
 	}
 }
 
+// handleRequest processes an incoming request.
+// reader: A buffered reader for the incoming data.
 func (s *Server) handleRequest(reader *bufio.Reader) ([]byte, error) {
 	var length uint32
 	if err := binary.Read(reader, binary.LittleEndian, &length); err != nil {
@@ -241,12 +103,14 @@ func (s *Server) handleRequest(reader *bufio.Reader) ([]byte, error) {
 	return data, err
 }
 
-func (s *Server) handleResponse(conn net.Conn, b []byte) {
-	req := transport.RequestFromBytes(b)
-	res := router.Resolve(req)
-	if req.Answer {
-		data, _ := transport.ResponseToBytes(res)
-		binary.Write(conn, binary.LittleEndian, uint32(len(data)))
-		conn.Write(data)
+// sendResponse sends a response back to the client.
+// conn: The client connection instance.
+// b: The byte array containing the request.
+func (s *Server) sendResponse(writer *bufio.Writer, b []byte) {
+	res := router.Handler(b)
+	if len(res) > 0 {
+		binary.Write(writer, binary.LittleEndian, uint32(len(res)))
+		writer.Write(res)
+		writer.Flush()
 	}
 }
