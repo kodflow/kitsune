@@ -50,13 +50,20 @@ ssl:
 	openssl req -x509 -days 365 -key ./.generated/ssl/localhost.key -in ./.generated/ssl/localhost.csr -out ./.generated/ssl/localhost.crt
 	openssl req -x509 -days 365 -nodes -newkey rsa:2048 -keyout ./.generated/ssl/localhost-ca.key -out ./.generated/ssl/localhost-ca.crt -subj "/CN=Certificate Authority"
 	echo "SSL certificates generated successfully!"
+tests:
+	echo "create file"
+	find src -name "*.go" | grep -vE "(_test.go$$|.pb.go$$)" | while read -r file; do test -f "$${file%.*}_test.go" || echo "package $$(grep -m 1 'package ' $$file | awk '{print $$2}')\n\nimport \"testing\"\n\nfunc TestNotExistInThisFile$$(basename $$file .go)(t *testing.T) {}\n" > "$${file%.*}_test.go"; done
+	echo "tests files"
+	go test -v `go list ./...` -coverprofile=coverage.txt -covermode=atomic
+	echo "clear files"
+	find . -name "*_test.go" | xargs grep -l "func TestNotExistInThisFile" | xargs rm
 
-tests: install-gotestsum
+testsum: install-gotestsum
 	gotestsum -- -v `go list ./...` -coverprofile=coverage.txt -covermode=atomic
 
 install-gotestsum:
 	@if ! command -v gotestsum > /dev/null; then \
-		go get gotest.tools/gotestsum@latest; \
+		go install gotest.tools/gotestsum@latest; \
 	fi
 
 update: ## Install/Update vendor
