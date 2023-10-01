@@ -74,7 +74,7 @@ jobs:
               });
             }
       - name: Wait all checks have passed and merge PR
-        uses: actions/github-script@v6
+        uses: actions/github-script@v4
         with:
           github-token: "${{ secrets.GH_OFA }}"
           script: |
