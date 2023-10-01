@@ -56,7 +56,7 @@ tests: install-gotestsum
 
 install-gotestsum:
 	@if ! command -v gotestsum > /dev/null; then \
-		GO111MODULE=off go get gotest.tools/gotestsum@latest; \
+		go get gotest.tools/gotestsum@latest; \
 	fi
 
 update: ## Install/Update vendor
