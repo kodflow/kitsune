@@ -1,4 +1,4 @@
-package router
+package service
 
 import (
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"

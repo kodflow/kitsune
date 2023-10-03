@@ -9,18 +9,18 @@ import (
 
 // Promise struct represents an asynchronous operation that may complete at some point.
 type Promise struct {
-	Id                string                       // Unique identifier for the promise
-	responsesRequired int                          // Number of responses required to resolve the promise
-	responses         []*transport.Response        // Accumulates the responses received
-	callback          func(...*transport.Response) // Function to be called when the promise is resolved
-	mu                sync.Mutex                   // Mutex to ensure thread safety
+	Id        string                       // Unique identifier for the promise
+	Length    int                          // Number of responses required to resolve the promise
+	responses []*transport.Response        // Accumulates the responses received
+	callback  func(...*transport.Response) // Function to be called when the promise is resolved
+	mu        sync.Mutex                   // Mutex to ensure thread safety
 }
 
 // Add adds a request to the promise and increments the number of responses required.
 // req: The request to be added to the promise
 func (p *Promise) Add(req *transport.Request) {
 	req.Pid = p.Id
-	p.responsesRequired++
+	p.Length++
 }
 
 // Resolve accumulates responses and resolves the promise if enough responses have been received.
@@ -30,10 +30,14 @@ func (p *Promise) Resolve(res *transport.Response) {
 	defer p.mu.Unlock()
 
 	p.responses = append(p.responses, res)
-	if len(p.responses) == p.responsesRequired {
-		p.callback(p.responses...)
-		repository.mu.Lock()
-		delete(repository.promises, p.Id)
-		repository.mu.Unlock()
+	if len(p.responses) == p.Length {
+		p.Close()
 	}
+}
+
+func (p *Promise) Close() {
+	p.callback(p.responses...)
+	repository.mu.Lock()
+	delete(repository.promises, p.Id)
+	repository.mu.Unlock()
 }

@@ -62,9 +62,9 @@ func run(port string) {
 	for j := 0; j < worker; j++ {
 		go func(j int) {
 			for i := 0; i < max; i++ {
-				query1 := service1.MakeRequestWithResponse()
+				query1 := service1.MakeQuery()
 				client.Send(func(responses ...*transport.Response) {
-					if query1.Req.Id == responses[0].Id {
+					if query1.Request().Id == responses[0].Id {
 						mu.Lock()
 						rps++
 						total++

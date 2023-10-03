@@ -13,7 +13,7 @@ import (
 	"io"
 	"net"
 
-	"github.com/kodmain/kitsune/src/internal/core/server/service/router"
+	"github.com/kodmain/kitsune/src/internal/core/server/service"
 )
 
 // Server represents a TCP server with the capability to manage multiple clients.
@@ -107,7 +107,7 @@ func (s *Server) handleRequest(reader *bufio.Reader) ([]byte, error) {
 // conn: The client connection instance.
 // b: The byte array containing the request.
 func (s *Server) sendResponse(writer *bufio.Writer, b []byte) {
-	res := router.Handler(b)
+	res := service.Handler(b)
 	if len(res) > 0 {
 		binary.Write(writer, binary.LittleEndian, uint32(len(res)))
 		writer.Write(res)

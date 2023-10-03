@@ -13,8 +13,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kodmain/kitsune/src/config"
-	"github.com/kodmain/kitsune/src/internal/core/cqrs/promise"
+	"github.com/kodmain/kitsune/src/internal/core/cqrs"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
+	"github.com/kodmain/kitsune/src/internal/core/server/transport/promise"
 	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
 	"google.golang.org/protobuf/proto"
 )
@@ -27,7 +28,7 @@ type Service struct {
 	ID        string // A unique identifier for this connection
 	Connected bool   // True if a connection has been established, false otherwise
 
-	request net.Conn // The underlying network connection
+	network net.Conn // The underlying network connection
 }
 
 // Create initializes a Service instance.
@@ -64,7 +65,7 @@ func (s *Service) Connect() error {
 	}
 
 	var err error
-	s.request, err = net.DialTimeout(s.Protocol, s.Name, time.Second*config.DEFAULT_TIMEOUT)
+	s.network, err = net.DialTimeout(s.Protocol, s.Name, time.Second*config.DEFAULT_TIMEOUT)
 	if err != nil {
 		return fmt.Errorf("can't establish connection: %w", err)
 	}
@@ -78,7 +79,7 @@ func (s *Service) Connect() error {
 func (s *Service) Disconnect() error {
 	s.Connected = false
 
-	if err := s.request.Close(); err != nil {
+	if err := s.network.Close(); err != nil {
 		s.Connected = true
 		return err
 	}
@@ -91,14 +92,14 @@ func (s *Service) Disconnect() error {
 // returns the number of bytes written and an error if any.
 func (s *Service) Write(data bytes.Buffer) (int, error) {
 	if s.Connected {
-		return s.request.Write(data.Bytes())
+		return s.network.Write(data.Bytes())
 	}
 	return 0, errors.New("not connected")
 }
 
 // handleServerResponses listens for responses from the server and processes them.
 func (s *Service) handleServerResponses() {
-	reader := bufio.NewReader(s.request)
+	reader := bufio.NewReader(s.network)
 	for {
 		if !s.Connected {
 			break
@@ -140,14 +141,32 @@ func (s *Service) handleServerResponses() {
 	}
 }
 
+func (s *Service) MakeQuery(answer ...bool) *cqrs.Message {
+	if len(answer) == 0 {
+		return cqrs.NewMessage(s.Name, true, cqrs.QRY)
+	}
+
+	return cqrs.NewMessage(s.Name, answer[0], cqrs.QRY)
+}
+
+func (s *Service) MakeCommand(answer ...bool) *cqrs.Message {
+	if len(answer) == 0 {
+		return cqrs.NewMessage(s.Name, true, cqrs.CMD)
+	}
+
+	return cqrs.NewMessage(s.Name, answer[0], cqrs.CMD)
+}
+
+/*
 // MakeRequestWithResponse initializes a Query object with the expectation of a response.
 // returns a Query instance configured to expect a response.
-func (s *Service) MakeRequestWithResponse() *Query {
-	return query(s.Name, true)
+func (s *Service) MakeRequestWithResponse() *cqrs.Message {
+	return cqrs.NewMessage(s.Name, true)
 }
 
 // MakeRequestOnly initializes a Query object without the expectation of a response.
 // returns a Query instance configured to not expect a response.
-func (s *Service) MakeRequestOnly() *Query {
-	return query(s.Name, false)
+func (s *Service) MakeRequestOnly() *cqrs.Message {
+	return cqrs.NewMessage(s.Name, false)
 }
+*/

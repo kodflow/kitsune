@@ -12,9 +12,10 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/kodmain/kitsune/src/internal/core/cqrs/promise"
+	"github.com/kodmain/kitsune/src/internal/core/cqrs"
 	"github.com/kodmain/kitsune/src/internal/core/server/service"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
+	"github.com/kodmain/kitsune/src/internal/core/server/transport/promise"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -73,12 +74,12 @@ func (c *Client) Disconnect(services ...string) error {
 
 // Send transmits a request to the server and returns a promise for the response.
 // req is the request to be sent.
-func (c *Client) Send(callback func(...*transport.Response), queries ...*service.Query) error {
+func (c *Client) Send(callback func(...*transport.Response), queries ...*cqrs.Message) error {
 	if len(queries) == 0 {
 		return fmt.Errorf("no request")
 	}
 
-	dispatch := map[string][]*service.Query{}
+	dispatch := map[string][]*cqrs.Message{}
 	buffers := map[string]bytes.Buffer{}
 
 	c.mu.Lock()
@@ -86,8 +87,8 @@ func (c *Client) Send(callback func(...*transport.Response), queries ...*service
 	c.mu.Unlock()
 
 	for _, query := range queries {
-		if _, ok := services[query.Service]; ok {
-			dispatch[query.Service] = append(dispatch[query.Service], query)
+		if _, ok := services[query.ServiceName()]; ok {
+			dispatch[query.ServiceName()] = append(dispatch[query.ServiceName()], query)
 		}
 	}
 
@@ -100,11 +101,11 @@ func (c *Client) Send(callback func(...*transport.Response), queries ...*service
 		var buffer bytes.Buffer
 
 		for _, query := range queries {
-			if query.Answer {
-				p.Add(query.Req)
+			if query.Answer() {
+				p.Add(query.Request())
 			}
 
-			data, err := proto.Marshal(query.Req)
+			data, err := proto.Marshal(query.Request())
 			if err != nil {
 				return err
 			}
@@ -123,6 +124,10 @@ func (c *Client) Send(callback func(...*transport.Response), queries ...*service
 
 	for service, buffer := range buffers {
 		services[service].Write(buffer)
+	}
+
+	if p.Length == 0 {
+		p.Close()
 	}
 
 	return nil
