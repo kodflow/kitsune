@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kodmain/kitsune/src/internal/core/server/protocols/socket"
+	"github.com/kodmain/kitsune/src/internal/core/server/protocols/tcp"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
 	"github.com/shirou/gopsutil/cpu"
 )
@@ -52,8 +52,8 @@ func main() {
 }
 
 func run(port string) {
-	client := socket.NewClient() // youka-PRODUCTION-9de5d4b457bad9c7.elb.eu-west-3.amazonaws.com
-	service1, err := client.Connect("ec2-13-38-48-22.eu-west-3.compute.amazonaws.com", "9999", "tcp")
+	client := tcp.NewClient() // youka-PRODUCTION-9de5d4b457bad9c7.elb.eu-west-3.amazonaws.com
+	service1, err := client.Connect("ec2-13-38-48-22.eu-west-3.compute.amazonaws.com", "9999")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
