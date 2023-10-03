@@ -1,33 +1,23 @@
+// Package plexer provides functionalities to manage a multiplexed connection.
 package plexer
 
-import (
-	"bufio"
-	"encoding/binary"
-	"fmt"
-	"io"
-	"net"
-	"time"
-
-	"github.com/google/uuid"
-	"github.com/kodmain/kitsune/src/config"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport/promise"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
-	"google.golang.org/protobuf/proto"
-)
-
+/*
+// Multi represents a multiplexed connection to a server.
 type Multi struct {
-	connected bool
+	connected bool   // True if a connection has been established, false otherwise
+	service   string // The service to connect to
+	address   string // The address of the server
+	protocol  string // The network protocol to use (e.g., TCP, UDP)
+	id        string // A unique identifier for this connection
 
-	service  string
-	address  string
-	protocol string
-	id       string
-
-	request net.Conn
-	//response net.Conn
+	request net.Conn // The underlying network connection
 }
 
+// NewMulti initializes a new Multi instance and connects it to a server.
+// address: Server's address
+// service: Service to be connected to
+// protocol: Network protocol to be used
+// Returns a pointer to the new Multi instance, or an error if one occurs.
 func NewMulti(address, service, protocol string) (*Multi, error) {
 	v4, err := uuid.NewRandom()
 	if err != nil {
@@ -48,6 +38,8 @@ func NewMulti(address, service, protocol string) (*Multi, error) {
 	return mp, nil
 }
 
+// Connect establishes a connection to the server.
+// Returns an error if the connection fails or if already connected.
 func (mp *Multi) Connect() error {
 	var err error
 
@@ -59,12 +51,6 @@ func (mp *Multi) Connect() error {
 	if err != nil {
 		return fmt.Errorf("can't establish connection")
 	}
-	/*
-		mp.response, err = net.DialTimeout(mp.protocol, mp.address+":"+mp.service, time.Second*config.DEFAULT_TIMEOUT)
-		if err != nil {
-			return fmt.Errorf("can't establish connection")
-		}
-	*/
 
 	mp.connected = true
 
@@ -73,6 +59,8 @@ func (mp *Multi) Connect() error {
 	return err
 }
 
+// Disconnect closes the connection.
+// Returns an error if the disconnection fails.
 func (mp *Multi) Disconnect() error {
 	mp.connected = false
 
@@ -81,21 +69,17 @@ func (mp *Multi) Disconnect() error {
 		return err
 	}
 
-	/*
-		if err := mp.response.Close(); err != nil {
-			mp.connected = true
-			return err
-		}
-	*/
-
 	return nil
 }
 
+// Write sends data over the connection.
+// data: The data to send
+// Returns the number of bytes written and any error encountered.
 func (mp *Multi) Write(data []byte) (int, error) {
 	return mp.request.Write(data)
 }
 
-// handleServerResponses continuously reads responses from the server and forwards them to the appropriate channels.
+// handleServerResponses listens for responses from the server and processes them.
 func (mp *Multi) handleServerResponses() {
 	reader := bufio.NewReader(mp.request)
 	for {
@@ -140,3 +124,4 @@ func (mp *Multi) handleServerResponses() {
 		}
 	}
 }
+*/
