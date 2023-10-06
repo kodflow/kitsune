@@ -53,7 +53,7 @@ func main() {
 
 func run(port string) {
 	client := tcp.NewClient() // youka-PRODUCTION-9de5d4b457bad9c7.elb.eu-west-3.amazonaws.com
-	service1, err := client.Connect("ec2-13-38-48-22.eu-west-3.compute.amazonaws.com", "9999")
+	service1, err := client.Connect("127.0.0.1", "9999")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

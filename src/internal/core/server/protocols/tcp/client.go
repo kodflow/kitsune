@@ -75,6 +75,10 @@ func (c *Client) Disconnect(services ...string) error {
 // Send transmits a request to the server and returns a promise for the response.
 // req is the request to be sent.
 func (c *Client) Send(callback func(...*transport.Response), queries ...*cqrs.Message) error {
+	if len(c.services) == 0 {
+		return errors.New("no connection")
+	}
+
 	if len(queries) == 0 {
 		return fmt.Errorf("no request")
 	}

@@ -22,13 +22,15 @@ import (
 
 // Service struct represents a remote service to interact with.
 type Service struct {
-	Name      string // The name of the service, usually in URI form.
-	Address   string // The address of the server
-	Protocol  string // The network protocol to use (e.g., TCP, UDP)
-	ID        string // A unique identifier for this connection
-	Connected bool   // True if a connection has been established, false otherwise
-
-	network net.Conn // The underlying network connection
+	Name         string // The name of the service, usually in URI form.
+	Address      string // The address of the server
+	Protocol     string // The network protocol to use (e.g., TCP, UDP)
+	ID           string // A unique identifier for this connection
+	Connected    bool   // True if a connection has been established, false otherwise
+	isPending    bool   // True if a connection is lost and query incomming, false otherwise
+	tryReconnect bool
+	pending      []bytes.Buffer
+	network      net.Conn // The underlying network connection
 }
 
 // Create initializes a Service instance.
@@ -46,13 +48,12 @@ func Create(address, port string) (*Service, error) {
 		Address:  address,
 		Protocol: "tcp",
 		ID:       v4.String(),
+		pending:  []bytes.Buffer{},
 	}
 
 	if err := s.Connect(); err != nil {
 		return nil, err
 	}
-
-	go s.handleServerResponses()
 
 	return s, nil
 }
@@ -71,6 +72,9 @@ func (s *Service) Connect() error {
 	}
 
 	s.Connected = true
+
+	go s.handleServerResponses()
+
 	return nil
 }
 
@@ -91,10 +95,67 @@ func (s *Service) Disconnect() error {
 // data: Buffer containing the data to be sent.
 // returns the number of bytes written and an error if any.
 func (s *Service) Write(data bytes.Buffer) (int, error) {
-	if s.Connected {
-		return s.network.Write(data.Bytes())
+	if s.Connected && !s.isPending {
+		i, err := s.network.Write(data.Bytes())
+		if err != nil {
+			s.Connected = false
+			s.isPending = true
+			s.pending = append(s.pending, data)
+			go s.reconnect()
+		}
+
+		return i, err
+	} else if s.Connected && s.isPending {
+		newPending := []bytes.Buffer{}
+		for pi, data := range s.pending {
+			i, err := s.network.Write(data.Bytes())
+			if err != nil {
+				s.Connected = false
+				s.pending = append(newPending, s.pending[pi:]...)
+				go s.reconnect()
+				return i, err
+			}
+		}
+
+		s.isPending = false
+
+		return s.Write(data)
+	} else {
+		s.pending = append(s.pending, data)
 	}
+
+	/*
+		} else if err := s.Connect(); err == nil {
+			return s.network.Write(data.Bytes())
+
+	*/
 	return 0, errors.New("not connected")
+}
+
+// reconnect tries to re-establish the connection every 5 seconds.
+func (s *Service) reconnect() {
+	if s.tryReconnect {
+		return
+	}
+
+	s.tryReconnect = true
+
+	defer func() {
+		s.tryReconnect = false
+	}()
+
+	for {
+		if s.Connected {
+			return
+		}
+
+		if err := s.Connect(); err == nil {
+			fmt.Println("Reconnecté")
+			return
+		}
+
+		time.Sleep(5 * time.Second)
+	}
 }
 
 // handleServerResponses listens for responses from the server and processes them.
