@@ -29,7 +29,7 @@ type Service struct {
 	Connected    bool   // True if a connection has been established, false otherwise
 	isPending    bool   // True if a connection is lost and query incomming, false otherwise
 	tryReconnect bool
-	pending      []bytes.Buffer
+	pendings     []bytes.Buffer
 	network      net.Conn // The underlying network connection
 }
 
@@ -48,7 +48,7 @@ func Create(address, port string) (*Service, error) {
 		Address:  address,
 		Protocol: "tcp",
 		ID:       v4.String(),
-		pending:  []bytes.Buffer{},
+		pendings: []bytes.Buffer{},
 	}
 
 	if err := s.Connect(); err != nil {
@@ -100,28 +100,29 @@ func (s *Service) Write(data bytes.Buffer) (int, error) {
 		if err != nil {
 			s.Connected = false
 			s.isPending = true
-			s.pending = append(s.pending, data)
+			s.pendings = append(s.pendings, data)
 			go s.reconnect()
 		}
 
 		return i, err
 	} else if s.Connected && s.isPending {
 		newPending := []bytes.Buffer{}
-		for pi, data := range s.pending {
+		for pi, data := range s.pendings {
 			i, err := s.network.Write(data.Bytes())
 			if err != nil {
 				s.Connected = false
-				s.pending = append(newPending, s.pending[pi:]...)
+				s.pendings = append(newPending, s.pendings[pi:]...)
 				go s.reconnect()
 				return i, err
 			}
 		}
 
+		s.pendings = []bytes.Buffer{}
 		s.isPending = false
 
 		return s.Write(data)
 	} else {
-		s.pending = append(s.pending, data)
+		s.pendings = append(s.pendings, data)
 	}
 
 	/*
@@ -139,7 +140,6 @@ func (s *Service) reconnect() {
 	}
 
 	s.tryReconnect = true
-
 	defer func() {
 		s.tryReconnect = false
 	}()
@@ -150,11 +150,11 @@ func (s *Service) reconnect() {
 		}
 
 		if err := s.Connect(); err == nil {
-			fmt.Println("Reconnecté")
+			fmt.Println("Reconnected")
 			return
 		}
 
-		time.Sleep(5 * time.Second)
+		time.Sleep(1 * time.Second)
 	}
 }
 

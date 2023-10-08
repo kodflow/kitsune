@@ -13,12 +13,12 @@ import (
 	"github.com/shirou/gopsutil/cpu"
 )
 
-var max = 10000000
+var max = 2000000
 var total = 0
 var rps = 0
 var totalTime time.Duration // Variable to keep track of total time
 var mu sync.Mutex
-var worker = 10
+var worker = 1
 
 func main() {
 	run("9999")
@@ -39,7 +39,7 @@ func main() {
 
 		avgTime := float64(totalTime.Milliseconds()) / float64(total) // Calculate average time in ms
 
-		log.Printf("Request/Sec: %d, REQS: %d/%d, Go Routine: %d, MemoryUsage: %d Mb, CPU Usage: %.2f%%, Avg Time per Request: %.2fms", rps, total, max, runtime.NumGoroutine(), bToMb(m.Alloc), cpuUsage, avgTime)
+		log.Printf("Count Request/Sec: %d, REQS: %d/%d, Go Routine: %d, MemoryUsage: %d Mb, CPU Usage: %.2f%%, Avg Time per Request: %.2fms", rps, total, max, runtime.NumGoroutine(), bToMb(m.Alloc), cpuUsage, avgTime)
 		if int(total) >= max {
 			ticker.Stop()
 			break
