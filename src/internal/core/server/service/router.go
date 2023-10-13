@@ -1,3 +1,4 @@
+// Package service provides the functionality to interact with a service over a network.
 package service
 
 import (

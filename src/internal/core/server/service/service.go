@@ -13,7 +13,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kodmain/kitsune/src/config"
-	"github.com/kodmain/kitsune/src/internal/core/cqrs"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport/promise"
 	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
@@ -27,9 +26,7 @@ type Service struct {
 	Protocol     string // The network protocol to use (e.g., TCP, UDP)
 	ID           string // A unique identifier for this connection
 	Connected    bool   // True if a connection has been established, false otherwise
-	isPending    bool   // True if a connection is lost and query incomming, false otherwise
 	tryReconnect bool
-	pendings     []bytes.Buffer
 	network      net.Conn // The underlying network connection
 }
 
@@ -48,7 +45,6 @@ func Create(address, port string) (*Service, error) {
 		Address:  address,
 		Protocol: "tcp",
 		ID:       v4.String(),
-		pendings: []bytes.Buffer{},
 	}
 
 	if err := s.Connect(); err != nil {
@@ -95,41 +91,17 @@ func (s *Service) Disconnect() error {
 // data: Buffer containing the data to be sent.
 // returns the number of bytes written and an error if any.
 func (s *Service) Write(data bytes.Buffer) (int, error) {
-	if s.Connected && !s.isPending {
+	if s.Connected {
 		i, err := s.network.Write(data.Bytes())
 		if err != nil {
 			s.Connected = false
-			s.isPending = true
-			s.pendings = append(s.pendings, data)
-			go s.reconnect()
+			s.reconnect()
+			return 0, errors.New("lost connection")
 		}
 
 		return i, err
-	} else if s.Connected && s.isPending {
-		newPending := []bytes.Buffer{}
-		for pi, data := range s.pendings {
-			i, err := s.network.Write(data.Bytes())
-			if err != nil {
-				s.Connected = false
-				s.pendings = append(newPending, s.pendings[pi:]...)
-				go s.reconnect()
-				return i, err
-			}
-		}
-
-		s.pendings = []bytes.Buffer{}
-		s.isPending = false
-
-		return s.Write(data)
-	} else {
-		s.pendings = append(s.pendings, data)
 	}
 
-	/*
-		} else if err := s.Connect(); err == nil {
-			return s.network.Write(data.Bytes())
-
-	*/
 	return 0, errors.New("not connected")
 }
 
@@ -140,9 +112,8 @@ func (s *Service) reconnect() {
 	}
 
 	s.tryReconnect = true
-	defer func() {
-		s.tryReconnect = false
-	}()
+	defer func() { s.tryReconnect = false }()
+	timeout := 0
 
 	for {
 		if s.Connected {
@@ -154,7 +125,11 @@ func (s *Service) reconnect() {
 			return
 		}
 
-		time.Sleep(1 * time.Second)
+		time.Sleep(time.Second)
+		timeout++
+		if timeout > 10 {
+			return
+		}
 	}
 }
 
@@ -202,14 +177,15 @@ func (s *Service) handleServerResponses() {
 	}
 }
 
-func (s *Service) MakeQuery(answer ...bool) *cqrs.Message {
+func (s *Service) MakeExchange(answer ...bool) *Exchange {
 	if len(answer) == 0 {
-		return cqrs.NewMessage(s.Name, true, cqrs.QRY)
+		return NewExchange(s.Name, true)
 	}
 
-	return cqrs.NewMessage(s.Name, answer[0], cqrs.QRY)
+	return NewExchange(s.Name, answer[0])
 }
 
+/*
 func (s *Service) MakeCommand(answer ...bool) *cqrs.Message {
 	if len(answer) == 0 {
 		return cqrs.NewMessage(s.Name, true, cqrs.CMD)

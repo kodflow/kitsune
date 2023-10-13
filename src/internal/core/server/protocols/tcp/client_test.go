@@ -20,7 +20,7 @@ func TestClient(t *testing.T) {
 
 	client := tcp.NewClient()
 	service1, _ := client.Connect("localhost", "8080")
-	query1 := service1.MakeQuery()
+	query1 := service1.MakeExchange()
 	response := make(chan bool)
 
 	client.Send(func(responses ...*transport.Response) {
@@ -51,7 +51,7 @@ func BenchmarkLocal(b *testing.B) {
 
 		go func() {
 			for i := 0; i < max; i++ {
-				query1 := service1.MakeQuery(false)
+				query1 := service1.MakeExchange(false)
 				client.Send(func(responses ...*transport.Response) {
 					mu.Lock()
 					rps++

@@ -13,7 +13,7 @@ import (
 	"github.com/shirou/gopsutil/cpu"
 )
 
-var max = 2000000
+var max = 10000000
 var total = 0
 var rps = 0
 var totalTime time.Duration // Variable to keep track of total time
@@ -53,7 +53,7 @@ func main() {
 
 func run(port string) {
 	client := tcp.NewClient() // youka-PRODUCTION-9de5d4b457bad9c7.elb.eu-west-3.amazonaws.com
-	service1, err := client.Connect("127.0.0.1", "9999")
+	service1, err := client.Connect("127.0.0.1", port)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -62,7 +62,7 @@ func run(port string) {
 	for j := 0; j < worker; j++ {
 		go func(j int) {
 			for i := 0; i < max; i++ {
-				query1 := service1.MakeQuery()
+				query1 := service1.MakeExchange()
 				client.Send(func(responses ...*transport.Response) {
 					if query1.Request().Id == responses[0].Id {
 						mu.Lock()

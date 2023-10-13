@@ -12,7 +12,6 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/kodmain/kitsune/src/internal/core/cqrs"
 	"github.com/kodmain/kitsune/src/internal/core/server/service"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport/promise"
@@ -74,7 +73,7 @@ func (c *Client) Disconnect(services ...string) error {
 
 // Send transmits a request to the server and returns a promise for the response.
 // req is the request to be sent.
-func (c *Client) Send(callback func(...*transport.Response), queries ...*cqrs.Message) error {
+func (c *Client) Send(callback func(...*transport.Response), queries ...*service.Exchange) error {
 	if len(c.services) == 0 {
 		return errors.New("no connection")
 	}
@@ -83,7 +82,7 @@ func (c *Client) Send(callback func(...*transport.Response), queries ...*cqrs.Me
 		return fmt.Errorf("no request")
 	}
 
-	dispatch := map[string][]*cqrs.Message{}
+	dispatch := map[string][]*service.Exchange{}
 	buffers := map[string]bytes.Buffer{}
 
 	c.mu.Lock()
