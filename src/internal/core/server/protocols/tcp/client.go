@@ -1,8 +1,4 @@
-// Package tcp provides functionalities for both a TCP client and a TCP server.
-// It enables the creation, management, and communication between clients and the server over TCP.
-// Messages sent between the client and server are serialized using protobuf.
-
-// tcp provides functionalities for a TCP client.
+// Package tcp provides functionalities for a TCP server.
 package tcp
 
 import (
@@ -18,22 +14,34 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// Client represents a TCP client with functionalities such as sending requests and waiting for responses.
+// Client represents a TCP client.
+// It manages multiple service connections and provides methods to send and receive data.
 type Client struct {
-	mu       sync.Mutex
-	services map[string]*service.Service
+	mu       sync.Mutex                  // Protects the services map
+	services map[string]*service.Service // A map of services by name
 }
 
-// NewClient initializes and returns a new Client instance.
-// address is the TCP address for the client.
+// NewClient initializes a new Client and returns its pointer.
+//
+// Returns:
+//
+//	*Client: A pointer to the newly created Client
 func NewClient() *Client {
-	c := &Client{
-		services: map[string]*service.Service{},
+	return &Client{
+		services: make(map[string]*service.Service),
 	}
-
-	return c
 }
 
+// Connect initiates a new service connection.
+// Parameters:
+//
+//	address: The IP address of the service
+//	port: The port number of the service
+//
+// Returns:
+//
+//	*service.Service: A pointer to the connected service
+//	error: An error object if an error occurred
 func (c *Client) Connect(address, port string) (*service.Service, error) {
 	s, err := service.Create(address, port)
 	if err != nil {
@@ -47,7 +55,15 @@ func (c *Client) Connect(address, port string) (*service.Service, error) {
 	return s, nil
 }
 
-// Disconnect terminates the active connection if it exists.
+// Disconnect terminates active connections to specified services or all services if none are specified.
+//
+// Parameters:
+//
+//	services: Names of services to disconnect (variadic)
+//
+// Returns:
+//
+//	error: An error object if an error occurred
 func (c *Client) Disconnect(services ...string) error {
 	if len(c.services) == 0 {
 		return errors.New("no connection")
@@ -71,8 +87,16 @@ func (c *Client) Disconnect(services ...string) error {
 	return nil
 }
 
-// Send transmits a request to the server and returns a promise for the response.
-// req is the request to be sent.
+// Send sends queries to services and registers a callback for responses.
+//
+// Parameters:
+//
+//	callback: A function to be called when responses are received
+//	queries: A slice of queries to send to services (variadic)
+//
+// Returns:
+//
+//	error: An error object if an error occurred
 func (c *Client) Send(callback func(...*transport.Response), queries ...*service.Exchange) error {
 	if len(c.services) == 0 {
 		return errors.New("no connection")
@@ -83,7 +107,7 @@ func (c *Client) Send(callback func(...*transport.Response), queries ...*service
 	}
 
 	dispatch := map[string][]*service.Exchange{}
-	buffers := map[string]bytes.Buffer{}
+	buffers := map[string]*bytes.Buffer{}
 
 	c.mu.Lock()
 	services := c.services
@@ -121,7 +145,7 @@ func (c *Client) Send(callback func(...*transport.Response), queries ...*service
 				return err
 			}
 
-			buffers[service] = buffer
+			buffers[service] = &buffer
 		}
 	}
 

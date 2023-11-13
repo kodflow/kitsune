@@ -3,100 +3,95 @@
 package http
 
 import (
-	"context"
-	"net/http"
-	"runtime"
+	"errors"
+	"os"
+	"strconv"
 
-	"golang.org/x/net/http2"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/helmet"
+	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
 )
 
-// Server represents an HTTP server.
 type Server struct {
-	Address string             // Address on which the server will listen.
-	ctx     context.Context    // Context to signal server termination.
-	cancel  context.CancelFunc // Function to cancel the server context.
-	server  *http.Server       // Internal HTTP server.
-	tasks   chan func()        // Task channel for workers.
+	Address  string     // Address to listen on
+	listener *fiber.App // TCP Listener object
+	running  bool
 }
 
-// NewV1 creates a new HTTP/1.1 server.
-func NewV1(address string) *Server {
-	ctx, cancel := context.WithCancel(context.Background())
-	s := &Server{
-		Address: address,
-		ctx:     ctx,
-		cancel:  cancel,
-		server:  &http.Server{Addr: address},         // Initialisation du serveur HTTP ici.
-		tasks:   make(chan func(), runtime.NumCPU()), // Initialize the task channel.
-	}
+func NewServer(address string) *Server {
+	app := fiber.New(fiber.Config{
+		Prefork:                  false,
+		StrictRouting:            true,
+		CaseSensitive:            true,
+		DisableStartupMessage:    true,
+		DisableHeaderNormalizing: true,
+		EnablePrintRoutes:        true,
+		RequestMethods: []string{
+			fiber.MethodHead,
+			fiber.MethodGet,
+			fiber.MethodPost,
+			fiber.MethodPut,
+			fiber.MethodPatch,
+			fiber.MethodDelete,
+		},
+	})
 
-	// Start workers.
-	for i := 0; i < runtime.NumCPU(); i++ {
-		go s.worker()
-	}
+	app.Use(helmet.New())
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Hello, World!")
+	})
 
-	return s
-}
+	/*
+		app.Use(func(c *fiber.Ctx) error {
+			req := &transport.Request{}
+			res := &transport.Response{}
 
-// NewV2 creates a new HTTP/2 server.
-func NewV2(address string) *Server {
-	s := NewV1(address)
-	http2.ConfigureServer(s.server, &http2.Server{}) // Maintenant, s.server n'est plus nil.
-	return s
-}
-
-// Start starts the HTTP server.
-func (s *Server) Start() error {
-	// Implement the logic to start the server.
-	return nil
-}
-
-// Stop stops the HTTP server.
-func (s *Server) Stop() error {
-	// Notify all workers to stop.
-	close(s.tasks)
-	s.cancel()
-	// Implement the logic to stop the server.
-	return nil
-}
-
-// worker is a goroutine that processes tasks.
-func (s *Server) worker() {
-	for {
-		select {
-		case task, ok := <-s.tasks:
-			// If the tasks channel is closed, exit the worker.
-			if !ok {
-				return
+			err := router.Resolve(req, res)
+			if err != nil {
+				return c.Status(fiber.StatusInternalServerError).SendString("An internal error occurred.")
 			}
-			// Run the task.
-			task()
-		// If context is done, exit the worker.
-		case <-s.ctx.Done():
-			return
-		}
+
+			b, err := proto.Marshal(res)
+			if err != nil {
+				return c.Status(fiber.StatusInternalServerError).SendString("An internal error occurred.")
+			}
+
+			return c.Send(b)
+		})
+
+		/*
+		app.Use(etag.New())
+		app.Use(cache.New(cache.Config{
+			CacheControl: true,
+			Expiration:   config.DEFAULT_CACHE * time.Minute,
+			Methods: []string{
+				fiber.MethodGet,
+				fiber.MethodHead,
+			},
+		}))
+	*/
+
+	return &Server{
+		Address:  address,
+		listener: app,
 	}
 }
 
-/*
-func (s *Server) worker() {
-	for request := range requests {
-		go s.handler()
+func (s *Server) Start() error {
+	if s.running {
+		return errors.New("server already started")
 	}
+	s.running = true
+	logger.Info("server start on " + s.Address + " with pid:" + strconv.Itoa(os.Getpid()))
+	return s.listener.Listen(s.Address)
 }
 
-// StartServer initializes and starts the HTTP/2 server
-func (s *Server) Start() {
-
-	for i := 0; i < runtime.NumCPU()*config.DEFAULT_IO_BOUND; i++ {
-		go s.worker()
+func (s *Server) Stop() error {
+	if !s.running {
+		return errors.New("server already stoped")
 	}
 
-	http2.ConfigureServer(server, &http2.Server{})
-
-	log.Printf("Starting HTTP/2 server on %s", address)
-	if err := server.ListenAndServeTLS("path/to/cert.pem", "path/to/key.pem"); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
-	}
+	s.running = false
+	logger.Info("server stop on " + s.Address)
+	return s.listener.Shutdown()
 }
-*/

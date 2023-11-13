@@ -8,7 +8,7 @@ import (
 )
 
 func TestDaemonHandler_StartStop(t *testing.T) {
-	handler := daemon.New(testProcessName, testPathRun)
+	handler := daemon.New()
 	testHandler := &daemon.Handler{
 		Name: "test",
 		Call: func() error {

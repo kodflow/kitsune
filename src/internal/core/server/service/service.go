@@ -21,19 +21,19 @@ import (
 
 // Service struct represents a remote service to interact with.
 type Service struct {
-	Name         string // The name of the service, usually in URI form.
-	Address      string // The address of the server
-	Protocol     string // The network protocol to use (e.g., TCP, UDP)
-	ID           string // A unique identifier for this connection
-	Connected    bool   // True if a connection has been established, false otherwise
-	tryReconnect bool
-	network      net.Conn // The underlying network connection
+	Name         string   // The name of the service, usually in URI form.
+	Address      string   // The address of the server.
+	Protocol     string   // The network protocol to use (e.g., TCP, UDP).
+	ID           string   // A unique identifier for this connection.
+	Connected    bool     // True if a connection has been established, false otherwise.
+	tryReconnect bool     // Flag indicating whether a reconnection attempt is in progress.
+	network      net.Conn // The underlying network connection.
 }
 
 // Create initializes a Service instance.
 // address: The address of the remote service.
 // port: The port number of the remote service.
-// returns a pointer to a Service instance and an error if any.
+// Returns a pointer to a Service instance and an error if any.
 func Create(address, port string) (*Service, error) {
 	v4, err := uuid.NewRandom()
 	if err != nil {
@@ -89,8 +89,8 @@ func (s *Service) Disconnect() error {
 
 // Write sends data to the service.
 // data: Buffer containing the data to be sent.
-// returns the number of bytes written and an error if any.
-func (s *Service) Write(data bytes.Buffer) (int, error) {
+// Returns the number of bytes written and an error if any.
+func (s *Service) Write(data *bytes.Buffer) (int, error) {
 	if s.Connected {
 		i, err := s.network.Write(data.Bytes())
 		if err != nil {
@@ -127,9 +127,6 @@ func (s *Service) reconnect() {
 
 		time.Sleep(time.Second)
 		timeout++
-		if timeout > 10 {
-			return
-		}
 	}
 }
 
@@ -177,6 +174,9 @@ func (s *Service) handleServerResponses() {
 	}
 }
 
+// MakeExchange creates a new Exchange instance for this service.
+// answer: Optional boolean argument to specify if the exchange should be answered.
+// Returns a pointer to a new Exchange instance.
 func (s *Service) MakeExchange(answer ...bool) *Exchange {
 	if len(answer) == 0 {
 		return NewExchange(s.Name, true)
@@ -184,26 +184,3 @@ func (s *Service) MakeExchange(answer ...bool) *Exchange {
 
 	return NewExchange(s.Name, answer[0])
 }
-
-/*
-func (s *Service) MakeCommand(answer ...bool) *cqrs.Message {
-	if len(answer) == 0 {
-		return cqrs.NewMessage(s.Name, true, cqrs.CMD)
-	}
-
-	return cqrs.NewMessage(s.Name, answer[0], cqrs.CMD)
-}
-
-/*
-// MakeRequestWithResponse initializes a Query object with the expectation of a response.
-// returns a Query instance configured to expect a response.
-func (s *Service) MakeRequestWithResponse() *cqrs.Message {
-	return cqrs.NewMessage(s.Name, true)
-}
-
-// MakeRequestOnly initializes a Query object without the expectation of a response.
-// returns a Query instance configured to not expect a response.
-func (s *Service) MakeRequestOnly() *cqrs.Message {
-	return cqrs.NewMessage(s.Name, false)
-}
-*/

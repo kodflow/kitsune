@@ -4,8 +4,10 @@ package promise
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/kodmain/kitsune/src/config"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
 )
 
@@ -48,6 +50,16 @@ func Create(callback func(...*transport.Response)) (*Promise, error) {
 	repository.mu.Lock()
 	repository.promises[promise.Id] = promise
 	repository.mu.Unlock()
+
+	// Start a timer to remove the promise if it takes too long
+	go func(promise *Promise) {
+		<-time.After(time.Second * config.DEFAULT_TIMEOUT)
+		if !promise.Closed {
+			// Delete the promise after timeout
+			promise.Close()
+			fmt.Println("timemout")
+		}
+	}(promise)
 
 	return promise, nil
 }

@@ -8,4 +8,5 @@ message Response {
   string id = 1;
   string pid = 2;
   bytes body = 3;
+  optional string etag = 4;
 }

@@ -105,9 +105,9 @@ build-service:
 	@for os in $(OS); do \
 		for arch in $(ARCH); do \
 			CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch go build -trimpath -buildvcs=false -ldflags="-s -w \
-			-X github.com/kodmain/kitsune/src/config/config.BUILD_VERSION=$$VERSION \
-			-X github.com/kodmain/kitsune/src/config/config.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
-			-X github.com/kodmain/kitsune/src/config/config.BUILD_APP_NAME=$(ARGS)" \
+			-X github.com/kodmain/kitsune/src/config.BUILD_VERSION=$$VERSION \
+			-X github.com/kodmain/kitsune/src/config.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
+			-X github.com/kodmain/kitsune/src/config.BUILD_APP_NAME=$(ARGS)" \
 			-o .generated/services/$(ARGS)-$$os-$$arch $(CURDIR)/src/services/$(ARGS)/main.go; \
 			chmod +x .generated/services/$(ARGS)-$$os-$$arch; \
 			sha1sum .generated/services/$(ARGS)-$$os-$$arch | awk '{ print $$1 }'  | tr -d '\n' > .generated/services/$(ARGS)-$$os-$$arch.sha1; \
