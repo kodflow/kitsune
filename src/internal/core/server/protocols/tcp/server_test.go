@@ -1,17 +1,17 @@
-package socket_test
+package tcp_test
 
 import (
 	"testing"
 	"time"
 
-	"github.com/kodmain/kitsune/src/internal/core/server/protocols/socket"
+	"github.com/kodmain/kitsune/src/internal/core/server/protocols/tcp"
 	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
 	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger/levels"
 	"github.com/stretchr/testify/assert"
 )
 
-func setup() *socket.Server {
-	return socket.NewServer("localhost:8080")
+func setup() *tcp.Server {
+	return tcp.NewServer("localhost:8080")
 }
 
 func TestServer(t *testing.T) {

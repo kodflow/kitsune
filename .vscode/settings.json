@@ -5,5 +5,6 @@
         "options": [
             "--proto_path=src/internal/data/proto",
         ],
-    }
+    },
+    "docwriter.style": "GoDoc"
 }

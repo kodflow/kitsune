@@ -1,14 +1,15 @@
 package main
 
 import (
-	"github.com/kodmain/kitsune/src/config"
+	"github.com/kodmain/kitsune/src/internal/core/server/protocols/http"
 	"github.com/kodmain/kitsune/src/internal/kernel/daemon"
-	"github.com/kodmain/kitsune/src/services/gateway/server"
 )
 
 func main() {
-	daemon.New(
-		config.BUILD_APP_NAME,
-		config.PATH_RUN,
-	).Start(server.Handler)
+	daemon.New().Start(&daemon.Handler{
+		Name: "HTTP Server",
+		Call: func() error {
+			return http.NewServer("gateway.kitsune.local:8888").Start()
+		},
+	})
 }

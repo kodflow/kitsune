@@ -1,6 +1,7 @@
 package daemon
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -8,8 +9,11 @@ import (
 	"time"
 
 	"github.com/kodmain/kitsune/src/config"
+	"github.com/kodmain/kitsune/src/internal/kernel/multithread"
 	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
 )
+
+const Name = "daemon"
 
 type Handler struct {
 	Name string
@@ -22,22 +26,25 @@ type DaemonHandler struct {
 	done       chan bool
 }
 
-func New(processName, pathRun string) *DaemonHandler {
+func New() *DaemonHandler {
 	return &DaemonHandler{
-		PIDHandler: NewPIDHandler(processName, pathRun),
+		PIDHandler: NewPIDHandler(config.BUILD_APP_NAME, config.PATH_RUN),
 		sigs:       make(chan os.Signal, 1),
 		done:       make(chan bool, 1),
 	}
 }
 
 func (d *DaemonHandler) Start(handlers ...*Handler) {
-	pid := os.Getpid()
-	if _, err := d.PIDHandler.GetPID(); err != nil {
-		handleErrorAndExit(err)
-	}
+	flag.Parse()
+	if multithread.IsMaster() {
+		pid := os.Getpid()
+		if _, err := d.PIDHandler.GetPID(); err != nil {
+			handleErrorAndExit(err)
+		}
 
-	if err := d.PIDHandler.SetPID(pid); err != nil {
-		handleErrorAndExit(err)
+		if err := d.PIDHandler.SetPID(pid); err != nil {
+			handleErrorAndExit(err)
+		}
 	}
 
 	signal.Notify(d.sigs, syscall.SIGINT, syscall.SIGTERM)
@@ -74,7 +81,7 @@ func (d *DaemonHandler) processHandler(handler *Handler) {
 	for {
 		logger.Info(config.BUILD_APP_NAME + " " + handler.Name + " start")
 		if err := handler.Call(); err != nil {
-			logger.Warn(config.BUILD_APP_NAME + " " + handler.Name + " fail")
+			logger.Warn(config.BUILD_APP_NAME+" "+handler.Name+" fail", err)
 			if count >= 2 && d.shouldExit(count, startTime) {
 				logger.Error(fmt.Errorf(config.BUILD_APP_NAME + " " + handler.Name + " won't start"))
 				d.done <- true

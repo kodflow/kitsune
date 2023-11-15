@@ -71,10 +71,19 @@ func (p *PIDHandler) GetPID() (int, error) {
 }
 
 // IsProcessRunning checks if the process with the given PID is running.
+// It returns true if the process is running, false otherwise.
 func IsProcessRunning(pid int) bool {
+	// Find the process by PID
 	process, err := os.FindProcess(pid)
 	if err != nil {
 		return false
 	}
-	return process.Signal(syscall.Signal(0)) == nil
+
+	// Send a signal to check if the process is still running
+	err = process.Signal(syscall.Signal(0))
+	if err != nil && err.Error() == "os: process already finished" {
+		return false
+	}
+
+	return err == nil
 }
