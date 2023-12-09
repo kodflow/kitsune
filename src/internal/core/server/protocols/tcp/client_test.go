@@ -30,7 +30,7 @@ func TestClient(t *testing.T) {
 }
 
 func BenchmarkLocal(b *testing.B) {
-	server1 := tcp.NewServerV2("localhost:8080")
+	server1 := tcp.NewServer("localhost:8080")
 	server1.Start()
 	defer server1.Stop()
 

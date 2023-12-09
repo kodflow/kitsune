@@ -97,7 +97,35 @@ func (c *Client) Disconnect(services ...string) error {
 // Returns:
 //
 //	error: An error object if an error occurred
+//
+// Send sends queries to services and registers a callback for responses.
 func (c *Client) Send(callback func(...*transport.Response), queries ...*service.Exchange) error {
+	if err := c.validateInputs(queries); err != nil {
+		return err
+	}
+
+	dispatch := c.buildDispatch(queries)
+	p, err := c.processQueries(dispatch, callback)
+	if err != nil {
+		return err
+	}
+
+	if err := c.sendToServices(dispatch); err != nil {
+		return err
+	}
+
+	if p.Length == 0 {
+		p.Close()
+	}
+
+	return nil
+}
+
+// validateInputs validates the service connections and queries.
+func (c *Client) validateInputs(queries []*service.Exchange) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	if len(c.services) == 0 {
 		return errors.New("no connection")
 	}
@@ -106,32 +134,48 @@ func (c *Client) Send(callback func(...*transport.Response), queries ...*service
 		return fmt.Errorf("no request")
 	}
 
-	dispatch := map[string][]*service.Exchange{}
-	buffers := map[string]*bytes.Buffer{}
+	return nil
+}
 
-	c.mu.Lock()
-	services := c.services
-	c.mu.Unlock()
+// buildDispatch builds the dispatch map for service names and their queries.
+func (c *Client) buildDispatch(queries []*service.Exchange) map[string][]*service.Exchange {
+	dispatch := make(map[string][]*service.Exchange)
 
 	for _, query := range queries {
-		if _, ok := services[query.ServiceName()]; ok {
+		if _, ok := c.services[query.ServiceName()]; ok {
 			dispatch[query.ServiceName()] = append(dispatch[query.ServiceName()], query)
 		}
 	}
 
+	return dispatch
+}
+
+// processQueries processes the queries and marshals the request data.
+func (c *Client) processQueries(dispatch map[string][]*service.Exchange, callback func(...*transport.Response)) (*promise.Promise, error) {
 	p, err := promise.Create(callback)
 	if err != nil {
-		return err
+		return nil, err
 	}
+
+	for _, queries := range dispatch {
+		for _, query := range queries {
+			if query.Answer() {
+				p.Add(query.Request())
+			}
+		}
+	}
+
+	return p, nil
+}
+
+// sendToServices sends the marshaled data to the services.
+func (c *Client) sendToServices(dispatch map[string][]*service.Exchange) error {
+	buffers := make(map[string]*bytes.Buffer)
 
 	for service, queries := range dispatch {
 		var buffer bytes.Buffer
 
 		for _, query := range queries {
-			if query.Answer() {
-				p.Add(query.Request())
-			}
-
 			data, err := proto.Marshal(query.Request())
 			if err != nil {
 				return err
@@ -144,17 +188,15 @@ func (c *Client) Send(callback func(...*transport.Response), queries ...*service
 			if _, err := buffer.Write(data); err != nil {
 				return err
 			}
-
-			buffers[service] = &buffer
 		}
+
+		buffers[service] = &buffer
 	}
 
 	for service, buffer := range buffers {
-		services[service].Write(buffer)
-	}
-
-	if p.Length == 0 {
-		p.Close()
+		if _, err := c.services[service].Write(buffer); err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -9,7 +9,14 @@ func main() {
 	daemon.New().Start(&daemon.Handler{
 		Name: "HTTP Server",
 		Call: func() error {
-			return http.NewServer("gateway.kitsune.local:8888").Start()
+			server := http.NewServer(&http.ServerCfg{
+				HTTP:  80,
+				HTTPS: 443,
+				//DOMAIN: "aube.io",
+				//SUBS:   []string{"home"},
+			})
+
+			return server.Start()
 		},
 	})
 }

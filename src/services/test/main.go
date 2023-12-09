@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"math"
 	"runtime"
@@ -12,12 +13,21 @@ import (
 	"github.com/shirou/gopsutil/cpu"
 )
 
-func main() {
-	numCPU := 20               //runtime.NumCPU()
-	runtime.GOMAXPROCS(numCPU) // facultatif
+var (
+	URL    = flag.String("url", "localhost", "set url")
+	PORT   = flag.String("port", "9999", "set port")
+	NUMCPU = flag.Int("cpu", 1, "set max CPU")
+)
+
+func init() {
+	flag.Parse()
+}
+
+func main() { //runtime.NumCPU()
+	runtime.GOMAXPROCS(*NUMCPU) // facultatif
 
 	var mu sync.Mutex
-	var max = 100000000 / numCPU // divisez par le nombre de CPU pour garder le même total
+	var max = 10000000 / *NUMCPU // divisez par le nombre de CPU pour garder le même total
 	var rps = 0
 	var total = 0
 
@@ -26,12 +36,12 @@ func main() {
 	var maxRPS int = math.MinInt64
 	var sumRPS int = 0
 
-	for i := 0; i < numCPU; i++ {
+	for i := 0; i < *NUMCPU; i++ {
 		go func() {
 			client := tcp.NewClient()
-			service1, _ := client.Connect("localhost", "9000")
+			service, _ := client.Connect(*URL, *PORT)
 			for i := 0; i < max; i++ {
-				query1 := service1.MakeExchange()
+				query1 := service.MakeExchange()
 				client.Send(func(responses ...*transport.Response) {
 					mu.Lock()
 					rps++
@@ -66,7 +76,7 @@ func main() {
 
 		log.Printf("Request/Sec: %d, Avg: %d, Min: %d, Max: %d, Delta: %d, REQS: %d/%d, Go Routine: %d, MemoryUsage: %d Mb, CPU Usage: %.2f%%", rps, avgRPS, minRPS, maxRPS, deltaRPS, total, max, runtime.NumGoroutine(), bToMb(m.Alloc), cpuUsage)
 		rps = 0
-		if int(total) >= max*numCPU {
+		if int(total) >= max**NUMCPU {
 			ticker.Stop()
 			break
 		}

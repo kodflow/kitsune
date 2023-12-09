@@ -130,47 +130,72 @@ func (s *Service) reconnect() {
 	}
 }
 
-// handleServerResponses listens for responses from the server and processes them.
+// handleServerResponses écoute les réponses du serveur et les traite.
 func (s *Service) handleServerResponses() {
 	reader := bufio.NewReader(s.network)
-	for {
-		if !s.Connected {
-			break
-		}
-
-		var length uint32
-		if err := binary.Read(reader, binary.LittleEndian, &length); err != nil {
-			break
-		}
-
-		data := make([]byte, length)
-		_, err := io.ReadFull(reader, data)
+	for s.isConnected() {
+		length, err := s.readMessageLength(reader)
 		if err != nil {
-			s.Disconnect()
-			if err == io.EOF {
-				logger.Info("connection closed by the server.")
-			} else {
-				logger.Error(err)
-			}
 			break
 		}
 
-		res := &transport.Response{}
-		err = proto.Unmarshal(data, res)
-		if logger.Error(err) {
+		data, err := s.readData(reader, length)
+		if err != nil {
+			handleReadError(s, err)
+			break
+		}
+
+		res, err := unmarshalResponse(data)
+		if err != nil {
+			logger.Error(err)
 			logger.Info(data)
 			continue
 		}
 
-		if res.Pid != "" {
-			p, err := promise.Find(res.Pid)
-			if err != nil {
-				fmt.Println(err)
-				continue
-			}
+		s.processResponse(res)
+	}
+}
 
-			p.Resolve(res)
+func (s *Service) isConnected() bool {
+	return s.Connected
+}
+
+func (s *Service) readMessageLength(reader *bufio.Reader) (uint32, error) {
+	var length uint32
+	err := binary.Read(reader, binary.LittleEndian, &length)
+	return length, err
+}
+
+func (s *Service) readData(reader *bufio.Reader, length uint32) ([]byte, error) {
+	data := make([]byte, length)
+	_, err := io.ReadFull(reader, data)
+	return data, err
+}
+
+func handleReadError(s *Service, err error) {
+	s.Disconnect()
+	if err == io.EOF {
+		logger.Info("connection closed by the server.")
+	} else {
+		logger.Error(err)
+	}
+}
+
+func unmarshalResponse(data []byte) (*transport.Response, error) {
+	res := &transport.Response{}
+	err := proto.Unmarshal(data, res)
+	return res, err
+}
+
+func (s *Service) processResponse(res *transport.Response) {
+	if res.Pid != "" {
+		p, err := promise.Find(res.Pid)
+		if err != nil {
+			fmt.Println(err)
+			return
 		}
+
+		p.Resolve(res)
 	}
 }
 
