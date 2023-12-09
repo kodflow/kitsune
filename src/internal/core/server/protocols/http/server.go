@@ -1,97 +1,176 @@
-// server.go
-
 package http
 
 import (
-	"errors"
+	"crypto/tls"
+	"net"
+	"net/http"
 	"os"
 	"strconv"
+	"time"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/helmet"
+	"github.com/kodmain/kitsune/src/internal/core/certs"
+	"github.com/kodmain/kitsune/src/internal/core/server/api"
+	"github.com/kodmain/kitsune/src/internal/core/server/handler"
+	"github.com/kodmain/kitsune/src/internal/kernel/errors"
 	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
+	"golang.org/x/net/http2"
 )
 
 type Server struct {
-	Address  string     // Address to listen on
-	listener *fiber.App // TCP Listener object
+	standard *Engine
+	secure   *Engine
+}
+
+type ServerCfg struct {
+	DOMAIN string
+	SUBS   []string
+	HTTP   int
+	HTTPS  int
+}
+
+type Engine struct {
+	PORT     int
+	DOMAIN   string
+	SUBS     []string
+	listener net.Listener
+	server   *http.Server
 	running  bool
 }
 
-func NewServer(address string) *Server {
-	app := fiber.New(fiber.Config{
-		Prefork:                  false,
-		StrictRouting:            true,
-		CaseSensitive:            true,
-		DisableStartupMessage:    true,
-		DisableHeaderNormalizing: true,
-		EnablePrintRoutes:        true,
-		RequestMethods: []string{
-			fiber.MethodHead,
-			fiber.MethodGet,
-			fiber.MethodPost,
-			fiber.MethodPut,
-			fiber.MethodPatch,
-			fiber.MethodDelete,
-		},
-	})
-
-	app.Use(helmet.New())
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
-
-	/*
-		app.Use(func(c *fiber.Ctx) error {
-			req := &transport.Request{}
-			res := &transport.Response{}
-
-			err := router.Resolve(req, res)
-			if err != nil {
-				return c.Status(fiber.StatusInternalServerError).SendString("An internal error occurred.")
-			}
-
-			b, err := proto.Marshal(res)
-			if err != nil {
-				return c.Status(fiber.StatusInternalServerError).SendString("An internal error occurred.")
-			}
-
-			return c.Send(b)
-		})
-
-		/*
-		app.Use(etag.New())
-		app.Use(cache.New(cache.Config{
-			CacheControl: true,
-			Expiration:   config.DEFAULT_CACHE * time.Minute,
-			Methods: []string{
-				fiber.MethodGet,
-				fiber.MethodHead,
+func NewServer(cfg *ServerCfg) *Server {
+	server := &Server{
+		standard: &Engine{
+			PORT:   cfg.HTTP,
+			DOMAIN: cfg.DOMAIN,
+			SUBS:   cfg.SUBS,
+			server: &http.Server{
+				Handler:           http.HandlerFunc(handler.HTTPHandler),
+				ReadTimeout:       5 * time.Second,
+				WriteTimeout:      5 * time.Second,
+				IdleTimeout:       120 * time.Second,
+				ReadHeaderTimeout: 2 * time.Second,
+				MaxHeaderBytes:    1 << 20,
 			},
-		}))
-	*/
-
-	return &Server{
-		Address:  address,
-		listener: app,
+		},
 	}
+
+	if cfg.HTTPS == 0 {
+		return server
+	}
+
+	server.secure = &Engine{
+		PORT:   cfg.HTTPS,
+		DOMAIN: cfg.DOMAIN,
+		SUBS:   cfg.SUBS,
+		server: &http.Server{
+			Handler:           http.HandlerFunc(handler.HTTPHandler),
+			ReadTimeout:       5 * time.Second,
+			WriteTimeout:      5 * time.Second,
+			IdleTimeout:       120 * time.Second,
+			ReadHeaderTimeout: 2 * time.Second,
+			MaxHeaderBytes:    1 << 20,
+			TLSConfig:         certs.TLSConfigFor(cfg.DOMAIN, cfg.SUBS...),
+		},
+	}
+
+	http2.ConfigureServer(server.secure.server, &http2.Server{
+		IdleTimeout: 120 * time.Second,
+	})
+
+	return server
 }
 
+// Register is a method for registering API handlers with the server.
+func (s *Server) Register(api api.APInterface) {
+	// TODO
+}
+
+// Start starts the TCP server, allowing it to accept incoming connections.
 func (s *Server) Start() error {
-	if s.running {
+	multi := errors.NewMultiError()
+
+	if s.standard.running {
+		multi.Add(errors.New("standard server active"))
+	}
+
+	if s.secure != nil && s.secure.running {
+		multi.Add(errors.New("secure server active"))
+	}
+
+	if multi.Count() > 0 {
+		return multi
+	}
+
+	multi.Add(s.standard.Start())
+	if s.secure != nil {
+		multi.Add(s.secure.Start())
+	}
+
+	return multi.IsError()
+}
+
+// Stop stops the TCP server.
+func (s *Server) Stop() error {
+	multi := errors.NewMultiError()
+
+	if !s.standard.running {
+		multi.Add(errors.New("standard server is not active"))
+	}
+
+	if s.secure != nil && !s.secure.running {
+		multi.Add(errors.New("secure server is not active"))
+	}
+
+	if multi.Count() > 0 {
+		return multi
+	}
+
+	multi.Add(s.standard.Stop())
+	if s.secure != nil {
+		multi.Add(s.secure.Stop())
+	}
+
+	logger.Info("server stop on " + s.standard.DOMAIN)
+
+	return multi.IsError()
+}
+
+// Start starts the TCP server, allowing it to accept incoming connections.
+func (e *Engine) Start() error {
+	if e.running {
 		return errors.New("server already started")
 	}
-	s.running = true
-	logger.Info("server start on " + s.Address + " with pid:" + strconv.Itoa(os.Getpid()))
-	return s.listener.Listen(s.Address)
-}
 
-func (s *Server) Stop() error {
-	if !s.running {
-		return errors.New("server already stoped")
+	listener, err := net.Listen("tcp", ":"+strconv.Itoa(e.PORT))
+	if err != nil {
+		return err
 	}
 
-	s.running = false
-	logger.Info("server stop on " + s.Address)
-	return s.listener.Shutdown()
+	e.listener = listener
+	if e.server.TLSConfig != nil {
+		e.listener = tls.NewListener(e.listener, e.server.TLSConfig)
+	}
+
+	e.running = true
+
+	logger.Info("server start on " + strconv.Itoa(e.PORT) + " with pid:" + strconv.Itoa(os.Getpid()))
+
+	go e.server.Serve(e.listener)
+
+	return nil
+}
+
+// Stop stops the TCP server.
+func (s *Engine) Stop() error {
+	if !s.running {
+		return errors.New("server is not active")
+	}
+
+	err := s.listener.Close()
+	if err != nil {
+		s.running = false
+	}
+
+	logger.Info("server stop on ")
+	return err
 }

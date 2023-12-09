@@ -11,10 +11,7 @@ import (
 	"strconv"
 
 	"github.com/kodmain/kitsune/src/internal/core/server/api"
-	"github.com/kodmain/kitsune/src/internal/core/server/router"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport"
 	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
-	"google.golang.org/protobuf/proto"
 )
 
 //https://github.com/douglasmakey/socket-sharding/blob/master/cmd/http-example/main.go
@@ -24,18 +21,20 @@ import (
 type Server struct {
 	Address  string       // Address to listen on
 	listener net.Listener // TCP Listener object
+	engine   *api.Engine
 }
 
 // NewServer creates a new Server instance with the specified listening address.
 func NewServer(address string) *Server {
 	return &Server{
 		Address: address,
+		engine:  api.MakeEngine(),
 	}
 }
 
 // Register is a method for registering API handlers with the server.
 func (s *Server) Register(api api.APInterface) {
-
+	// TODO
 }
 
 // Start starts the TCP server, allowing it to accept incoming connections.
@@ -97,7 +96,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 			break
 		}
 
-		s.sendResponse(writer, s.handler(data))
+		s.sendResponse(writer, s.engine.Handler(data))
 	}
 }
 
@@ -122,6 +121,7 @@ func (s *Server) sendResponse(writer *bufio.Writer, res []byte) {
 	}
 }
 
+/*
 // handler processes incoming data and generates a response.
 func (s *Server) handler(b []byte) []byte {
 	req := &transport.Request{}
@@ -143,3 +143,4 @@ func (s *Server) handler(b []byte) []byte {
 
 	return b
 }
+*/

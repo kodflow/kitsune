@@ -1,13 +1,9 @@
 package router
 
-import (
-	"github.com/kodmain/kitsune/src/internal/core/server/transport"
-)
-
-var Empty = []byte{}
+import "github.com/kodmain/kitsune/src/internal/core/server/transport"
 
 func Resolve(req *transport.Request, res *transport.Response) error {
-	res.Id = req.Id
-	res.Pid = req.Pid
+	// TODO
+
 	return nil
 }
