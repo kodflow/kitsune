@@ -9,5 +9,5 @@ message Response {
   string id = 2;
   string pid = 3;
   bytes body = 4;
-  optional string etag = 5;
+  map<string, string> headers = 6;
 }

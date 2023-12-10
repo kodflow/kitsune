@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/kodmain/kitsune/src/config"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
+	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
 )
 
 // Repository manages a set of promises.
@@ -57,7 +58,7 @@ func Create(callback func(...*transport.Response)) (*Promise, error) {
 		if !promise.Closed {
 			// Delete the promise after timeout
 			promise.Close()
-			fmt.Println("timemout")
+			logger.Error(fmt.Errorf("promise %s timed out", promise.Id))
 		}
 	}(promise)
 

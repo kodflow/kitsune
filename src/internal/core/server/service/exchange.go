@@ -9,20 +9,12 @@ import (
 // Exchange struct models a service message.
 type Exchange struct {
 	service string             // The service to which this message is directed.
-	answer  bool               // Indicates if this message expects an answer.
-	req     *transport.Request // The actual transport request associated with this message.
+	Answer  bool               // Indicates if this message expects an answer.
+	Req     *transport.Request // The actual transport request associated with this message.
 }
 
 func (m *Exchange) ServiceName() string {
 	return m.service
-}
-
-func (m *Exchange) Answer() bool {
-	return m.answer
-}
-
-func (m *Exchange) Request() *transport.Request {
-	return m.req
 }
 
 // NewExchange creates a new Exchange instance.
@@ -38,7 +30,10 @@ func NewExchange(service string, answer bool) *Exchange {
 
 	return &Exchange{
 		service: service,
-		req:     &transport.Request{Id: v4.String()},
-		answer:  answer,
+		Req: &transport.Request{
+			Endpoint: service,
+			Id:       v4.String(),
+		},
+		Answer: answer,
 	}
 }

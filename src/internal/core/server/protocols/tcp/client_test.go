@@ -11,22 +11,31 @@ import (
 	"github.com/kodmain/kitsune/src/internal/core/server/protocols/tcp"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
 	"github.com/shirou/gopsutil/cpu"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestClient(t *testing.T) {
-	server1 := tcp.NewServer("localhost:8080")
-	server1.Start()
-	defer server1.Stop()
+	server := setupServer("localhost:8080")
+	server.Start()
+	defer server.Stop()
 
 	client := tcp.NewClient()
-	service1, _ := client.Connect("localhost", "8080")
+	service1, err := client.Connect("localhost", "8080")
+	assert.Nil(t, err)
+
 	query1 := service1.MakeExchange()
+
 	response := make(chan bool)
 
 	client.Send(func(responses ...*transport.Response) {
 		response <- true
 	}, query1)
-	<-response
+
+	time.AfterFunc(3*time.Second, func() {
+		response <- false
+	})
+
+	assert.True(t, <-response)
 }
 
 func BenchmarkLocal(b *testing.B) {
@@ -51,7 +60,8 @@ func BenchmarkLocal(b *testing.B) {
 
 		go func() {
 			for i := 0; i < max; i++ {
-				query1 := service1.MakeExchange(false)
+				query1 := service1.MakeExchange()
+
 				client.Send(func(responses ...*transport.Response) {
 					mu.Lock()
 					rps++

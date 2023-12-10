@@ -159,8 +159,8 @@ func (c *Client) processQueries(dispatch map[string][]*service.Exchange, callbac
 
 	for _, queries := range dispatch {
 		for _, query := range queries {
-			if query.Answer() {
-				p.Add(query.Request())
+			if query.Answer {
+				p.Add(query.Req)
 			}
 		}
 	}
@@ -176,7 +176,7 @@ func (c *Client) sendToServices(dispatch map[string][]*service.Exchange) error {
 		var buffer bytes.Buffer
 
 		for _, query := range queries {
-			data, err := proto.Marshal(query.Request())
+			data, err := proto.Marshal(query.Req)
 			if err != nil {
 				return err
 			}

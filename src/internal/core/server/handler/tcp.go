@@ -10,6 +10,7 @@ func TCPHandler(b []byte) []byte {
 	req, res := transport.New()
 
 	err := proto.Unmarshal(b, req)
+	res.Pid = req.Pid
 	if err != nil {
 		return transport.Empty
 	}
