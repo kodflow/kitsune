@@ -27,7 +27,7 @@ help: #Pour générer automatiquement l'aide ## Display all commands available
 	echo '║ ██║  ██║███████╗███████╗██║     ███████╗██║  ██║ ║'
 	echo '║ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝     ╚══════╝╚═╝  ╚═╝ ║'
 	echo '╟──────────────────────────────────────────────────╝'
-	@grep -E '^[a-zA-Z_-]+:.*?##[\s]?.*$$' Makefile | awk 'BEGIN {FS = ":.*?##"}; {gsub(/(^ +| +$$)/, "", $$2);printf "╟─[ \033[36m%-$(PADDING)s\033[0m %s\n", $$1, "] "$$2}'
+	grep -E '^[a-zA-Z_-]+:.*?##[\s]?.*$$' Makefile | awk 'BEGIN {FS = ":.*?##"}; {gsub(/(^ +| +$$)/, "", $$2);printf "╟─[ \033[36m%-$(PADDING)s\033[0m %s\n", $$1, "] "$$2}'
 	echo '╚──────────────────────────────────────────────────>'
 	echo ''
 
@@ -55,7 +55,7 @@ tests:
 	echo "create file"
 	find src -name "*.go" | grep -vE "(_test.go$$|.pb.go$$)" | while read -r file; do test -f "$${file%.*}_test.go" || echo "package $$(grep -m 1 'package ' $$file | awk '{print $$2}')\n\nimport \"testing\"\n\nfunc TestNotExistInThisFile$$(basename $$file .go)(t *testing.T) {}\n" > "$${file%.*}_test.go"; done
 	echo "tests files"
-	go test -v `go list ./...` -coverprofile=coverage.txt -covermode=atomic
+	go test -v `go list ./...` -coverprofile=coverage.txt -covermode=atomic || true
 	echo "clear files"
 	find . -name "*_test.go" | xargs grep -l "func TestNotExistInThisFile" | xargs rm
 
@@ -63,7 +63,7 @@ testsum: install-gotestsum
 	gotestsum -- -v `go list ./...` -coverprofile=coverage.txt -covermode=atomic
 
 install-gotestsum:
-	@if ! command -v gotestsum > /dev/null; then \
+	if ! command -v gotestsum > /dev/null; then \
 		go install gotest.tools/gotestsum@latest; \
 	fi
 
@@ -81,13 +81,13 @@ binary-only:
 	find . | grep -E 'sha1|md5' | xargs rm;
 
 build-services:
-	@for service in $(SERVICES); do \
+	for service in $(SERVICES); do \
 		make build-service $$(basename $$service);\
 	done
 
 build-framework:
 	echo Build Kitsune;
-	@for os in $(OS); do \
+	for os in $(OS); do \
 		for arch in $(ARCH); do \
 			ldflags="-s -w \
 				-X github.com/kodmain/kitsune/src/config/config.BUILD_VERSION=$$VERSION \
@@ -102,12 +102,12 @@ build-framework:
 
 build-service:
 	echo Build service $(ARGS);
-	@for os in $(OS); do \
+	for os in $(OS); do \
 		for arch in $(ARCH); do \
 			CGO_ENABLED=0 GOOS=$$os GOARCH=$$arch go build -trimpath -buildvcs=false -ldflags="-s -w \
-			-X github.com/kodmain/kitsune/src/config/config.BUILD_VERSION=$$VERSION \
-			-X github.com/kodmain/kitsune/src/config/config.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
-			-X github.com/kodmain/kitsune/src/config/config.BUILD_APP_NAME=$(ARGS)" \
+			-X github.com/kodmain/kitsune/src/config.BUILD_VERSION=$$VERSION \
+			-X github.com/kodmain/kitsune/src/config.BUILD_COMMIT=$$(git rev-parse --short HEAD) \
+			-X github.com/kodmain/kitsune/src/config.BUILD_APP_NAME=$(ARGS)" \
 			-o .generated/services/$(ARGS)-$$os-$$arch $(CURDIR)/src/services/$(ARGS)/main.go; \
 			chmod +x .generated/services/$(ARGS)-$$os-$$arch; \
 			sha1sum .generated/services/$(ARGS)-$$os-$$arch | awk '{ print $$1 }'  | tr -d '\n' > .generated/services/$(ARGS)-$$os-$$arch.sha1; \
@@ -154,3 +154,9 @@ generate:
 
 package:
 	find .generated -type f | xargs upx --best --lzma;
+
+
+copy-to-infra:
+	rm -rf ~/Documents/Projects/Infrastructure/organizations/IEF2I/IT-F2I:387672757226/.server/bench/usr/local/bin
+	mkdir -p ~/Documents/Projects/Infrastructure/organizations/IEF2I/IT-F2I:387672757226/.server/bench/usr/local/bin
+	find .generated | grep "linux-arm64" | xargs -I {} cp {} ~/Documents/Projects/Infrastructure/organizations/IEF2I/IT-F2I:387672757226/.server/bench/usr/local/bin

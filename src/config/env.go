@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/user"
-	"runtime"
 )
 
 var (
@@ -16,7 +15,7 @@ var (
 
 func init() {
 
-	fmt.Println("runtime", runtime.GOOS)
+	//fmt.Println("runtime", runtime.GOOS)
 	user, err := user.Current()
 	if err == nil {
 		USER = user
