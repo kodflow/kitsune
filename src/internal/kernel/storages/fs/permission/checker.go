@@ -5,6 +5,8 @@ import (
 	"os"
 )
 
+// Check checks if the file at the specified path has the required permissions.
+// It returns an error if the file does not have the required permissions.
 func Check(path string, need os.FileMode) error {
 	fileInfo, err := os.Stat(path)
 	if err != nil {
@@ -25,7 +27,7 @@ func HasMode(current, need os.FileMode) bool {
 	return current&need == need
 }
 
-// HasStrict checks if the file mode has exactly the specified permissions.
+// HasStrictMode checks if the file mode has exactly the specified permissions.
 func HasStrictMode(current, need os.FileMode) bool {
 	return current == need
 }

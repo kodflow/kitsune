@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSendRequest(t *testing.T) {
+func TestHTTPClient(t *testing.T) {
 	// Création d'un serveur HTTP de test
 	server := setupHTTPServer(80, 443)
 	server.Start()

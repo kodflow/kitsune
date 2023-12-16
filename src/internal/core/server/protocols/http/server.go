@@ -19,6 +19,7 @@ import (
 type Server struct {
 	standard *Engine
 	secure   *Engine
+	router   *api.Router
 }
 
 type ServerCfg struct {
@@ -39,6 +40,7 @@ type Engine struct {
 
 func NewServer(cfg *ServerCfg) *Server {
 	server := &Server{
+		router: api.MakeRouter(),
 		standard: &Engine{
 			PORT:   cfg.HTTP,
 			DOMAIN: cfg.DOMAIN,

@@ -15,7 +15,6 @@ var (
 
 func init() {
 
-	//fmt.Println("runtime", runtime.GOOS)
 	user, err := user.Current()
 	if err == nil {
 		USER = user

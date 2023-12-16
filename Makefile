@@ -60,7 +60,7 @@ tests:
 	find . -name "*_test.go" | xargs grep -l "func TestNotExistInThisFile" | xargs rm
 
 testsum: install-gotestsum
-	gotestsum -- -v `go list ./...` -coverprofile=coverage.txt -covermode=atomic
+	gotestsum -- -v `go list ./...` -coverprofile=coverage.txt -covermode=atomic 
 
 install-gotestsum:
 	if ! command -v gotestsum > /dev/null; then \

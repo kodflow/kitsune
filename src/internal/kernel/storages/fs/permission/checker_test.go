@@ -5,49 +5,55 @@ import (
 	"testing"
 )
 
-func TestCheck_Success(t *testing.T) {
+// TestCheckSuccess tests the Check function when the file has the required permissions.
+func TestCheckSuccess(t *testing.T) {
+	// Create a temporary directory
 	dir, err := os.MkdirTemp("", "test")
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
 	defer os.RemoveAll(dir)
 
-	// Définir les permissions pour le dossier
+	// Set the permissions of the directory to 0700
 	err = os.Chmod(dir, 0700)
 	if err != nil {
 		t.Fatalf("failed to set permissions: %v", err)
 	}
 
-	// Vérifier les permissions en utilisant la fonction Check
+	// Check if the directory has the required permissions
 	err = Check(dir, 0700)
 	if err != nil {
 		t.Errorf("failed to check permissions: %v", err)
 	}
 }
 
-func TestCheck_Fail(t *testing.T) {
-	// Utilisation d'un chemin non existant avec des permissions aléatoires pour échouer le test
+// TestCheckFail tests the Check function when the file does not have the required permissions.
+func TestCheckFail(t *testing.T) {
+	// Check if a fake path has the required permissions
 	if err := Check("/fake/path", 0700); err == nil {
 		t.Errorf("expected to fail permission check, but passed")
 	} else {
 		t.Log("expected failure, error:", err)
 	}
 }
-func TestCheck_InvalidPermissions(t *testing.T) {
+
+// TestCheckInvalidPermissions tests the Check function when the file has invalid permissions.
+func TestCheckInvalidPermissions(t *testing.T) {
+	// Create a temporary directory
 	dir, err := os.MkdirTemp("", "test-permission")
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
 	defer os.RemoveAll(dir)
 
-	// Définir les permissions pour le dossier
-	err = os.Chmod(dir, 0755) // permissions de lecture/écriture pour l'utilisateur, lecture/exécution pour les autres
+	// Set the permissions of the directory to 0755
+	err = os.Chmod(dir, 0755)
 	if err != nil {
 		t.Fatalf("failed to set permissions: %v", err)
 	}
 
-	// Essayer de vérifier le répertoire avec des permissions qui ne sont pas celles définies
-	err = Check(dir, 0700) // 0700 = rwx pour l'utilisateur uniquement
+	// Check if the directory has the required permissions
+	err = Check(dir, 0700)
 	if err == nil {
 		currentPerms, _ := os.Stat(dir)
 		t.Errorf("expected to fail permission check for invalid permissions, but passed. Current permissions: %v", currentPerms.Mode().Perm())

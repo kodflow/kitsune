@@ -10,15 +10,24 @@ import (
 	"github.com/kodmain/kitsune/src/internal/kernel/daemon"
 )
 
+// Process represents a process that can be started and managed.
 type Process struct {
-	Name       string
-	args       []string
-	command    string
-	IsRunning  bool
-	Proc       *exec.Cmd
-	pidHandler *daemon.PIDHandler
+	Name       string             // Name is the name of the process.
+	args       []string           // args are the arguments passed to the process.
+	command    string             // command is the command used to start the process.
+	IsRunning  bool               // IsRunning indicates whether the process is currently running.
+	Proc       *exec.Cmd          // Proc is the underlying exec.Cmd instance representing the process.
+	pidHandler *daemon.PIDHandler // pidHandler is used to handle the process ID.
 }
 
+// Kill terminates the process associated with the Process object.
+// It first retrieves the process ID (PID) using the pidHandler.
+// If the PID is not 0, it uses os.FindProcess to find the process.
+// Then, it calls the Kill method on the process to terminate it.
+// If an error occurs during the process termination or while clearing the PID file,
+// it returns an error with a descriptive message.
+// If the PID is 0, indicating that no process is associated with the Process object,
+// it returns nil.
 func (p *Process) Kill() error {
 	if pid, _ := p.pidHandler.GetPID(); pid != 0 {
 		process, err := os.FindProcess(pid)
@@ -40,6 +49,9 @@ func (p *Process) Kill() error {
 	return nil
 }
 
+// Restart restarts the process.
+// It stops the process, waits for 1 second, and then starts it again.
+// If stopping the process or starting it again fails, an error is returned.
 func (p *Process) Restart() error {
 	err := p.Stop()
 	if err != nil {
@@ -56,6 +68,10 @@ func (p *Process) Restart() error {
 	return nil
 }
 
+// Start starts the process.
+// It returns an error if the process is already running or if it fails to start.
+// The function starts the process in a separate goroutine and updates the IsRunning flag accordingly.
+// If the process stops, it will be automatically restarted.
 func (p *Process) Start() error {
 	if p.IsRunning {
 		return fmt.Errorf("process %s is already Isrunning", p.Name)
@@ -80,6 +96,8 @@ func (p *Process) Start() error {
 	return nil
 }
 
+// Stop stops the process.
+// It returns an error if the process is not running or if there was an error while stopping the process.
 func (p *Process) Stop() error {
 	if !p.IsRunning {
 		return fmt.Errorf("process %s is not Isrunning", p.Name)

@@ -4,7 +4,9 @@ import (
 	"flag"
 	"log"
 	"math"
+	"os"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -20,7 +22,9 @@ var (
 )
 
 func init() {
-	flag.Parse()
+	if !strings.HasSuffix(os.Args[0], ".test") {
+		flag.Parse()
+	}
 }
 
 func main() { //runtime.NumCPU()

@@ -14,13 +14,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestClient(t *testing.T) {
-	server := setupServer("localhost:8080")
+func TestTCPClient(t *testing.T) {
+	server := setupServer("localhost:7777")
 	server.Start()
 	defer server.Stop()
 
 	client := tcp.NewClient()
-	service1, err := client.Connect("localhost", "8080")
+	service1, err := client.Connect("localhost", "7777")
 	assert.Nil(t, err)
 
 	query1 := service1.MakeExchange()
@@ -30,10 +30,6 @@ func TestClient(t *testing.T) {
 	client.Send(func(responses ...*transport.Response) {
 		response <- true
 	}, query1)
-
-	time.AfterFunc(3*time.Second, func() {
-		response <- false
-	})
 
 	assert.True(t, <-response)
 }

@@ -53,3 +53,7 @@ func (r *Router) Patch(url string, handlers ...*Handler) {
 func (r *Router) Delete(url string, handlers ...*Handler) {
 	r.delete[url] = append(r.delete[url], handlers...)
 }
+
+func MakeRouter() *Router {
+	return &Router{}
+}

@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/kodmain/kitsune/src/internal/core/server/api"
+	"github.com/kodmain/kitsune/src/internal/core/server/handler"
 	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
 )
 
@@ -21,14 +22,14 @@ import (
 type Server struct {
 	Address  string       // Address to listen on
 	listener net.Listener // TCP Listener object
-	engine   *api.Engine
+	router   *api.Router
 }
 
 // NewServer creates a new Server instance with the specified listening address.
 func NewServer(address string) *Server {
 	return &Server{
 		Address: address,
-		engine:  api.MakeEngine(),
+		router:  api.MakeRouter(),
 	}
 }
 
@@ -96,7 +97,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 			break
 		}
 
-		s.sendResponse(writer, s.engine.Handler(data))
+		s.sendResponse(writer, handler.TCPHandler(data))
 	}
 }
 
