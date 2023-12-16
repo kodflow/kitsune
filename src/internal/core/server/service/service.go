@@ -31,9 +31,14 @@ type Service struct {
 }
 
 // Create initializes a Service instance.
-// address: The address of the remote service.
-// port: The port number of the remote service.
-// Returns a pointer to a Service instance and an error if any.
+//
+// Parameters:
+// - address: The address of the remote service.
+// - port: The port number of the remote service.
+//
+// Returns:
+// - service: A pointer to a Service instance.
+// - err: An error if any.
 func Create(address, port string) (*Service, error) {
 	v4, err := uuid.NewRandom()
 	if err != nil {
@@ -55,7 +60,9 @@ func Create(address, port string) (*Service, error) {
 }
 
 // Connect establishes a connection to the server.
-// Returns an error if the connection fails or if already connected.
+//
+// Returns:
+// - err: An error if the connection fails or if already connected.
 func (s *Service) Connect() error {
 	if s.Connected {
 		return errors.New("already connected")
@@ -75,7 +82,9 @@ func (s *Service) Connect() error {
 }
 
 // Disconnect closes the connection.
-// Returns an error if the disconnection fails.
+//
+// Returns:
+// - err: An error if the disconnection fails.
 func (s *Service) Disconnect() error {
 	s.Connected = false
 
@@ -88,90 +97,140 @@ func (s *Service) Disconnect() error {
 }
 
 // Write sends data to the service.
-// data: Buffer containing the data to be sent.
-// Returns the number of bytes written and an error if any.
+//
+// Parameters:
+// - data: Buffer containing the data to be sent.
+//
+// Returns:
+// - n: The number of bytes written.
+// - err: An error if any.
 func (s *Service) Write(data *bytes.Buffer) (int, error) {
 	if s.Connected {
-		i, err := s.network.Write(data.Bytes())
+		n, err := s.network.Write(data.Bytes())
 		if err != nil {
 			s.Connected = false
 			s.reconnect()
 			return 0, errors.New("lost connection")
 		}
 
-		return i, err
+		return n, err
 	}
 
 	return 0, errors.New("not connected")
 }
 
-// reconnect tries to re-establish the connection every 5 seconds.
+// reconnect tries to re-establish the connection every X seconds.
 func (s *Service) reconnect() {
+	// Check if a reconnection attempt is already in progress.
 	if s.tryReconnect {
 		return
 	}
 
+	// Set the tryReconnect flag to indicate a reconnection attempt is starting.
 	s.tryReconnect = true
+
+	// Use a deferred function to reset the tryReconnect flag when the function exits.
 	defer func() { s.tryReconnect = false }()
+
+	// Initialize a timeout counter.
 	timeout := 0
 
+	// Loop until the connection is re-established or until a timeout is reached.
 	for {
+		// If already connected, exit the loop.
 		if s.Connected {
 			return
 		}
 
+		// Try to establish a connection.
 		if err := s.Connect(); err == nil {
+			// Reconnection successful.
 			fmt.Println("Reconnected")
 			return
 		}
 
+		// Sleep for one second before attempting to reconnect again.
 		time.Sleep(time.Second)
 		timeout++
 	}
 }
 
-// handleServerResponses écoute les réponses du serveur et les traite.
+// handleServerResponses listens to server responses and processes them.
 func (s *Service) handleServerResponses() {
+	// Create a reader to read data from the network connection.
 	reader := bufio.NewReader(s.network)
+
+	// Continuously listen for server responses while the service is connected.
 	for s.isConnected() {
+		// Read the length of the incoming message.
 		length, err := s.readMessageLength(reader)
-		if err != nil {
-			break
+		if logger.Error(err) {
+			break // Exit the loop if there's an error reading the message length.
 		}
 
+		// Read the data with the specified length.
 		data, err := s.readData(reader, length)
-		if err != nil {
+		if logger.Error(err) {
+			// Handle any read errors and exit the loop.
 			handleReadError(s, err)
 			break
 		}
 
+		// Unmarshal the received data into a response object.
 		res, err := unmarshalResponse(data)
-		if err != nil {
-			logger.Error(err)
+		if logger.Error(err) {
+			// Log an error if unmarshaling fails and continue to the next iteration.
 			logger.Info(data)
 			continue
 		}
 
+		// Process the received response.
 		s.processResponse(res)
 	}
 }
 
+// isConnected checks if the service is connected.
+//
+// Returns:
+// - connected: True if the service is connected, false otherwise.
 func (s *Service) isConnected() bool {
 	return s.Connected
 }
 
+// readMessageLength reads the length of a message from the reader.
+//
+// Parameters:
+// - reader: The bufio.Reader to read from.
+//
+// Returns:
+// - length: The length of the message.
+// - err: An error if any.
 func (s *Service) readMessageLength(reader *bufio.Reader) (uint32, error) {
 	var length uint32
 	err := binary.Read(reader, binary.LittleEndian, &length)
 	return length, err
 }
 
+// readData reads data of a specified length from the reader.
+//
+// Parameters:
+// - reader: The bufio.Reader to read from.
+// - length: The length of data to read.
+//
+// Returns:
+// - data: The read data.
+// - err: An error if any.
 func (s *Service) readData(reader *bufio.Reader, length uint32) ([]byte, error) {
 	data := make([]byte, length)
 	_, err := io.ReadFull(reader, data)
 	return data, err
 }
 
+// handleReadError handles read errors, disconnects the service if needed.
+//
+// Parameters:
+// - s: The Service instance.
+// - err: The error to handle.
 func handleReadError(s *Service, err error) {
 	s.Disconnect()
 	if err == io.EOF {
@@ -181,12 +240,24 @@ func handleReadError(s *Service, err error) {
 	}
 }
 
+// unmarshalResponse unmarshals a response from binary data.
+//
+// Parameters:
+// - data: The binary data to unmarshal.
+//
+// Returns:
+// - res: The unmarshaled response.
+// - err: An error if any.
 func unmarshalResponse(data []byte) (*transport.Response, error) {
 	res := &transport.Response{}
 	err := proto.Unmarshal(data, res)
 	return res, err
 }
 
+// processResponse processes a response, resolves associated promises.
+//
+// Parameters:
+// - res: The response to process.
 func (s *Service) processResponse(res *transport.Response) {
 	if res.Pid != "" {
 		p, err := promise.Find(res.Pid)
@@ -200,8 +271,12 @@ func (s *Service) processResponse(res *transport.Response) {
 }
 
 // MakeExchange creates a new Exchange instance for this service.
-// answer: Optional boolean argument to specify if the exchange should be answered.
-// Returns a pointer to a new Exchange instance.
+//
+// Parameters:
+// - answer: Optional boolean argument to specify if the exchange should be answered.
+//
+// Returns:
+// - exchange: A pointer to a new Exchange instance.
 func (s *Service) MakeExchange(answer ...bool) *Exchange {
 	if len(answer) == 0 {
 		return NewExchange(s.Name, true)

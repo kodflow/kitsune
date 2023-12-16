@@ -14,6 +14,9 @@ const (
 	NONEXISTENT_DIR_PATH = "/tmp/kitsune/dir-nonexistent"
 )
 
+// TestCreateDirectory tests the directory creation functionality in the fs package.
+// It ensures that a directory is successfully created without errors.
+// This test also verifies that creating an already existing directory does not cause an error.
 func TestCreateDirectory(t *testing.T) {
 	defer os.RemoveAll("/tmp/kitsune")
 
@@ -30,6 +33,8 @@ func TestCreateDirectory(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+// TestExistsDirectory tests the directory existence checking functionality.
+// It verifies that the function correctly identifies the existence and non-existence of a directory.
 func TestExistsDirectory(t *testing.T) {
 	err := fs.CreateDirectory(VALID_DIR_PATH)
 	assert.NoError(t, err)
@@ -44,6 +49,8 @@ func TestExistsDirectory(t *testing.T) {
 	assert.False(t, exists)
 }
 
+// TestDeleteDirectory tests the directory deletion functionality.
+// It ensures that a directory is successfully deleted and confirms its non-existence post-deletion.
 func TestDeleteDirectory(t *testing.T) {
 	err := fs.CreateDirectory(VALID_DIR_PATH)
 	assert.NoError(t, err)

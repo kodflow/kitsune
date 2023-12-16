@@ -14,6 +14,8 @@ const (
 	NONEXISTENT_FILE_PATH = "/tmp/kitsune/file-nonexistent"
 )
 
+// TestCreateFile tests the file creation functionality in the fs package.
+// It ensures that a file is successfully created without errors.
 func TestCreateFile(t *testing.T) {
 	defer os.RemoveAll("/tmp/kitsune")
 
@@ -22,6 +24,8 @@ func TestCreateFile(t *testing.T) {
 	assert.NotNil(t, fs)
 }
 
+// TestPermissions tests the setting of file permissions.
+// It verifies that the file permissions are correctly set and can be retrieved.
 func TestPermissions(t *testing.T) {
 	defer os.RemoveAll("/tmp/kitsune")
 
@@ -36,6 +40,8 @@ func TestPermissions(t *testing.T) {
 	assert.Equal(t, os.FileMode(0600), info.Mode().Perm())
 }
 
+// TestOpenFile tests the file opening functionality.
+// It checks if a file can be opened and then verifies its existence.
 func TestOpenFile(t *testing.T) {
 	defer os.Remove(VALID_FILE_PATH)
 
@@ -48,6 +54,8 @@ func TestOpenFile(t *testing.T) {
 	assert.True(t, exists)
 }
 
+// TestDeleteFile tests the file deletion functionality.
+// It ensures that a file is deleted and confirms its non-existence.
 func TestDeleteFile(t *testing.T) {
 	_, err := fs.CreateFile(VALID_FILE_PATH, &fs.Options{Perms: 0644})
 	assert.NoError(t, err)
@@ -59,6 +67,8 @@ func TestDeleteFile(t *testing.T) {
 	assert.False(t, exists)
 }
 
+// TestSHA1File tests the SHA1 hashing functionality for files.
+// It verifies that the hash is generated correctly and is not empty.
 func TestSHA1File(t *testing.T) {
 	filePath := "test_sha1.txt"
 	content := "Hello, World!"
@@ -72,6 +82,8 @@ func TestSHA1File(t *testing.T) {
 	assert.NotEmpty(t, hash)
 }
 
+// TestExistsFile checks if the file existence checking functionality works.
+// It verifies both the existence and non-existence cases.
 func TestExistsFile(t *testing.T) {
 	filePath := "test_exists.txt"
 
@@ -86,6 +98,8 @@ func TestExistsFile(t *testing.T) {
 	assert.False(t, exists)
 }
 
+// TestStatFile tests the file status retrieval functionality.
+// It confirms that the file status information is correctly obtained.
 func TestStatFile(t *testing.T) {
 	filePath := "test_stat.txt"
 	defer os.Remove(filePath)
@@ -98,6 +112,8 @@ func TestStatFile(t *testing.T) {
 	assert.NotNil(t, info)
 }
 
+// TestReadFile tests reading content from a file.
+// It ensures that the content read is the same as what was written.
 func TestReadFile(t *testing.T) {
 	filePath := "test_read.txt"
 	content := "Test content"
@@ -111,6 +127,8 @@ func TestReadFile(t *testing.T) {
 	assert.Equal(t, content, string(readContent))
 }
 
+// TestWriteFile tests the file writing functionality.
+// It verifies that the content written to a file can be read back accurately.
 func TestWriteFile(t *testing.T) {
 	filePath := "test_write.txt"
 	content := "New content"
@@ -124,6 +142,8 @@ func TestWriteFile(t *testing.T) {
 	assert.Equal(t, content, string(readContent))
 }
 
+// TestContains tests the substring checking functionality in a file.
+// It checks both the presence and absence of specified substrings.
 func TestContains(t *testing.T) {
 	filePath := "test_contains.txt"
 	content := "Hello, World!"

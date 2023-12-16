@@ -11,10 +11,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// newTestLogger creates and returns a new logger instance for testing.
+// This logger is configured with a file writer and trace level logging.
 func newTestLogger() *logger.Logger {
 	return logger.New(writers.FILE, levels.TRACE)
 }
 
+// TestLoggerErrorMethods tests the error handling methods of the logger.
+// It verifies that Error, Fatal, and Panic methods return true when provided with an error.
 func TestLoggerErrorMethods(t *testing.T) {
 	logger := newTestLogger()
 
@@ -24,6 +28,8 @@ func TestLoggerErrorMethods(t *testing.T) {
 	assert.True(t, logger.Panic(err), "Panic should return true if an error is provided")
 }
 
+// TestLoggerLevels tests the logger's ability to handle different logging levels.
+// It writes messages at various levels and checks if they are correctly written to the respective output files.
 func TestLoggerLevels(t *testing.T) {
 	logger := newTestLogger()
 

@@ -1,7 +1,6 @@
 package fs
 
 import (
-	"fmt"
 	"io/fs"
 	"os"
 	"os/user"
@@ -11,16 +10,23 @@ import (
 )
 
 // Options represents the options for file system storage.
+// This struct holds the configuration for file or directory access and permissions.
+//
+// Attributes:
+// - User: *user.User The user that owns the file or directory.
+// - Perms: fs.FileMode The permissions for the file or directory.
 type Options struct {
 	User  *user.User  // The user that owns the file.
 	Perms fs.FileMode // The permissions for the file.
 }
 
-// defaultOptions returns the default options for the storage filesystem.
-// It creates and returns a new Options struct with the default values.
-// The default values include the user and permissions.
-// The user is obtained from the config.USER constant.
-// The permissions are set to 0644.
+// defaultFileOptions returns the default options for the storage filesystem.
+// It creates and returns a new Options struct with the default values for file storage.
+// The default user is obtained from config.USER and the default permissions are set to 0644.
+//
+// Returns:
+// - *Options: The default file Options.
+// - error: nil since there is no error generation in this function.
 func defaultFileOptions() (*Options, error) {
 	return &Options{
 		User:  config.USER,
@@ -29,10 +35,12 @@ func defaultFileOptions() (*Options, error) {
 }
 
 // defaultDirectoryOptions returns the default options for a directory.
-// It creates and returns a new Options struct with the following values:
-// - User: the value of config.USER
-// - Perms: 0755
-// It returns the newly created Options struct and nil error.
+// It creates and returns a new Options struct with the default values for directory storage.
+// The default user is config.USER and the default permissions are set to 0755.
+//
+// Returns:
+// - *Options: The default directory Options.
+// - error: nil since there is no error generation in this function.
 func defaultDirectoryOptions() (*Options, error) {
 	return &Options{
 		User:  config.USER,
@@ -41,14 +49,15 @@ func defaultDirectoryOptions() (*Options, error) {
 }
 
 // resolveFileOptions resolves the file options.
-// It returns the provided file options if any, or the default options if no options are specified.
+// It checks if specific options are provided; if not, it defaults to the standard file options.
+// This function is used to determine the final settings for file operations.
 //
 // Parameters:
-// - options: The file options (optional)
+// - options: []*Options Optional parameter for specifying custom file options.
 //
 // Returns:
-// - *Options: The resolved file options
-// - error: An error if there was a problem resolving the options
+// - *Options: The resolved file Options.
+// - error: An error if resolving the options fails.
 func resolveFileOptions(options ...*Options) (*Options, error) {
 	if len(options) > 0 && options[0] != nil {
 		if options[0].User == nil {
@@ -66,14 +75,15 @@ func resolveFileOptions(options ...*Options) (*Options, error) {
 }
 
 // resolveDirectoryOptions resolves the directory options.
-// It returns the provided directory options if any, or the default options if no options are specified.
+// It checks if specific options are provided; if not, it defaults to the standard directory options.
+// This function is used to determine the final settings for directory operations.
 //
 // Parameters:
-// - options: The directory options (optional)
+// - options: []*Options Optional parameter for specifying custom directory options.
 //
 // Returns:
-// - *Options: The resolved directory options
-// - error: An error if there was a problem resolving the options
+// - *Options: The resolved directory Options.
+// - error: An error if resolving the options fails.
 func resolveDirectoryOptions(options ...*Options) (*Options, error) {
 	if len(options) > 0 && options[0] != nil {
 		if options[0].User == nil {
@@ -90,67 +100,51 @@ func resolveDirectoryOptions(options ...*Options) (*Options, error) {
 	return defaultDirectoryOptions()
 }
 
-// AddPerms ajoute les droits d'accès spécifiés aux options de stockage.
-// Les droits d'accès spécifiés sont ajoutés aux droits d'accès existants.
+// AddPerms adds the specified permissions to the current permissions of Options.
 //
-// Paramètres :
-// - perms : Les droits d'accès à ajouter.
-//
-// Retour :
-// Aucun.
+// Parameters:
+// - perms: fs.FileMode The permissions to add to the current set.
 func (co *Options) AddPerms(perms fs.FileMode) {
 	co.Perms |= perms
 }
 
-// RemovePerms supprime les permissions spécifiées des options.
-// Les permissions à supprimer sont spécifiées par le paramètre "perms".
-// Cette méthode met à jour les permissions des options en utilisant l'opérateur
-// bitwise AND NOT (^=) pour supprimer les permissions spécifiées.
+// RemovePerms removes the specified permissions from the current permissions of Options.
 //
-// Paramètres:
-// - perms: Les permissions à supprimer.
-//
-// Retour:
-// Aucun.
+// Parameters:
+// - perms: fs.FileMode The permissions to remove from the current set.
 func (co *Options) RemovePerms(perms fs.FileMode) {
 	co.Perms &^= perms
 }
 
-// perms sets the permissions and ownership of the specified path.
-// It takes the path and options as parameters and returns an error if any.
+// perms sets the permissions and ownership for a given path according to the provided Options.
+// This function changes the owner and permissions of the file or directory at the given path.
 //
 // Parameters:
-// - path: The path to set permissions and ownership for
-// - options: The options containing the desired permissions and ownership
+// - path: string The file system path for which to set permissions and ownership.
+// - options: *Options The options specifying the desired permissions and owner.
 //
 // Returns:
-// - error: An error if any of the operations fail
+// - error: An error if setting permissions or ownership fails.
 func perms(path string, options *Options) error {
-	fmt.Println("perms", options)
 	uid, err := strconv.Atoi(options.User.Uid)
 	if err != nil {
-		fmt.Println("a")
 		return err
 	}
 
 	gid, err := strconv.Atoi(options.User.Gid)
 	if err != nil {
-		fmt.Println("b")
 		return err
 	}
 
 	err = os.Chown(path, uid, gid)
 	if err != nil {
-		fmt.Println("c")
 		return err
 	}
 
 	err = os.Chmod(path, options.Perms)
 	if err != nil {
-		fmt.Println("d")
 		return err
 	}
 
-	fmt.Println("e")
 	return nil
 }

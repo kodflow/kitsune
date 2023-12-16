@@ -7,6 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TestLevelString tests the String method of the levels.TYPE type.
+// It verifies that each log level is correctly converted to its string representation.
 func TestLevelString(t *testing.T) {
 	tests := []struct {
 		level    levels.TYPE
@@ -30,6 +32,9 @@ func TestLevelString(t *testing.T) {
 	}
 }
 
+// TestLevelColor tests the Color method of the levels.TYPE type.
+// It verifies that each log level is associated with the correct color code.
+// This test also includes a case for an unknown log level.
 func TestLevelColor(t *testing.T) {
 	tests := []struct {
 		level    levels.TYPE

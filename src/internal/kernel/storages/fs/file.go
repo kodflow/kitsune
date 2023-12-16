@@ -13,10 +13,11 @@ import (
 )
 
 // CreateFile creates a file at the specified file path with the given options.
+// It wraps the createOrOpenFile function with specific flags for file creation.
 //
 // Parameters:
-// - filePath: The path of the file to create.
-// - options: The options to apply when creating the file.
+// - filePath: string The path of the file to create.
+// - options: []*Options Optional parameters to specify file options.
 //
 // Returns:
 // - *os.File: The created file.
@@ -26,10 +27,11 @@ func CreateFile(filePath string, options ...*Options) (*os.File, error) {
 }
 
 // Permissions sets the permissions of the file at the specified file path with the given options.
+// It uses the resolveFileOptions function to determine the options and sets permissions accordingly.
 //
 // Parameters:
-// - filePath: The path of the file to set permissions for.
-// - options: The options to apply when setting permissions.
+// - filePath: string The path of the file to set permissions for.
+// - options: []*Options Optional parameters to specify file options.
 //
 // Returns:
 // - error: An error if any occurred during the process.
@@ -42,18 +44,27 @@ func Permissions(filePath string, options ...*Options) error {
 	return perms(filePath, opts)
 }
 
+// OpenFile opens a file at the specified file path with the given options.
+// It wraps the createOrOpenFile function with specific flags for opening a file for appending and writing.
+//
+// Parameters:
+// - filePath: string The path of the file to open.
+// - options: []*Options Optional parameters to specify file options.
+//
+// Returns:
+// - *os.File: The opened file.
+// - error: An error if any occurred during the process.
 func OpenFile(filePath string, options ...*Options) (*os.File, error) {
 	return createOrOpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, options...)
 }
 
 // createOrOpenFile creates or opens a file at the specified file path with the given flags and options.
-// It resolves the file options, creates the necessary directory, opens the file, sets the permissions,
-// and returns the opened file or an error if any occurred.
+// It resolves file options, creates the necessary directory, opens the file, sets permissions, and returns the file.
 //
 // Parameters:
-// - filePath: The path of the file to create or open.
-// - flag: The flags to use when opening the file.
-// - options: The options to apply when creating or opening the file.
+// - filePath: string The path of the file to create or open.
+// - flag: int The flags to use when opening the file.
+// - options: []*Options Optional parameters to specify file options.
 //
 // Returns:
 // - *os.File: The opened file.
@@ -87,9 +98,10 @@ func createOrOpenFile(filePath string, flag int, options ...*Options) (*os.File,
 }
 
 // DeleteFile deletes the file at the specified file path.
+// It simply calls os.Remove to delete the file.
 //
 // Parameters:
-// - filePath: The path of the file to delete.
+// - filePath: string The path of the file to delete.
 //
 // Returns:
 // - error: An error if any occurred during the process.
@@ -98,12 +110,13 @@ func DeleteFile(filePath string) error {
 }
 
 // SHA1File calculates the SHA1 hash of the file at the specified file path.
+// It opens the file, calculates its SHA1 hash, and returns the hash as a hex string.
 //
 // Parameters:
-// - filePath: The path of the file to calculate the SHA1 hash for.
+// - filePath: string The path of the file to calculate the SHA1 hash for.
 //
 // Returns:
-// - string: The SHA1 hash of the file.
+// - string: The SHA1 hash of the file as a hex string.
 // - error: An error if any occurred during the process.
 func SHA1File(filePath string) (string, error) {
 	file, err := os.Open(filePath)
@@ -120,13 +133,14 @@ func SHA1File(filePath string) (string, error) {
 	return hex.EncodeToString(hash.Sum(nil)), nil
 }
 
-// ExistsFile checks if the file at the specified file path exists.
+// ExistsFile checks if the file at the specified file path exists and is not a directory.
+// It uses os.Stat to get file information and checks if the file is not a directory.
 //
 // Parameters:
-// - filePath: The path of the file to check.
+// - filePath: string The path of the file to check.
 //
 // Returns:
-// - bool: true if the file exists, false otherwise.
+// - bool: true if the file exists and is not a directory, false otherwise.
 func ExistsFile(filePath string) bool {
 	info, err := os.Stat(filePath)
 	if os.IsNotExist(err) {
@@ -136,9 +150,10 @@ func ExistsFile(filePath string) bool {
 }
 
 // StatFile returns the file information for the file at the specified file path.
+// It calls os.Stat to retrieve file information.
 //
 // Parameters:
-// - filePath: The path of the file to get information for.
+// - filePath: string The path of the file to get information for.
 //
 // Returns:
 // - fs.FileInfo: The file information.
@@ -148,9 +163,10 @@ func StatFile(filePath string) (fs.FileInfo, error) {
 }
 
 // ReadFile reads the content of the file at the specified file path.
+// It uses os.ReadFile to read and return the content of the file.
 //
 // Parameters:
-// - filePath: The path of the file to read.
+// - filePath: string The path of the file to read.
 //
 // Returns:
 // - []byte: The content of the file.
@@ -160,10 +176,11 @@ func ReadFile(filePath string) ([]byte, error) {
 }
 
 // WriteFile writes the content to the file at the specified file path.
+// It creates the necessary directory and then writes the content to the file using os.WriteFile.
 //
 // Parameters:
-// - filePath: The path of the file to write to.
-// - content: The content to write to the file.
+// - filePath: string The path of the file to write to.
+// - content: string The content to write to the file.
 //
 // Returns:
 // - error: An error if any occurred during the process.
@@ -177,10 +194,11 @@ func WriteFile(filePath string, content string) error {
 }
 
 // Contains checks if the file at the specified file path contains the given substring.
+// It opens the file, scans it line by line, and checks if any line contains the substring.
 //
 // Parameters:
-// - filePath: The path of the file to check.
-// - substring: The substring to search for in the file.
+// - filePath: string The path of the file to check.
+// - substring: string The substring to search for in the file.
 //
 // Returns:
 // - bool: true if the file contains the substring, false otherwise.
