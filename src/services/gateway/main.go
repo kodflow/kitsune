@@ -10,8 +10,8 @@ func main() {
 		Name: "HTTP Server",
 		Call: func() error {
 			server := http.NewServer(&http.ServerCfg{
-				HTTP:  80,
-				HTTPS: 443,
+				HTTP:  "80",
+				HTTPS: "443",
 				//DOMAIN: "aube.io",
 				//SUBS:   []string{"home"},
 			})
