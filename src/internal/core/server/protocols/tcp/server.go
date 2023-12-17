@@ -9,9 +9,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/kodmain/kitsune/src/internal/core/server/api"
-	"github.com/kodmain/kitsune/src/internal/core/server/handler"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
+	"github.com/kodflow/kitsune/src/internal/core/server/api"
+	"github.com/kodflow/kitsune/src/internal/core/server/handler"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
 )
 
 // Server represents a TCP server and contains information about the address it listens on

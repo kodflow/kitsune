@@ -1,4 +1,4 @@
-FROM kodmain/builder:all as builder
+FROM kodflow/builder:all as builder
 
 USER root
 

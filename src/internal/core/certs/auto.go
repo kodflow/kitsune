@@ -3,7 +3,7 @@ package certs
 import (
 	"crypto/tls"
 
-	"github.com/kodmain/kitsune/src/config"
+	"github.com/kodflow/kitsune/src/config"
 	"golang.org/x/crypto/acme/autocert"
 )
 

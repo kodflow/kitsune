@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
 	"github.com/stretchr/testify/assert"
 )
 

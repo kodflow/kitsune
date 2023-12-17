@@ -2,7 +2,7 @@ package transport
 
 import (
 	"github.com/google/uuid"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport/proto/generated"
 )
 
 // Empty represents an empty byte slice.

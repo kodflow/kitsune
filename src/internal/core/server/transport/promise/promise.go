@@ -4,7 +4,7 @@ package promise
 import (
 	"sync"
 
-	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport/proto/generated"
 )
 
 // Promise struct represents an asynchronous operation that may complete at some point.

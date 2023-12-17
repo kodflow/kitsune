@@ -12,10 +12,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/kodmain/kitsune/src/config"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport/promise"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
+	"github.com/kodflow/kitsune/src/config"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport/promise"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport/proto/generated"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
 	"google.golang.org/protobuf/proto"
 )
 

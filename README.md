@@ -1,18 +1,18 @@
-# Kitsune [![Reference](https://pkg.go.dev/badge/github.com/kodmain/kitsune.svg)](https://pkg.go.dev/github.com/kodmain/kitsune) [![License](https://img.shields.io:/github/license/kodmain/kitsune)](https://github.com/kodmain/kitsune/src/blob/main/LICENSE.md) ![Latest Stable Version](https://img.shields.io/github/v/tag/kodmain/kitsune?label=version)
+# Kitsune [![Reference](https://pkg.go.dev/badge/github.com/kodflow/kitsune.svg)](https://pkg.go.dev/github.com/kodflow/kitsune) [![License](https://img.shields.io:/github/license/kodflow/kitsune)](https://github.com/kodflow/kitsune/src/blob/main/LICENSE.md) ![Latest Stable Version](https://img.shields.io/github/v/tag/kodflow/kitsune?label=version)
 
 
-[![codecov](https://codecov.io/gh/kodmain/kitsune/branch/main/graph/badge.svg)](https://codecov.io/gh/kodmain/kitsune)
-[![Workflow](https://img.shields.io/github/actions/workflow/status/kodmain/kitsune/main.yml)](https://github.com/kodmain/kitsune/src/actions/workflows/main.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/kodmain/kitsune)](https://goreportcard.com/report/github.com/kodmain/kitsune)
-[![Maintainability](https://api.codeclimate.com/v1/badges/06d21ae59b44e76b6713/maintainability)](https://codeclimate.com/github/kodmain/kitsune/maintainability)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/3a89526aa9624788a14e1d443a82a2f2)](https://www.codacy.com/gh/kodmain/kitsune/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=kodmain/kitsune&amp;utm_campaign=Badge_Grade)
+[![codecov](https://codecov.io/gh/kodflow/kitsune/branch/main/graph/badge.svg)](https://codecov.io/gh/kodflow/kitsune)
+[![Workflow](https://img.shields.io/github/actions/workflow/status/kodflow/kitsune/main.yml)](https://github.com/kodflow/kitsune/src/actions/workflows/main.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/kodflow/kitsune)](https://goreportcard.com/report/github.com/kodflow/kitsune)
+[![Maintainability](https://api.codeclimate.com/v1/badges/06d21ae59b44e76b6713/maintainability)](https://codeclimate.com/github/kodflow/kitsune/maintainability)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/3a89526aa9624788a14e1d443a82a2f2)](https://www.codacy.com/gh/kodflow/kitsune/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=kodflow/kitsune&amp;utm_campaign=Badge_Grade)
 
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=bugs)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=kodmain_kitsune&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=kodmain_kitsune)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=kodflow_kitsune&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=kodflow_kitsune)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=kodflow_kitsune&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=kodflow_kitsune)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=kodflow_kitsune&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=kodflow_kitsune)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=kodflow_kitsune&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=kodflow_kitsune)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=kodflow_kitsune&metric=bugs)](https://sonarcloud.io/summary/new_code?id=kodflow_kitsune)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=kodflow_kitsune&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=kodflow_kitsune)
 
 ## Description
 

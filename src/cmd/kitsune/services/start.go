@@ -6,8 +6,8 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/kodmain/kitsune/src/config"
-	"github.com/kodmain/kitsune/src/internal/kernel/storages/fs"
+	"github.com/kodflow/kitsune/src/config"
+	"github.com/kodflow/kitsune/src/internal/kernel/storages/fs"
 	"github.com/spf13/cobra"
 )
 

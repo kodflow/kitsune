@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/kodmain/kitsune/src/internal/core/server/router"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport"
+	"github.com/kodflow/kitsune/src/internal/core/server/router"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport"
 	"google.golang.org/protobuf/proto"
 )
 

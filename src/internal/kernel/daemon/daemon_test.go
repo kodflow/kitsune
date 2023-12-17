@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kodmain/kitsune/src/internal/kernel/daemon"
+	"github.com/kodflow/kitsune/src/internal/kernel/daemon"
 )
 
 func TestDaemonHandler_StartStop(t *testing.T) {

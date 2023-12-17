@@ -1,9 +1,9 @@
 package kitsune
 
 import (
-	"github.com/kodmain/kitsune/src/cmd/kitsune/install"
-	"github.com/kodmain/kitsune/src/cmd/kitsune/services"
-	"github.com/kodmain/kitsune/src/config"
+	"github.com/kodflow/kitsune/src/cmd/kitsune/install"
+	"github.com/kodflow/kitsune/src/cmd/kitsune/services"
+	"github.com/kodflow/kitsune/src/config"
 	"github.com/spf13/cobra"
 )
 

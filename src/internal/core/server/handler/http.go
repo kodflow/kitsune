@@ -4,8 +4,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/kodmain/kitsune/src/internal/core/server/router"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport"
+	"github.com/kodflow/kitsune/src/internal/core/server/router"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport"
 )
 
 // HTTPHandler handles HTTP requests and sends back HTTP responses.
