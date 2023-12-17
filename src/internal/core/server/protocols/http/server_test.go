@@ -12,7 +12,7 @@ import (
 
 func setupHTTPServer(httpPort, httpsPort int) *http.Server {
 	cfg := &http.ServerCfg{
-		DOMAIN: "localhost",
+		DOMAIN: "127.0.0.1",
 		SUBS:   []string{},
 		HTTP:   httpPort,
 		HTTPS:  httpsPort,

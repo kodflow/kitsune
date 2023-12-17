@@ -19,7 +19,7 @@ func TestHTTPClient(t *testing.T) {
 
 	req := &generated.Request{
 		Method:   "GET",
-		Endpoint: "http://localhost/",
+		Endpoint: "http://127.0.0.1/",
 	}
 
 	t.Run("GET Request", func(t *testing.T) {
@@ -29,7 +29,7 @@ func TestHTTPClient(t *testing.T) {
 
 	req = &generated.Request{
 		Method:   "GET",
-		Endpoint: "https://localhost/",
+		Endpoint: "https://127.0.0.1/",
 	}
 
 	t.Run("GET Request", func(t *testing.T) {

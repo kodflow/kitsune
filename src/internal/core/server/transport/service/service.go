@@ -261,8 +261,7 @@ func unmarshalResponse(data []byte) (*generated.Response, error) {
 func (s *Service) processResponse(res *generated.Response) {
 	if res.Pid != "" {
 		p, err := promise.Find(res.Pid)
-		if err != nil {
-			fmt.Println(err)
+		if logger.Error(err) {
 			return
 		}
 
