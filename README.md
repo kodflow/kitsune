@@ -2,7 +2,7 @@
 
 
 [![codecov](https://codecov.io/gh/kodflow/kitsune/branch/main/graph/badge.svg)](https://codecov.io/gh/kodflow/kitsune)
-[![Workflow](https://img.shields.io/github/actions/workflow/status/kodflow/kitsune/main.yml)](https://github.com/kodflow/kitsune/src/actions/workflows/main.yml)
+[![Workflow](https://img.shields.io/github/actions/workflow/status/kodflow/kitsune/main.yml)](https://github.com/kodflow/kitsune/actions/workflows/main.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/kodflow/kitsune)](https://goreportcard.com/report/github.com/kodflow/kitsune)
 [![Maintainability](https://api.codeclimate.com/v1/badges/06d21ae59b44e76b6713/maintainability)](https://codeclimate.com/github/kodflow/kitsune/maintainability)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/3a89526aa9624788a14e1d443a82a2f2)](https://www.codacy.com/gh/kodflow/kitsune/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=kodflow/kitsune&amp;utm_campaign=Badge_Grade)
