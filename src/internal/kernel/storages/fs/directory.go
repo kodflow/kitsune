@@ -18,14 +18,11 @@ func CreateDirectory(dirPath string, options ...*Options) error {
 		return nil
 	}
 
-	opts, err := resolveDirectoryOptions(options...)
-	if err != nil {
-		return err
-	}
+	opts := resolveDirectoryOptions(options...)
 
 	opts.AddPerms(0111)
 
-	err = os.MkdirAll(dirPath, opts.Perms)
+	err := os.MkdirAll(dirPath, opts.Perms)
 	if err != nil {
 		return err
 	}

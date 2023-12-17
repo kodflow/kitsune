@@ -27,11 +27,11 @@ type Options struct {
 // Returns:
 // - *Options: The default file Options.
 // - error: nil since there is no error generation in this function.
-func defaultFileOptions() (*Options, error) {
+func defaultFileOptions() *Options {
 	return &Options{
 		User:  config.USER,
 		Perms: 0644,
-	}, nil
+	}
 }
 
 // defaultDirectoryOptions returns the default options for a directory.
@@ -41,11 +41,11 @@ func defaultFileOptions() (*Options, error) {
 // Returns:
 // - *Options: The default directory Options.
 // - error: nil since there is no error generation in this function.
-func defaultDirectoryOptions() (*Options, error) {
+func defaultDirectoryOptions() *Options {
 	return &Options{
 		User:  config.USER,
 		Perms: 0755,
-	}, nil
+	}
 }
 
 // resolveFileOptions resolves the file options.
@@ -58,7 +58,7 @@ func defaultDirectoryOptions() (*Options, error) {
 // Returns:
 // - *Options: The resolved file Options.
 // - error: An error if resolving the options fails.
-func resolveFileOptions(options ...*Options) (*Options, error) {
+func resolveFileOptions(options ...*Options) *Options {
 	if len(options) > 0 && options[0] != nil {
 		if options[0].User == nil {
 			options[0].User = config.USER
@@ -68,7 +68,7 @@ func resolveFileOptions(options ...*Options) (*Options, error) {
 			options[0].Perms = 0644
 		}
 
-		return options[0], nil
+		return options[0]
 	}
 
 	return defaultFileOptions()
@@ -84,7 +84,7 @@ func resolveFileOptions(options ...*Options) (*Options, error) {
 // Returns:
 // - *Options: The resolved directory Options.
 // - error: An error if resolving the options fails.
-func resolveDirectoryOptions(options ...*Options) (*Options, error) {
+func resolveDirectoryOptions(options ...*Options) *Options {
 	if len(options) > 0 && options[0] != nil {
 		if options[0].User == nil {
 			options[0].User = config.USER
@@ -94,7 +94,7 @@ func resolveDirectoryOptions(options ...*Options) (*Options, error) {
 			options[0].Perms = 0755
 		}
 
-		return options[0], nil
+		return options[0]
 	}
 
 	return defaultDirectoryOptions()
@@ -126,25 +126,95 @@ func (co *Options) RemovePerms(perms fs.FileMode) {
 // Returns:
 // - error: An error if setting permissions or ownership fails.
 func perms(path string, options *Options) error {
+	uid, err := parseUID(options)
+	if err != nil {
+		return err
+	}
+
+	gid, err := parseGID(options)
+	if err != nil {
+		return err
+	}
+
+	err = changeOwnership(path, uid, gid)
+	if err != nil {
+		return err
+	}
+
+	return changePermissions(path, options)
+}
+
+// parseUID extracts the UID from the provided Options struct.
+// This function attempts to convert the User ID (UID) string from the Options
+// struct to an integer. It returns the UID as an integer and any error encountered
+// during the conversion process.
+//
+// Parameters:
+// - options: *Options - A pointer to an Options struct containing user information.
+//
+// Returns:
+// - int: The user ID converted to an integer.
+// - error: An error object if the conversion fails, nil otherwise.
+func parseUID(options *Options) (int, error) {
 	uid, err := strconv.Atoi(options.User.Uid)
 	if err != nil {
-		return err
+		return 0, err
 	}
+	return uid, nil
+}
 
+// parseGID extracts the GID from the provided Options struct.
+// Similar to parseUID, this function converts the Group ID (GID) string from the
+// Options struct to an integer. It returns the GID as an integer and any error
+// encountered during the conversion.
+//
+// Parameters:
+// - options: *Options - A pointer to an Options struct containing user group information.
+//
+// Returns:
+// - int: The group ID converted to an integer.
+// - error: An error object if the conversion fails, nil otherwise.
+func parseGID(options *Options) (int, error) {
 	gid, err := strconv.Atoi(options.User.Gid)
 	if err != nil {
-		return err
+		return 0, err
 	}
+	return gid, nil
+}
 
-	err = os.Chown(path, uid, gid)
+// changeOwnership sets the ownership of the specified file or directory.
+// This function changes the ownership of the file or directory at the given path
+// to the specified user ID (UID) and group ID (GID).
+//
+// Parameters:
+// - path: string - The file or directory path whose ownership is to be changed.
+// - uid: int - The user ID to set as owner.
+// - gid: int - The group ID to set as owner.
+//
+// Returns:
+// - error: An error object if the ownership change fails, nil otherwise.
+func changeOwnership(path string, uid, gid int) error {
+	err := os.Chown(path, uid, gid)
 	if err != nil {
 		return err
 	}
+	return nil
+}
 
-	err = os.Chmod(path, options.Perms)
+// changePermissions sets the permissions of the specified file or directory.
+// This function changes the permissions of the file or directory at the given path
+// to the permissions specified in the Options struct.
+//
+// Parameters:
+// - path: string - The file or directory path whose permissions are to be changed.
+// - perms: *Options - A pointer to an Options struct containing the new permissions.
+//
+// Returns:
+// - error: An error object if the permission change fails, nil otherwise.
+func changePermissions(path string, perms *Options) error {
+	err := os.Chmod(path, perms.Perms)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }

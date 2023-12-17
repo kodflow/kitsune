@@ -66,7 +66,7 @@ func Make(t TYPE, sof SOF) io.Writer {
 			target = FILE_STDERR
 		}
 
-		if f, err := fs.OpenFile(target); err == nil {
+		if f, err := fs.CreateFile(target); err == nil {
 			ws = append(ws, f)
 		}
 	}

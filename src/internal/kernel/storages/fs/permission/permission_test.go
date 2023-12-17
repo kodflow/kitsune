@@ -10,15 +10,16 @@ import (
 )
 
 const (
-	VALID_FILE_PATH       = "/tmp/kitsune/file"
-	INVALID_FILE_PATH     = "/tmp/kitsune/invalid"
-	NONEXISTENT_FILE_PATH = "/tmp/kitsune/nonexistent"
+	Kitsune               = "/tmp/kitsune"
+	VALID_FILE_PATH       = Kitsune + "/file"
+	INVALID_FILE_PATH     = Kitsune + "/invalid"
+	NONEXISTENT_FILE_PATH = Kitsune + "/nonexistent"
 )
 
 // TestValidate tests the Validate function.
 func TestValidate(t *testing.T) {
 	// Clean up the temporary directory after the test.
-	defer os.RemoveAll("/tmp/kitsune")
+	defer os.RemoveAll(Kitsune)
 
 	// Create a valid file.
 	fv, err := fs.CreateFile(VALID_FILE_PATH)
