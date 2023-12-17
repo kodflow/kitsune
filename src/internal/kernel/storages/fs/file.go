@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"crypto/sha1"
 	"encoding/hex"
-	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -71,7 +70,6 @@ func OpenFile(filePath string, options ...*Options) (*os.File, error) {
 // - error: An error if any occurred during the process.
 func createOrOpenFile(filePath string, flag int, options ...*Options) (*os.File, error) {
 	opts, err := resolveFileOptions(options...)
-	fmt.Println(opts)
 
 	if err != nil {
 		return nil, err

@@ -2,6 +2,7 @@ package http
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net"
 	"net/http"
 	"os"
@@ -175,8 +176,6 @@ func (s *Server) Stop() error {
 		multi.Add(s.secure.Stop())
 	}
 
-	logger.Info("server stop on " + s.standard.DOMAIN)
-
 	return multi.IsError()
 }
 
@@ -202,7 +201,7 @@ func (e *Engine) Start() error {
 
 	e.running = true
 
-	logger.Info("server start on " + strconv.Itoa(e.PORT) + " with pid:" + strconv.Itoa(os.Getpid()))
+	logger.Info(fmt.Sprintf("server start on %v:%v with pid: %v", e.DOMAIN, e.PORT, os.Getpid()))
 
 	go e.server.Serve(e.listener)
 
@@ -224,6 +223,7 @@ func (e *Engine) Stop() error {
 		e.running = false
 	}
 
-	logger.Info("server stop on ")
+	logger.Info(fmt.Sprintf("server stop on %v:%v with pid: %v", e.DOMAIN, e.PORT, os.Getpid()))
+
 	return err
 }

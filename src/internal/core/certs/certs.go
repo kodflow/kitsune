@@ -26,7 +26,7 @@ func TLSConfigFor(domain string, subs ...string) *tls.Config {
 	hosts := generateHosts(domain, subs...)
 
 	// Generate a self-signed certificate for localhost, otherwise get a remotely signed certificate
-	if domain == "localhost" {
+	if domain == "localhost" || domain == "127.0.0.1" {
 		return generateSelfSignedCert(hosts)
 	}
 
