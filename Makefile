@@ -147,7 +147,6 @@ generate:
 package:
 	find .generated -type f | xargs upx --best --lzma;
 
-
 copy-to-infra:
 	rm -rf ~/Documents/Projects/Infrastructure/organizations/IEF2I/IT-F2I:387672757226/.server/bench/usr/local/bin
 	mkdir -p ~/Documents/Projects/Infrastructure/organizations/IEF2I/IT-F2I:387672757226/.server/bench/usr/local/bin
