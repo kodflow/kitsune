@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kodmain/kitsune/src/internal/core/server/protocols/http"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger/levels"
+	"github.com/kodflow/kitsune/src/internal/core/server/protocols/http"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/levels"
 	"github.com/stretchr/testify/assert"
 )
 

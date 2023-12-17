@@ -88,5 +88,5 @@ jobs:
         build-args: |
           BINARY_VERSION=${{ needs.Binary.outputs.version }}
         tags: |
-          kodmain/kitsune:latest
-          kodmain/kitsune:${{ needs.Binary.outputs.version }}
+          kodflow/kitsune:latest
+          kodflow/kitsune:${{ needs.Binary.outputs.version }}

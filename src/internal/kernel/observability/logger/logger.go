@@ -6,8 +6,8 @@ import (
 	"runtime/debug"
 
 	"github.com/Code-Hex/dd"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger/levels"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger/writers"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/levels"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/writers"
 )
 
 // Constant for formatting log path with color.

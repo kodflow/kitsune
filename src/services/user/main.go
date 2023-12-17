@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/kodmain/kitsune/src/internal/core/server/protocols/tcp"
-	"github.com/kodmain/kitsune/src/internal/kernel/daemon"
-	user "github.com/kodmain/kitsune/src/services/user/api"
+	"github.com/kodflow/kitsune/src/internal/core/server/protocols/tcp"
+	"github.com/kodflow/kitsune/src/internal/kernel/daemon"
+	user "github.com/kodflow/kitsune/src/services/user/api"
 )
 
 func main() {

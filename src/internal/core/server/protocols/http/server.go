@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/kodmain/kitsune/src/config"
-	"github.com/kodmain/kitsune/src/internal/core/certs"
-	"github.com/kodmain/kitsune/src/internal/core/server/api"
-	"github.com/kodmain/kitsune/src/internal/core/server/handler"
-	"github.com/kodmain/kitsune/src/internal/kernel/errors"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
+	"github.com/kodflow/kitsune/src/config"
+	"github.com/kodflow/kitsune/src/internal/core/certs"
+	"github.com/kodflow/kitsune/src/internal/core/server/api"
+	"github.com/kodflow/kitsune/src/internal/core/server/handler"
+	"github.com/kodflow/kitsune/src/internal/kernel/errors"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
 	"golang.org/x/net/http2"
 )
 

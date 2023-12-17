@@ -3,8 +3,8 @@ package http_test
 import (
 	"testing"
 
-	"github.com/kodmain/kitsune/src/internal/core/server/protocols/http"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
+	"github.com/kodflow/kitsune/src/internal/core/server/protocols/http"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport/proto/generated"
 	"github.com/stretchr/testify/assert"
 )
 

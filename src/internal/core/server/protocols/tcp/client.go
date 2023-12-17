@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/kodmain/kitsune/src/internal/core/server/transport/promise"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport/service"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport/promise"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport/proto/generated"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport/service"
 	"google.golang.org/protobuf/proto"
 )
 

@@ -5,8 +5,8 @@ import (
 	"os"
 	"path"
 
-	"github.com/kodmain/kitsune/src/config"
-	"github.com/kodmain/kitsune/src/internal/kernel/storages/fs"
+	"github.com/kodflow/kitsune/src/config"
+	"github.com/kodflow/kitsune/src/internal/kernel/storages/fs"
 )
 
 // TYPE is a custom type representing different writer types.

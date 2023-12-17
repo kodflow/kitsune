@@ -19,7 +19,7 @@ func latest() *meta {
 		return data
 	}
 
-	resp, err := http.Get("https://api.github.com/repos/kodmain/kitsune/releases/latest")
+	resp, err := http.Get("https://api.github.com/repos/kodflow/kitsune/releases/latest")
 	if err != nil || resp.StatusCode != http.StatusOK {
 		fmt.Println(err.Error())
 		return nil

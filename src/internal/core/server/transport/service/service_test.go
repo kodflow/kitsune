@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kodmain/kitsune/src/internal/core/server/transport/service"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport/service"
 	"github.com/stretchr/testify/assert"
 )
 
