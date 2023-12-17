@@ -52,7 +52,7 @@ ssl:
 	echo "SSL certificates generated successfully!"
 	
 tests: install-gotestsum
-	gotestsum -- -v $(go list ./... | grep -vE "src/services|generated") -run 'Test[^Pb]' -coverprofile=coverage.txt -covermode=atomic || true
+	gotestsum -- -v $$(go list ./... | grep -vE "src/services|generated") -run 'Test[^Pb]' -coverprofile=coverage.txt -covermode=atomic
 
 install-gotestsum:
 	if ! command -v gotestsum > /dev/null; then \
