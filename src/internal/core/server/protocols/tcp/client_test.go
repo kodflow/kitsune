@@ -15,12 +15,12 @@ import (
 )
 
 func TestTCPClient(t *testing.T) {
-	server := setupServer("localhost:7777")
+	server := setupServer("127.0.0.1:7777")
 	server.Start()
 	defer server.Stop()
 
 	client := tcp.NewClient()
-	service1, err := client.Connect("localhost", "7777")
+	service1, err := client.Connect("127.0.0.1", "7777")
 	assert.Nil(t, err)
 
 	query1 := service1.MakeExchange()
@@ -35,12 +35,12 @@ func TestTCPClient(t *testing.T) {
 }
 
 func BenchmarkLocal(b *testing.B) {
-	server1 := tcp.NewServer("localhost:8080")
+	server1 := tcp.NewServer("127.0.0.1:8080")
 	server1.Start()
 	defer server1.Stop()
 
 	client := tcp.NewClient()
-	service1, _ := client.Connect("localhost", "8080")
+	service1, _ := client.Connect("127.0.0.1", "8080")
 
 	b.Run("benchmark", func(b *testing.B) {
 		b.ResetTimer() // Ne compte pas la configuration initiale dans le temps de benchmark
@@ -114,15 +114,15 @@ func bToMb(b uint64) uint64 {
 
 func TestClient(t *testing.T) {
 	logger.SetLevel(levels.OFF)
-	server := tcp.NewServer("localhost:8080")
+	server := tcp.NewServer("127.0.0.1:8080")
 	server.Start()
 	defer server.Stop()
 
-	client := tcp.NewClient("localhost:8080")
+	client := tcp.NewClient("127.0.0.1:8080")
 
 	t.Run("NewClient", func(t *testing.T) {
 		assert.NotNil(t, client, "Expected client to be non-nil")
-		assert.Equal(t, "localhost:8080", client.Address)
+		assert.Equal(t, "127.0.0.1:8080", client.Address)
 	})
 
 	t.Run("ConnectAndClose", func(t *testing.T) {
@@ -146,7 +146,7 @@ func TestClient(t *testing.T) {
 		const max = 1000
 		clients := map[int]*tcp.Client{}
 		for c := 0; c < max; c++ {
-			clients[c] = tcp.NewClient("localhost:8080")
+			clients[c] = tcp.NewClient("127.0.0.1:8080")
 			err := clients[c].Connect()
 			assert.Nil(t, err, "Expected no error on multiple connect")
 		}
@@ -180,10 +180,10 @@ func TestClient(t *testing.T) {
 
 func BenchmarkRequestsOnly(b *testing.B) {
 	logger.SetLevel(levels.OFF)
-	server := tcp.NewServer("localhost:8080")
+	server := tcp.NewServer("127.0.0.1:8080")
 	server.Start()
 
-	client := tcp.NewClient("localhost:8080")
+	client := tcp.NewClient("127.0.0.1:8080")
 	client.Connect()
 
 	b.Run("benchmark", func(b *testing.B) {
@@ -254,10 +254,10 @@ func bToMb(b uint64) uint64 {
 func BenchmarkRequestAndResponse(b *testing.B) {
 	logger.SetLevel(levels.OFF)
 
-	server := tcp.NewServer("localhost:8080")
+	server := tcp.NewServer("127.0.0.1:8080")
 	server.Start()
 
-	client := tcp.NewClient("localhost:8080")
+	client := tcp.NewClient("127.0.0.1:8080")
 	client.Connect()
 
 	b.Run("benchmark", func(b *testing.B) {
