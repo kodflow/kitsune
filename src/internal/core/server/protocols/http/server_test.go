@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func setupHTTPServer(httpPort, httpsPort int) *http.Server {
+func setupHTTPServer(httpPort, httpsPort string) *http.Server {
 	cfg := &http.ServerCfg{
 		DOMAIN: "127.0.0.1",
 		SUBS:   []string{},
@@ -23,12 +23,12 @@ func setupHTTPServer(httpPort, httpsPort int) *http.Server {
 func TestHTTPServer(t *testing.T) {
 	logger.SetLevel(levels.OFF)
 	t.Run("NewHTTPServer", func(t *testing.T) {
-		server := setupHTTPServer(8080, 0)
+		server := setupHTTPServer("8080", "")
 		assert.NotNil(t, server)
 	})
 
 	t.Run("StartStandardServer:Successfully", func(t *testing.T) {
-		server := setupHTTPServer(8080, 0)
+		server := setupHTTPServer("8080", "")
 		err := server.Start()
 		assert.Nil(t, err)
 
@@ -38,7 +38,7 @@ func TestHTTPServer(t *testing.T) {
 	})
 
 	t.Run("StartStandardServer:Failure(already started)", func(t *testing.T) {
-		server := setupHTTPServer(8080, 0)
+		server := setupHTTPServer("8080", "")
 		server.Start()
 
 		err := server.Start()
@@ -48,7 +48,7 @@ func TestHTTPServer(t *testing.T) {
 	})
 
 	t.Run("StartSecureServer:Successfully", func(t *testing.T) {
-		server := setupHTTPServer(0, 8443)
+		server := setupHTTPServer("", "8443")
 		err := server.Start()
 		assert.Nil(t, err)
 
