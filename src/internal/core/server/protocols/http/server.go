@@ -6,7 +6,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/kodflow/kitsune/src/config"
@@ -33,8 +32,8 @@ type Server struct {
 type ServerCfg struct {
 	DOMAIN string   // The domain of the server.
 	SUBS   []string // The subdomains of the server.
-	HTTP   int      // The port number for HTTP connections.
-	HTTPS  int      // The port number for HTTPS connections.
+	HTTP   string   // The port number for HTTP connections.
+	HTTPS  string   // The port number for HTTPS connections.
 }
 
 // Engine represents an HTTP engine.
@@ -42,7 +41,7 @@ type ServerCfg struct {
 // or secure connections, keeping track of its running status and configuration details
 // like port, domain, and subdomains.
 type Engine struct {
-	PORT     int          // The port number for the engine.
+	PORT     string       // The port number for the engine.
 	DOMAIN   string       // The domain of the engine.
 	SUBS     []string     // The subdomains of the engine.
 	listener net.Listener // The network listener for the engine.
@@ -96,7 +95,7 @@ func NewServer(cfg *ServerCfg) *Server {
 		},
 	}
 
-	if cfg.HTTPS == 0 {
+	if cfg.HTTPS == "" {
 		return server
 	}
 
@@ -189,7 +188,7 @@ func (e *Engine) Start() error {
 		return errors.New("server already started")
 	}
 
-	listener, err := net.Listen("tcp", ":"+strconv.Itoa(e.PORT))
+	listener, err := net.Listen("tcp", ":"+e.PORT)
 	if err != nil {
 		return err
 	}

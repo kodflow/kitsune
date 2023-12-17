@@ -29,8 +29,9 @@ func TestPromiseLifecycle(t *testing.T) {
 
 // TestRepositoryLifecycle teste la création et la recherche de promesses dans le dépôt.
 func TestRepositoryLifecycle(t *testing.T) {
-	callback := func(responses ...*generated.Response) {}
-	p, err := Create(callback)
+	p, err := Create(func(responses ...*generated.Response) {
+		// do it
+	})
 	assert.NoError(t, err, "Erreur lors de la création de la promesse")
 
 	foundPromise, err := Find(p.Id)
