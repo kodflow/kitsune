@@ -6,7 +6,7 @@ import (
 	"os/user"
 	"strconv"
 
-	"github.com/kodmain/kitsune/src/config"
+	"github.com/kodflow/kitsune/src/config"
 )
 
 // Options represents the options for file system storage.

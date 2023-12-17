@@ -4,10 +4,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger/levels"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger/writers"
-	"github.com/kodmain/kitsune/src/internal/kernel/storages/fs"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/levels"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/writers"
+	"github.com/kodflow/kitsune/src/internal/kernel/storages/fs"
 	"github.com/stretchr/testify/assert"
 )
 

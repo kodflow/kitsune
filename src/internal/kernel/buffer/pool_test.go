@@ -3,7 +3,7 @@ package buffer_test
 import (
 	"testing"
 
-	"github.com/kodmain/kitsune/src/internal/kernel/buffer"
+	"github.com/kodflow/kitsune/src/internal/kernel/buffer"
 )
 
 func TestPool(t *testing.T) {

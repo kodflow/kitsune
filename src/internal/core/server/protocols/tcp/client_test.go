@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kodmain/kitsune/src/internal/core/server/protocols/tcp"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
+	"github.com/kodflow/kitsune/src/internal/core/server/protocols/tcp"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport/proto/generated"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/stretchr/testify/assert"
 )

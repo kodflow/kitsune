@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kodmain/kitsune/src/internal/kernel/daemon"
+	"github.com/kodflow/kitsune/src/internal/kernel/daemon"
 )
 
 // Process represents a process that can be started and managed.

@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/kodmain/kitsune/src/cmd/kitsune"
+	"github.com/kodflow/kitsune/src/cmd/kitsune"
 )
 
 func main() {

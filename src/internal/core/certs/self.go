@@ -10,7 +10,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
 )
 
 // generateSelfSignedCert generates a self-signed certificate and returns a tls.Config.

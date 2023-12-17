@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/kodmain/kitsune/src/internal/kernel/daemon"
+	"github.com/kodflow/kitsune/src/internal/kernel/daemon"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -1,8 +1,8 @@
 package logger
 
 import (
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger/levels"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger/writers"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/levels"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/writers"
 )
 
 var instance *Logger = nil

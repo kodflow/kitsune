@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/kodmain/kitsune/src/config"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
+	"github.com/kodflow/kitsune/src/config"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport/proto/generated"
 )
 
 // HTTPClient represents an HTTP client.

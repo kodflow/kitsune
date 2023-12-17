@@ -1,7 +1,7 @@
 package router
 
 import (
-	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport/proto/generated"
 )
 
 // Resolve resolves a transport request and generates a transport response.

@@ -7,8 +7,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kodmain/kitsune/src/config"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
+	"github.com/kodflow/kitsune/src/config"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
 )
 
 // Constant representing the name of the daemon.

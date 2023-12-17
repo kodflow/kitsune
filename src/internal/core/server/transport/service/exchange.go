@@ -3,7 +3,7 @@ package service
 
 import (
 	"github.com/google/uuid"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport/proto/generated"
 )
 
 // Exchange struct represents a service message.

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport/service"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport/service"
 )
 
 func TestNewExchange(t *testing.T) {

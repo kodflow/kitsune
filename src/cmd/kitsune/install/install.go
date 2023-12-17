@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/kodmain/kitsune/src/config"
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
+	"github.com/kodflow/kitsune/src/config"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
 	"github.com/spf13/cobra"
 )
 

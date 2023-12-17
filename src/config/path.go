@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/kodmain/kitsune/src/internal/kernel/storages/fs/permission"
+	"github.com/kodflow/kitsune/src/internal/kernel/storages/fs/permission"
 )
 
 // PATH_SERVICES, PATH_BIN, PATH_RUN, and PATH_LOGS are constants representing

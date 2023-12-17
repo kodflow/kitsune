@@ -3,7 +3,7 @@ package levels_test
 import (
 	"testing"
 
-	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger/levels"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/levels"
 	"github.com/stretchr/testify/assert"
 )
 

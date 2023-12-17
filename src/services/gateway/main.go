@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/kodmain/kitsune/src/internal/core/server/protocols/http"
-	"github.com/kodmain/kitsune/src/internal/kernel/daemon"
+	"github.com/kodflow/kitsune/src/internal/core/server/protocols/http"
+	"github.com/kodflow/kitsune/src/internal/kernel/daemon"
 )
 
 func main() {
