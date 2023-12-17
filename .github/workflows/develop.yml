@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Delete old PRs
-        uses: actions/github-script@v5
+        uses: actions/github-script@v4
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           script: |
