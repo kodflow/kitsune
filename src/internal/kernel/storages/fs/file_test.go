@@ -8,15 +8,16 @@ import (
 )
 
 const (
-	VALID_FILE_PATH       = "/tmp/kitsune/file"
+	Kitsune               = "/tmp/kitsune"
+	VALID_FILE_PATH       = Kitsune + "/file"
 	INVALID_FILE_PATH     = "/path/to/file-invalid"
-	NONEXISTENT_FILE_PATH = "/tmp/kitsune/file-nonexistent"
+	NONEXISTENT_FILE_PATH = Kitsune + "/file-nonexistent"
 )
 
 // TestCreateFile tests the file creation functionality in the fs package.
 // It ensures that a file is successfully created without errors.
 func TestCreateFile(t *testing.T) {
-	defer os.RemoveAll("/tmp/kitsune")
+	defer os.RemoveAll(Kitsune)
 
 	fv, err := CreateFile(VALID_FILE_PATH)
 	assert.NoError(t, err)
@@ -30,7 +31,7 @@ func TestCreateFile(t *testing.T) {
 // TestPermissions tests the setting of file permissions.
 // It verifies that the file permissions are correctly set and can be retrieved.
 func TestPermissions(t *testing.T) {
-	defer os.RemoveAll("/tmp/kitsune")
+	defer os.RemoveAll(Kitsune)
 
 	_, err := CreateFile(VALID_FILE_PATH)
 	assert.NoError(t, err)
@@ -79,8 +80,9 @@ func TestDeleteFile(t *testing.T) {
 // It verifies that the hash is generated correctly and is not empty.
 func TestSHA1File(t *testing.T) {
 	defer os.Remove(VALID_FILE_PATH)
+	hw := "Hello, World!"
 
-	err := WriteFile(VALID_FILE_PATH, "Hello, World!")
+	err := WriteFile(VALID_FILE_PATH, hw)
 	assert.NoError(t, err)
 
 	hash, err := SHA1File(VALID_FILE_PATH)
@@ -92,7 +94,7 @@ func TestSHA1File(t *testing.T) {
 	assert.Empty(t, hash)
 	assert.Contains(t, err.Error(), "no such file or directory")
 
-	err = WriteFile(VALID_FILE_PATH, "Hello, World!")
+	err = WriteFile(VALID_FILE_PATH, hw)
 	assert.NoError(t, err)
 }
 
