@@ -13,8 +13,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kodmain/kitsune/src/config"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport/promise"
+	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
 	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
 	"google.golang.org/protobuf/proto"
 )
@@ -27,7 +27,7 @@ type Service struct {
 	ID           string   // A unique identifier for this connection.
 	Connected    bool     // True if a connection has been established, false otherwise.
 	tryReconnect bool     // Flag indicating whether a reconnection attempt is in progress.
-	network      net.Conn // The underlying network connection.
+	Network      net.Conn // The underlying network connection.
 }
 
 // Create initializes a Service instance.
@@ -69,7 +69,7 @@ func (s *Service) Connect() error {
 	}
 
 	var err error
-	s.network, err = net.DialTimeout(s.Protocol, s.Name, time.Second*config.DEFAULT_TIMEOUT)
+	s.Network, err = net.DialTimeout(s.Protocol, s.Name, time.Second*config.DEFAULT_TIMEOUT)
 	if err != nil {
 		return fmt.Errorf("can't establish connection: %w", err)
 	}
@@ -88,7 +88,7 @@ func (s *Service) Connect() error {
 func (s *Service) Disconnect() error {
 	s.Connected = false
 
-	if err := s.network.Close(); err != nil {
+	if err := s.Network.Close(); err != nil {
 		s.Connected = true
 		return err
 	}
@@ -106,7 +106,7 @@ func (s *Service) Disconnect() error {
 // - err: An error if any.
 func (s *Service) Write(data *bytes.Buffer) (int, error) {
 	if s.Connected {
-		n, err := s.network.Write(data.Bytes())
+		n, err := s.Network.Write(data.Bytes())
 		if err != nil {
 			s.Connected = false
 			s.reconnect()
@@ -158,7 +158,7 @@ func (s *Service) reconnect() {
 // handleServerResponses listens to server responses and processes them.
 func (s *Service) handleServerResponses() {
 	// Create a reader to read data from the network connection.
-	reader := bufio.NewReader(s.network)
+	reader := bufio.NewReader(s.Network)
 
 	// Continuously listen for server responses while the service is connected.
 	for s.isConnected() {
@@ -248,8 +248,8 @@ func handleReadError(s *Service, err error) {
 // Returns:
 // - res: The unmarshaled response.
 // - err: An error if any.
-func unmarshalResponse(data []byte) (*transport.Response, error) {
-	res := &transport.Response{}
+func unmarshalResponse(data []byte) (*generated.Response, error) {
+	res := &generated.Response{}
 	err := proto.Unmarshal(data, res)
 	return res, err
 }
@@ -258,7 +258,7 @@ func unmarshalResponse(data []byte) (*transport.Response, error) {
 //
 // Parameters:
 // - res: The response to process.
-func (s *Service) processResponse(res *transport.Response) {
+func (s *Service) processResponse(res *generated.Response) {
 	if res.Pid != "" {
 		p, err := promise.Find(res.Pid)
 		if err != nil {

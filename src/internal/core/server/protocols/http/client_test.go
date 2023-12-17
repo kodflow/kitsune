@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/kodmain/kitsune/src/internal/core/server/protocols/http"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport"
+	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,7 +17,7 @@ func TestHTTPClient(t *testing.T) {
 	// Initialisation du client HTTP
 	client := http.NewHTTPClient()
 
-	req := &transport.Request{
+	req := &generated.Request{
 		Method:   "GET",
 		Endpoint: "http://localhost/",
 	}
@@ -27,7 +27,7 @@ func TestHTTPClient(t *testing.T) {
 		assert.Equal(t, uint32(204), res.Status)
 	})
 
-	req = &transport.Request{
+	req = &generated.Request{
 		Method:   "GET",
 		Endpoint: "https://localhost/",
 	}

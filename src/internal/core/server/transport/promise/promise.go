@@ -4,7 +4,7 @@ package promise
 import (
 	"sync"
 
-	"github.com/kodmain/kitsune/src/internal/core/server/transport"
+	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
 )
 
 // Promise struct represents an asynchronous operation that may complete at some point.
@@ -13,8 +13,8 @@ type Promise struct {
 	Id        string                       // Id is a unique identifier for the promise.
 	Length    int                          // Length is the number of responses required to resolve the promise.
 	Closed    bool                         // Closed indicates whether the promise has been resolved.
-	responses []*transport.Response        // Responses accumulates the responses received.
-	callback  func(...*transport.Response) // Callback is a function to be called when the promise is resolved.
+	responses []*generated.Response        // Responses accumulates the responses received.
+	callback  func(...*generated.Response) // Callback is a function to be called when the promise is resolved.
 	mu        sync.Mutex                   // Mutex ensures thread safety when accessing the promise.
 }
 
@@ -22,8 +22,8 @@ type Promise struct {
 // It associates the promise ID with the request, indicating that the request is part of the promise.
 //
 // Parameters:
-// - req: *transport.Request The request to be added to the promise.
-func (p *Promise) Add(req *transport.Request) {
+// - req: *generated.Request The request to be added to the promise.
+func (p *Promise) Add(req *generated.Request) {
 	req.Pid = p.Id // Associate the request with the promise ID.
 	p.Length++     // Increment the number of expected responses.
 }
@@ -33,8 +33,8 @@ func (p *Promise) Add(req *transport.Request) {
 // If all responses are received, it triggers the callback function and closes the promise.
 //
 // Parameters:
-// - res: *transport.Response The response to be added to the promise.
-func (p *Promise) Resolve(res *transport.Response) {
+// - res: *generated.Response The response to be added to the promise.
+func (p *Promise) Resolve(res *generated.Response) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 

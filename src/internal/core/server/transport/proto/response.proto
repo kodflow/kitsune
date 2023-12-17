@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package transport;
+package generated;
 
-option go_package = "src/internal/core/server/transport";
+option go_package = "src/internal/core/server/transport/proto/generated";
 
 message Response {
   uint32 status = 1;

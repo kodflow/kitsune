@@ -1,4 +1,3 @@
-// Package tcp provides functionalities for a TCP server.
 package tcp
 
 import (
@@ -14,8 +13,6 @@ import (
 	"github.com/kodmain/kitsune/src/internal/core/server/handler"
 	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
 )
-
-//https://github.com/douglasmakey/socket-sharding/blob/master/cmd/http-example/main.go
 
 // Server represents a TCP server and contains information about the address it listens on
 // and the underlying network listener.
@@ -34,11 +31,17 @@ func NewServer(address string) *Server {
 }
 
 // Register is a method for registering API handlers with the server.
+//
+// Parameters:
+// - api: api.APInterface - The API interface to register handlers from.
 func (s *Server) Register(api api.APInterface) {
-	// TODO
+	// TODO: Implement handler registration.
 }
 
 // Start starts the TCP server, allowing it to accept incoming connections.
+//
+// Returns:
+// - error: An error if the server is already started or if there was an issue starting the server.
 func (s *Server) Start() error {
 	if s.listener != nil {
 		return errors.New("server already started")
@@ -58,6 +61,9 @@ func (s *Server) Start() error {
 }
 
 // Stop stops the TCP server.
+//
+// Returns:
+// - error: An error if the server is not active or if there was an issue stopping the server.
 func (s *Server) Stop() error {
 	if s.listener == nil {
 		return errors.New("server is not active")
@@ -70,38 +76,50 @@ func (s *Server) Stop() error {
 	return err
 }
 
-// acceptLoop continuously accepts incoming connections.
+// accepLoop continuously accepts incoming connections.
+// It listens for incoming client connections and handles them asynchronously by calling 'handleConnection'.
 func (s *Server) accepLoop() {
 	for {
 		if s.listener == nil {
 			break
 		}
 
-		conn, err := s.listener.Accept()
+		conn, err := s.listener.Accept() // Accept incoming connections.
 		if err != nil {
-			break
+			break // Exit the loop if there is an error accepting a connection.
 		}
 
-		go s.handleConnection(conn)
+		go s.handleConnection(conn) // Handle the connection asynchronously using 'handleConnection'.
 	}
 }
 
 // handleConnection handles incoming client connections.
+// It reads data from the 'conn', processes incoming requests, and sends responses back.
+//
+// Parameters:
+// - conn: net.Conn - The client connection to handle.
 func (s *Server) handleConnection(conn net.Conn) {
-	defer conn.Close()
-	reader := bufio.NewReader(conn)
-	writer := bufio.NewWriter(conn)
+	defer conn.Close()              // Close the connection when the function exits.
+	reader := bufio.NewReader(conn) // Create a buffered reader for reading data from the connection.
+	writer := bufio.NewWriter(conn) // Create a buffered writer for writing data to the connection.
 	for {
-		data, err := s.handleRequest(reader)
+		data, err := s.handleRequest(reader) // Read and process incoming requests.
 		if err != nil {
-			break
+			break // Exit the loop if there is an error.
 		}
 
-		s.sendResponse(writer, handler.TCPHandler(data))
+		s.sendResponse(writer, handler.TCPHandler(data)) // Send a response to the client based on the processed data.
 	}
 }
 
 // handleRequest reads and processes incoming requests.
+//
+// Parameters:
+// - reader: *bufio.Reader - The reader used to read incoming data.
+//
+// Returns:
+// - []byte: The data read from the reader.
+// - error: An error if there was an issue reading the request.
 func (s *Server) handleRequest(reader *bufio.Reader) ([]byte, error) {
 	var length uint32
 	if err := binary.Read(reader, binary.LittleEndian, &length); err != nil {
@@ -114,6 +132,10 @@ func (s *Server) handleRequest(reader *bufio.Reader) ([]byte, error) {
 }
 
 // sendResponse sends a response to the client.
+//
+// Parameters:
+// - writer: *bufio.Writer - The writer used to send the response.
+// - res: []byte - The response data to be sent.
 func (s *Server) sendResponse(writer *bufio.Writer, res []byte) {
 	if len(res) > 0 {
 		binary.Write(writer, binary.LittleEndian, uint32(len(res)))
@@ -121,27 +143,3 @@ func (s *Server) sendResponse(writer *bufio.Writer, res []byte) {
 		writer.Flush()
 	}
 }
-
-/*
-// handler processes incoming data and generates a response.
-func (s *Server) handler(b []byte) []byte {
-	req := &transport.Request{}
-	res := &transport.Response{}
-	err := proto.Unmarshal(b, req)
-	if err != nil {
-		return router.Empty
-	}
-
-	err = router.Resolve(req, res)
-	if err != nil {
-		return router.Empty
-	}
-
-	b, err = proto.Marshal(res)
-	if err != nil {
-		return router.Empty
-	}
-
-	return b
-}
-*/

@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kodmain/kitsune/src/config"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport"
+	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
 	"github.com/kodmain/kitsune/src/internal/kernel/observability/logger"
 )
 
@@ -39,7 +39,7 @@ func new() (*Promise, error) {
 
 	p := &Promise{
 		Id:        v4.String(), // Set the Promise ID to the UUID string.
-		responses: []*transport.Response{},
+		responses: []*generated.Response{},
 	}
 
 	return p, nil
@@ -49,12 +49,12 @@ func new() (*Promise, error) {
 // It stores the promise in the repository and starts a timer to remove the promise after a timeout.
 //
 // Parameters:
-// - callback: func(...*transport.Response) Function to call when the promise is resolved.
+// - callback: func(...*generated.Response) Function to call when the promise is resolved.
 //
 // Returns:
 // - *Promise: A pointer to the newly created Promise.
 // - error: An error if the Promise creation fails.
-func Create(callback func(...*transport.Response)) (*Promise, error) {
+func Create(callback func(...*generated.Response)) (*Promise, error) {
 	promise, err := new()
 	promise.callback = callback // Set the callback function for the promise.
 	if err != nil {

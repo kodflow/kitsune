@@ -4,11 +4,12 @@ import (
 	"testing"
 
 	"github.com/kodmain/kitsune/src/internal/core/server/transport"
+	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRequestInitialization(t *testing.T) {
-	req := &transport.Request{
+	req := &generated.Request{
 		Id:       "test_id",
 		Pid:      "test_pid",
 		Method:   "GET",
@@ -22,7 +23,7 @@ func TestRequestInitialization(t *testing.T) {
 }
 
 func TestResponseInitialization(t *testing.T) {
-	res := &transport.Response{
+	res := &generated.Response{
 		Status:  200,
 		Id:      "test_id",
 		Pid:     "test_pid",

@@ -5,15 +5,15 @@ import (
 	"time"
 
 	"github.com/kodmain/kitsune/src/config"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport/promise"
+	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCreate(t *testing.T) {
 	config.DEFAULT_TIMEOUT = 1
 	callbackCalled := false
-	callback := func(responses ...*transport.Response) {
+	callback := func(responses ...*generated.Response) {
 		callbackCalled = true
 	}
 

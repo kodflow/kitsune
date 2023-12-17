@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/kodmain/kitsune/src/internal/core/server/protocols/tcp"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport"
+	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/stretchr/testify/assert"
 )
@@ -27,7 +27,7 @@ func TestTCPClient(t *testing.T) {
 
 	response := make(chan bool)
 
-	client.Send(func(responses ...*transport.Response) {
+	client.Send(func(responses ...*generated.Response) {
 		response <- true
 	}, query1)
 
@@ -58,7 +58,7 @@ func BenchmarkLocal(b *testing.B) {
 			for i := 0; i < max; i++ {
 				query1 := service1.MakeExchange()
 
-				client.Send(func(responses ...*transport.Response) {
+				client.Send(func(responses ...*generated.Response) {
 					mu.Lock()
 					rps++
 					total++
