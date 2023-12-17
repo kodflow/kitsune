@@ -5,12 +5,15 @@ import (
 
 	"github.com/kodflow/kitsune/src/internal/core/server/protocols/http"
 	"github.com/kodflow/kitsune/src/internal/core/server/transport/proto/generated"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/levels"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestHTTPClient(t *testing.T) {
+	logger.SetLevel(levels.DEBUG)
 	// Création d'un serveur HTTP de test
-	server := setupHTTPServer(80, 443)
+	server := setupHTTPServer(7777, 7778)
 	server.Start()
 	defer server.Stop()
 
@@ -19,17 +22,18 @@ func TestHTTPClient(t *testing.T) {
 
 	req := &generated.Request{
 		Method:   "GET",
-		Endpoint: "http://localhost/",
+		Endpoint: "http://127.0.0.1:7777/",
 	}
 
 	t.Run("GET Request", func(t *testing.T) {
 		res := client.Send(req)
 		assert.Equal(t, uint32(204), res.Status)
+		logger.Debug(res)
 	})
 
 	req = &generated.Request{
 		Method:   "GET",
-		Endpoint: "https://localhost/",
+		Endpoint: "https://127.0.0.1:7778/",
 	}
 
 	t.Run("GET Request", func(t *testing.T) {
