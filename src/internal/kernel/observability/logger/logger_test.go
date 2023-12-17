@@ -52,10 +52,12 @@ func TestLoggerLevels(t *testing.T) {
 	for _, test := range tests {
 		logger.Write(test.level, test.message)
 		if test.level.Int() > levels.WARN.Int() {
+			assert.True(t, fs.ExistsFile(writers.FILE_STDOUT), "Stdout file should exist")
 			ok, err := fs.Contains(writers.FILE_STDOUT, test.contains)
 			assert.Nil(t, err, "Error should be nil")
 			assert.True(t, ok, "File should contain the message")
 		} else {
+			assert.True(t, fs.ExistsFile(writers.FILE_STDERR), "Stderr file should exist")
 			ok, err := fs.Contains(writers.FILE_STDERR, test.contains)
 			assert.Nil(t, err, "Error should be nil")
 			assert.True(t, ok, "File should contain the message", writers.FILE_STDERR)
