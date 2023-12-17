@@ -2,8 +2,10 @@ package logger_test
 
 import (
 	"errors"
+	"os"
 	"testing"
 
+	"github.com/kodflow/kitsune/src/config"
 	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
 	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/levels"
 	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/writers"
@@ -31,6 +33,7 @@ func TestLoggerErrorMethods(t *testing.T) {
 // TestLoggerLevels tests the logger's ability to handle different logging levels.
 // It writes messages at various levels and checks if they are correctly written to the respective output files.
 func TestLoggerLevels(t *testing.T) {
+	defer os.RemoveAll(config.PATH_LOGS)
 	logger := newTestLogger()
 
 	tests := []struct {

@@ -20,6 +20,10 @@ func TestLoggerMethods(t *testing.T) {
 	assert.True(t, logger.Fatal(testError), "Fatal should return true if an error is provided")
 	assert.True(t, logger.Error(testError), "Error should return true if an error is provided")
 
+	assert.False(t, logger.Panic(nil), "Panic should return false if an error is provided")
+	assert.False(t, logger.Fatal(nil), "Fatal should return false if an error is provided")
+	assert.False(t, logger.Error(nil), "Error should return false if an error is provided")
+
 	// Test for other methods, ensuring they do not produce an error
 	// Verifies that methods such as Success, Message, Warn, Info, Debug, and Trace do not cause panics.
 	assert.NotPanics(t, func() { logger.Success("test success") }, "Success should not panic")

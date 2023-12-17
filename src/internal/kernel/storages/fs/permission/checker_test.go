@@ -3,6 +3,8 @@ package permission
 import (
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // TestCheckSuccess tests the Check function when the file has the required permissions.
@@ -67,14 +69,10 @@ func TestHasMode(t *testing.T) {
 	// Test case 1: current mode has the required mode
 	currentMode := os.FileMode(0700)
 	requiredMode := os.FileMode(0700)
-	if !HasMode(currentMode, requiredMode) {
-		t.Errorf("HasMode returned false for matching modes")
-	}
+	assert.True(t, HasMode(currentMode, requiredMode))
 
 	// Test case 2: current mode does not have the required mode
-	currentMode = os.FileMode(0755)
+	currentMode = os.FileMode(0655)
 	requiredMode = os.FileMode(0700)
-	if HasMode(currentMode, requiredMode) {
-		t.Errorf("HasMode returned true for non-matching modes")
-	}
+	assert.False(t, HasMode(currentMode, requiredMode))
 }
