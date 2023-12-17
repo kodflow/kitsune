@@ -181,7 +181,7 @@ func TestContains(t *testing.T) {
 // TestCreateOrOpenFile tests the createOrOpenFile function in the fs package.
 // It ensures that a file is successfully created or opened without errors.
 func TestCreateOrOpenFile(t *testing.T) {
-	defer os.RemoveAll("/tmp/kitsune")
+	defer os.RemoveAll(Kitsune)
 
 	defer os.Remove(VALID_FILE_PATH)
 
@@ -199,7 +199,7 @@ func TestCreateOrOpenFile(t *testing.T) {
 // TestCreateOrOpenFileError tests error handling in the createOrOpenFile function.
 // It verifies that the function returns an error when file creation or opening fails.
 func TestCreateOrOpenFileError(t *testing.T) {
-	defer os.RemoveAll("/tmp/kitsune")
+	defer os.RemoveAll(Kitsune)
 
 	file, err := createOrOpenFile(INVALID_FILE_PATH, os.O_RDWR|os.O_CREATE, &Options{Perms: 0644})
 	assert.Error(t, err)

@@ -110,7 +110,7 @@ func TestRemovePerms(t *testing.T) {
 }
 
 func TestPerms(t *testing.T) {
-	defer os.RemoveAll("/tmp/kitsune")
+	defer os.RemoveAll(Kitsune)
 
 	CreateFile(VALID_FILE_PATH)
 	u, _ := user.Current()

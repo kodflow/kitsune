@@ -8,16 +8,16 @@ import (
 )
 
 const (
-	VALID_DIR_PATH       = "/tmp/kitsune/dir"
+	VALID_DIR_PATH       = Kitsune + "/dir"
 	INVALID_DIR_PATH     = "/path/to/dir-invalid"
-	NONEXISTENT_DIR_PATH = "/tmp/kitsune/dir-nonexistent"
+	NONEXISTENT_DIR_PATH = Kitsune + "/dir-nonexistent"
 )
 
 // TestCreateDirectory tests the directory creation functionality in the fs package.
 // It ensures that a directory is successfully created without errors.
 // This test also verifies that creating an already existing directory does not cause an error.
 func TestCreateDirectory(t *testing.T) {
-	defer os.RemoveAll("/tmp/kitsune")
+	defer os.RemoveAll(Kitsune)
 
 	err := CreateDirectory(INVALID_DIR_PATH)
 	assert.Error(t, err)
