@@ -62,7 +62,7 @@ install-gotestsum:
 update: ## Install/Update vendor
 	echo "Update all dependencies"
 	go get -u ./...
-	go mod vendor
+	go mod tidy
 
 build: clear update build-services build-framework ## Build all services
 
