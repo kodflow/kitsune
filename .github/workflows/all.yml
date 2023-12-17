@@ -25,3 +25,11 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@master
+        with:
+          args: >
+            -Dsonar.projectKey=kodflow_kitsune
+            -Dsonar.organization=kodflow
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.go.coverage.reportPaths=coverage.out
