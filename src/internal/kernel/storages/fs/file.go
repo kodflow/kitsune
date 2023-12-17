@@ -25,24 +25,6 @@ func CreateFile(filePath string, options ...*Options) (*os.File, error) {
 	return createOrOpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, options...)
 }
 
-// Permissions sets the permissions of the file at the specified file path with the given options.
-// It uses the resolveFileOptions function to determine the options and sets permissions accordingly.
-//
-// Parameters:
-// - filePath: string The path of the file to set permissions for.
-// - options: []*Options Optional parameters to specify file options.
-//
-// Returns:
-// - error: An error if any occurred during the process.
-func Permissions(filePath string, options ...*Options) error {
-	opts, err := resolveFileOptions(options...)
-	if err != nil {
-		return err
-	}
-
-	return perms(filePath, opts)
-}
-
 // OpenFile opens a file at the specified file path with the given options.
 // It wraps the createOrOpenFile function with specific flags for opening a file for appending and writing.
 //
@@ -54,7 +36,22 @@ func Permissions(filePath string, options ...*Options) error {
 // - *os.File: The opened file.
 // - error: An error if any occurred during the process.
 func OpenFile(filePath string, options ...*Options) (*os.File, error) {
-	return createOrOpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, options...)
+	return createOrOpenFile(filePath, os.O_APPEND|os.O_WRONLY, options...)
+}
+
+// Permissions sets the permissions of the file at the specified file path with the given options.
+// It uses the resolveFileOptions function to determine the options and sets permissions accordingly.
+//
+// Parameters:
+// - filePath: string The path of the file to set permissions for.
+// - options: []*Options Optional parameters to specify file options.
+//
+// Returns:
+// - error: An error if any occurred during the process.
+func Permissions(filePath string, options ...*Options) error {
+	opts := resolveFileOptions(options...)
+
+	return perms(filePath, opts)
 }
 
 // createOrOpenFile creates or opens a file at the specified file path with the given flags and options.
@@ -69,13 +66,9 @@ func OpenFile(filePath string, options ...*Options) (*os.File, error) {
 // - *os.File: The opened file.
 // - error: An error if any occurred during the process.
 func createOrOpenFile(filePath string, flag int, options ...*Options) (*os.File, error) {
-	opts, err := resolveFileOptions(options...)
+	opts := resolveFileOptions(options...)
 
-	if err != nil {
-		return nil, err
-	}
-
-	err = CreateDirectory(filepath.Dir(filePath), opts)
+	err := CreateDirectory(filepath.Dir(filePath), opts)
 	if err != nil {
 		return nil, err
 	}

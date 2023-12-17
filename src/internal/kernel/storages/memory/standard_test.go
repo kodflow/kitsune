@@ -1,9 +1,8 @@
-package memory_test
+package memory
 
 import (
 	"testing"
 
-	"github.com/kodflow/kitsune/src/internal/kernel/storages/memory"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,18 +12,30 @@ type testStruct struct {
 
 func TestStandard(t *testing.T) {
 	data := &testStruct{Name: "test"}
+	clear := &testStruct{Name: "clear"}
 
-	memory.Store(data.Name, data)
-	exist := memory.Exists(data.Name)
-	assert.True(t, exist, "Should return true if the key exists")
+	Store(data.Name, data)
+	Store(clear.Name, clear)
 
-	recoveredData, exist := memory.Read(data.Name)
-	assert.True(t, exist, "Should not return an error")
-	assert.Equal(t, data, recoveredData, "Should return the same data")
+	exist := Exists(data.Name)
+	assert.True(t, exist, "should return true if the key exists")
 
-	memory.Delete(data.Name)
+	recoveredData, exist := Read(data.Name)
+	assert.True(t, exist, "should not return an error")
+	assert.Equal(t, data, recoveredData, "should return the same data")
 
-	recoveredData, exist = memory.Read(data.Name)
-	assert.False(t, exist, "Should not return an error")
+	Delete(data.Name)
+
+	recoveredData, exist = Read(data.Name)
+	assert.False(t, exist, "should not return an error")
 	assert.Nil(t, recoveredData, "Should return nil")
+	recoveredData, exist = Read(clear.Name)
+	assert.True(t, exist, "should not return an error")
+	assert.NotNil(t, recoveredData, "should return nil")
+
+	Clear()
+
+	recoveredData, exist = Read(clear.Name)
+	assert.False(t, exist, "should not return an error")
+	assert.Nil(t, recoveredData, "should return nil")
 }

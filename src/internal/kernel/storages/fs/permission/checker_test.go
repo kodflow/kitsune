@@ -61,3 +61,20 @@ func TestCheckInvalidPermissions(t *testing.T) {
 		t.Log("expected failure for invalid permissions, error:", err)
 	}
 }
+
+// TestHasMode tests the HasMode function.
+func TestHasMode(t *testing.T) {
+	// Test case 1: current mode has the required mode
+	currentMode := os.FileMode(0700)
+	requiredMode := os.FileMode(0700)
+	if !HasMode(currentMode, requiredMode) {
+		t.Errorf("HasMode returned false for matching modes")
+	}
+
+	// Test case 2: current mode does not have the required mode
+	currentMode = os.FileMode(0755)
+	requiredMode = os.FileMode(0700)
+	if HasMode(currentMode, requiredMode) {
+		t.Errorf("HasMode returned true for non-matching modes")
+	}
+}
