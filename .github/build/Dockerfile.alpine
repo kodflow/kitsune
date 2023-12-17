@@ -1,11 +1,11 @@
 ## BUILDER
-FROM kodflow/os:alpine AS builder
+FROM kodmain/os:alpine AS builder
 
 ARG BINARY_VERSION=latest
 ENV BINARY_VERSION=${BINARY_VERSION}
 USER root:root
 
-RUN curl --silent -L -o /bin/kitsune https://github.com/kodflow/kitsune/releases/download/${BINARY_VERSION}/kitsune-linux-$ARCHITECTURE;
+RUN curl --silent -L -o /bin/kitsune https://github.com/kodmain/kitsune/releases/download/${BINARY_VERSION}/kitsune-linux-$ARCHITECTURE;
 
 RUN chmod +x /bin/kitsune
 RUN /bin/kitsune install
