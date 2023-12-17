@@ -17,13 +17,13 @@ func setupServer(address string) *tcp.Server {
 func TestServer(t *testing.T) {
 	logger.SetLevel(levels.OFF)
 	t.Run("New", func(t *testing.T) {
-		server := setupServer("127.0.0.1:8080")
+		server := setupServer("127.0.0.1:7777")
 		assert.NotNil(t, server)
-		assert.Equal(t, "127.0.0.1:8080", server.Address)
+		assert.Equal(t, "127.0.0.1:7777", server.Address)
 	})
 
 	t.Run("Start:Successfully", func(t *testing.T) {
-		server := setupServer("127.0.0.1:8080")
+		server := setupServer("127.0.0.1:7777")
 		err := server.Start()
 		assert.Nil(t, err)
 
@@ -34,7 +34,7 @@ func TestServer(t *testing.T) {
 	})
 
 	t.Run("Start:Failure(already started)", func(t *testing.T) {
-		server := setupServer("127.0.0.1:8080")
+		server := setupServer("127.0.0.1:7777")
 		server.Start()
 
 		// Attempting to start again
@@ -46,7 +46,7 @@ func TestServer(t *testing.T) {
 	})
 
 	t.Run("Stop:Successfully", func(t *testing.T) {
-		server := setupServer("127.0.0.1:8080")
+		server := setupServer("127.0.0.1:7777")
 		server.Start()
 
 		// Allow the server some time to start
@@ -57,7 +57,7 @@ func TestServer(t *testing.T) {
 	})
 
 	t.Run("Stop:Failure(already stopped)", func(t *testing.T) {
-		server := setupServer("127.0.0.1:8080")
+		server := setupServer("127.0.0.1:7777")
 		err := server.Stop()
 		assert.NotNil(t, err)
 		assert.Equal(t, "server is not active", err.Error())

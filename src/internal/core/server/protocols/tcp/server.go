@@ -49,7 +49,7 @@ func (s *Server) Start() error {
 
 	var err error
 	s.listener, err = net.Listen("tcp", s.Address)
-	if err != nil {
+	if logger.Error(err) {
 		return err
 	}
 
@@ -104,7 +104,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 	writer := bufio.NewWriter(conn) // Create a buffered writer for writing data to the connection.
 	for {
 		data, err := s.handleRequest(reader) // Read and process incoming requests.
-		if err != nil {
+		if logger.Error(err) {
 			break // Exit the loop if there is an error.
 		}
 
