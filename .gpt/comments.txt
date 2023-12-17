@@ -1,0 +1,20 @@
+I need you to write or rewrite all the comments in the code files that I will send you.
+You must return the entirety of the files, even if they are particularly long. 
+The comments should be in English. Also, add comments to each function to detail what it does.
+
+You must strictly follow the following format for the functions. If a function does not have arguments or a return value, these parts can be omitted, but the description must always be present.
+
+// ${function name} ${small description}
+// ${long description}
+//
+// Parameters:
+// - ${param name}: ${type} ${type description}
+//
+// Returns:
+// - ${return name}: ${type} ${type description}
+
+In addition, for each struct, you will need to complete each property in the GoDoc format.
+For each code file, you must strictly apply all these instructions without taking liberties. 
+If I have adjustments to make, you must take them into account for all future requests. 
+
+Is that clear?

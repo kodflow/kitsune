@@ -9,24 +9,29 @@ import (
 	"time"
 
 	"github.com/kodmain/kitsune/src/internal/core/server/protocols/tcp"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport"
+	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
 	"github.com/shirou/gopsutil/cpu"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestClient(t *testing.T) {
-	server1 := tcp.NewServer("localhost:8080")
-	server1.Start()
-	defer server1.Stop()
+func TestTCPClient(t *testing.T) {
+	server := setupServer("localhost:7777")
+	server.Start()
+	defer server.Stop()
 
 	client := tcp.NewClient()
-	service1, _ := client.Connect("localhost", "8080")
+	service1, err := client.Connect("localhost", "7777")
+	assert.Nil(t, err)
+
 	query1 := service1.MakeExchange()
+
 	response := make(chan bool)
 
-	client.Send(func(responses ...*transport.Response) {
+	client.Send(func(responses ...*generated.Response) {
 		response <- true
 	}, query1)
-	<-response
+
+	assert.True(t, <-response)
 }
 
 func BenchmarkLocal(b *testing.B) {
@@ -51,8 +56,9 @@ func BenchmarkLocal(b *testing.B) {
 
 		go func() {
 			for i := 0; i < max; i++ {
-				query1 := service1.MakeExchange(false)
-				client.Send(func(responses ...*transport.Response) {
+				query1 := service1.MakeExchange()
+
+				client.Send(func(responses ...*generated.Response) {
 					mu.Lock()
 					rps++
 					total++

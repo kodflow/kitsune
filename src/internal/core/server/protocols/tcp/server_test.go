@@ -10,20 +10,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func setup() *tcp.Server {
-	return tcp.NewServer("localhost:8080")
+func setupServer(address string) *tcp.Server {
+	return tcp.NewServer(address)
 }
 
 func TestServer(t *testing.T) {
 	logger.SetLevel(levels.OFF)
 	t.Run("New", func(t *testing.T) {
-		server := setup()
+		server := setupServer("localhost:8080")
 		assert.NotNil(t, server)
 		assert.Equal(t, "localhost:8080", server.Address)
 	})
 
 	t.Run("Start:Successfully", func(t *testing.T) {
-		server := setup()
+		server := setupServer("localhost:8080")
 		err := server.Start()
 		assert.Nil(t, err)
 
@@ -34,7 +34,7 @@ func TestServer(t *testing.T) {
 	})
 
 	t.Run("Start:Failure(already started)", func(t *testing.T) {
-		server := setup()
+		server := setupServer("localhost:8080")
 		server.Start()
 
 		// Attempting to start again
@@ -46,7 +46,7 @@ func TestServer(t *testing.T) {
 	})
 
 	t.Run("Stop:Successfully", func(t *testing.T) {
-		server := setup()
+		server := setupServer("localhost:8080")
 		server.Start()
 
 		// Allow the server some time to start
@@ -57,7 +57,7 @@ func TestServer(t *testing.T) {
 	})
 
 	t.Run("Stop:Failure(already stopped)", func(t *testing.T) {
-		server := setup()
+		server := setupServer("localhost:8080")
 		err := server.Stop()
 		assert.NotNil(t, err)
 		assert.Equal(t, "server is not active", err.Error())

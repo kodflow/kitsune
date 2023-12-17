@@ -38,9 +38,7 @@ func TestPool(t *testing.T) {
 
 		if buf == nil {
 			t.Errorf("Expected buffer to be allocated, got nil")
-		}
-
-		if len(*buf) != buffer.SIZE_1B {
+		} else if len(*buf) != buffer.SIZE_1B {
 			t.Errorf("Expected buffer of size %d, got %d", buffer.SIZE_1B, len(*buf))
 		}
 	})
