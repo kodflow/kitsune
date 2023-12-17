@@ -35,3 +35,10 @@ jobs:
             -Dsonar.projectKey=kodflow_kitsune
             -Dsonar.organization=kodflow
             -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.sources=src
+            -Dsonar.exclusions=**/*.pb.go
+            -Dsonar.tests=.
+            -Dsonar.test.inclusions=**/*_test.go
+            -Dsonar.test.exclusions=vendor/**
+            -Dsonar.verbose=true
+            -Dsonar.verbose=true
