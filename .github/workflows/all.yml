@@ -41,4 +41,3 @@ jobs:
             -Dsonar.test.inclusions=**/*_test.go
             -Dsonar.test.exclusions=vendor/**
             -Dsonar.verbose=true
-            -Dsonar.verbose=true
