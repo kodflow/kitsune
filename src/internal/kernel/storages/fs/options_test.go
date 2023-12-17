@@ -135,7 +135,7 @@ func TestPerms(t *testing.T) {
 		Perms: 0644,
 	}
 	err = perms(VALID_FILE_PATH, options)
-	assert.Error(t, err, "should return an error")
+	assert.Error(t, err)
 
 	// Test case 3: invalid user GID
 	options = &Options{
@@ -146,7 +146,7 @@ func TestPerms(t *testing.T) {
 		Perms: 0644,
 	}
 	err = perms(VALID_FILE_PATH, options)
-	assert.Error(t, err, "should return an error")
+	assert.Error(t, err)
 
 	// Test case 4: failed to change ownership
 	options = &Options{
@@ -157,7 +157,7 @@ func TestPerms(t *testing.T) {
 		Perms: 0644,
 	}
 	err = perms(VALID_FILE_PATH, options)
-	assert.Error(t, err, "should return an error")
+	assert.Error(t, err)
 
 	// Test case 5: failed to change permissions
 	options = &Options{
@@ -168,7 +168,7 @@ func TestPerms(t *testing.T) {
 		Perms: 0644,
 	}
 	err = perms(VALID_FILE_PATH, options)
-	assert.Error(t, err, "should return an error")
+	assert.Error(t, err)
 
 	// Test case 6: failed to change permissions
 	options = &Options{
@@ -180,7 +180,7 @@ func TestPerms(t *testing.T) {
 	}
 
 	err = perms(INVALID_FILE_PATH, options)
-	assert.Error(t, err, "should return an error")
+	assert.Error(t, err)
 
 	// Test case 1: successful permission change
 	err = changePermissions(VALID_FILE_PATH, &Options{Perms: 0644})
@@ -188,5 +188,5 @@ func TestPerms(t *testing.T) {
 
 	// Test case 2: failed permission change
 	err = changePermissions(INVALID_FILE_PATH, &Options{Perms: 0755})
-	assert.Error(t, err, "should return an error")
+	assert.Error(t, err)
 }
