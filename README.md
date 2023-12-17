@@ -8,7 +8,6 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/3a89526aa9624788a14e1d443a82a2f2)](https://www.codacy.com/gh/kodflow/kitsune/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=kodflow/kitsune&amp;utm_campaign=Badge_Grade)
 
 [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=kodflow_kitsune&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=kodflow_kitsune)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=kodflow_kitsune&metric=coverage)](https://sonarcloud.io/summary/new_code?id=kodflow_kitsune)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=kodflow_kitsune&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=kodflow_kitsune)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=kodflow_kitsune&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=kodflow_kitsune)
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=kodflow_kitsune&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=kodflow_kitsune)
