@@ -1,4 +1,4 @@
-// Package tcp provides functionalities for a TCP server.
+// Package tcp provides functionalities for a TCP client.
 package tcp
 
 import (
@@ -8,40 +8,34 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/kodmain/kitsune/src/internal/core/server/service"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport"
 	"github.com/kodmain/kitsune/src/internal/core/server/transport/promise"
+	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
+	"github.com/kodmain/kitsune/src/internal/core/server/transport/service"
 	"google.golang.org/protobuf/proto"
 )
 
-// Client represents a TCP client.
-// It manages multiple service connections and provides methods to send and receive data.
+// Client represents a TCP client for interacting with remote services.
 type Client struct {
-	mu       sync.Mutex                  // Protects the services map
+	mu       sync.Mutex                  // Mutex to protect the services map
 	services map[string]*service.Service // A map of services by name
 }
 
-// NewClient initializes a new Client and returns its pointer.
-//
-// Returns:
-//
-//	*Client: A pointer to the newly created Client
+// NewClient creates a new TCP client.
 func NewClient() *Client {
 	return &Client{
 		services: make(map[string]*service.Service),
 	}
 }
 
-// Connect initiates a new service connection.
-// Parameters:
+// Connect establishes a connection to a remote service.
 //
-//	address: The IP address of the service
-//	port: The port number of the service
+// Parameters:
+// - address: string The address of the remote service.
+// - port: string The port of the remote service.
 //
 // Returns:
-//
-//	*service.Service: A pointer to the connected service
-//	error: An error object if an error occurred
+// - s: *service.Service The connected service.
+// - error: An error if any.
 func (c *Client) Connect(address, port string) (*service.Service, error) {
 	s, err := service.Create(address, port)
 	if err != nil {
@@ -55,15 +49,13 @@ func (c *Client) Connect(address, port string) (*service.Service, error) {
 	return s, nil
 }
 
-// Disconnect terminates active connections to specified services or all services if none are specified.
+// Disconnect closes connections to one or more services.
 //
 // Parameters:
-//
-//	services: Names of services to disconnect (variadic)
+// - services: ...string A variadic list of service names to disconnect from.
 //
 // Returns:
-//
-//	error: An error object if an error occurred
+// - error: An error if any.
 func (c *Client) Disconnect(services ...string) error {
 	if len(c.services) == 0 {
 		return errors.New("no connection")
@@ -87,19 +79,15 @@ func (c *Client) Disconnect(services ...string) error {
 	return nil
 }
 
-// Send sends queries to services and registers a callback for responses.
+// Send sends requests to remote services and handles the responses.
 //
 // Parameters:
-//
-//	callback: A function to be called when responses are received
-//	queries: A slice of queries to send to services (variadic)
+// - callback: func(...*generated.Response) A function to handle responses.
+// - queries: ...*service.Exchange An array of service exchanges containing requests and their associated services.
 //
 // Returns:
-//
-//	error: An error object if an error occurred
-//
-// Send sends queries to services and registers a callback for responses.
-func (c *Client) Send(callback func(...*transport.Response), queries ...*service.Exchange) error {
+// - error: An error if any.
+func (c *Client) Send(callback func(...*generated.Response), queries ...*service.Exchange) error {
 	if err := c.validateInputs(queries); err != nil {
 		return err
 	}
@@ -121,7 +109,13 @@ func (c *Client) Send(callback func(...*transport.Response), queries ...*service
 	return nil
 }
 
-// validateInputs validates the service connections and queries.
+// validateInputs checks if the inputs to the Send function are valid.
+//
+// Parameters:
+// - queries: []*service.Exchange An array of service exchanges containing requests and their associated services.
+//
+// Returns:
+// - error: An error if any.
 func (c *Client) validateInputs(queries []*service.Exchange) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -137,21 +131,35 @@ func (c *Client) validateInputs(queries []*service.Exchange) error {
 	return nil
 }
 
-// buildDispatch builds the dispatch map for service names and their queries.
+// buildDispatch organizes queries by service name for dispatch.
+//
+// Parameters:
+// - queries: []*service.Exchange An array of service exchanges containing requests and their associated services.
+//
+// Returns:
+// - dispatch: map[string][]*service.Exchange A map of service names to their respective queries.
 func (c *Client) buildDispatch(queries []*service.Exchange) map[string][]*service.Exchange {
 	dispatch := make(map[string][]*service.Exchange)
 
 	for _, query := range queries {
-		if _, ok := c.services[query.ServiceName()]; ok {
-			dispatch[query.ServiceName()] = append(dispatch[query.ServiceName()], query)
+		if _, ok := c.services[query.Service]; ok {
+			dispatch[query.Service] = append(dispatch[query.Service], query)
 		}
 	}
 
 	return dispatch
 }
 
-// processQueries processes the queries and marshals the request data.
-func (c *Client) processQueries(dispatch map[string][]*service.Exchange, callback func(...*transport.Response)) (*promise.Promise, error) {
+// processQueries prepares queries for sending and sets up callback handling.
+//
+// Parameters:
+// - dispatch: map[string][]*service.Exchange A map of service names to their respective queries.
+// - callback: func(...*generated.Response) A function to handle responses.
+//
+// Returns:
+// - p: *promise.Promise A promise object for handling responses.
+// - error: An error if any.
+func (c *Client) processQueries(dispatch map[string][]*service.Exchange, callback func(...*generated.Response)) (*promise.Promise, error) {
 	p, err := promise.Create(callback)
 	if err != nil {
 		return nil, err
@@ -159,8 +167,8 @@ func (c *Client) processQueries(dispatch map[string][]*service.Exchange, callbac
 
 	for _, queries := range dispatch {
 		for _, query := range queries {
-			if query.Answer() {
-				p.Add(query.Request())
+			if query.Answer {
+				p.Add(query.Req)
 			}
 		}
 	}
@@ -168,7 +176,13 @@ func (c *Client) processQueries(dispatch map[string][]*service.Exchange, callbac
 	return p, nil
 }
 
-// sendToServices sends the marshaled data to the services.
+// sendToServices sends queries to remote services.
+//
+// Parameters:
+// - dispatch: map[string][]*service.Exchange A map of service names to their respective queries.
+//
+// Returns:
+// - error: An error if any.
 func (c *Client) sendToServices(dispatch map[string][]*service.Exchange) error {
 	buffers := make(map[string]*bytes.Buffer)
 
@@ -176,7 +190,7 @@ func (c *Client) sendToServices(dispatch map[string][]*service.Exchange) error {
 		var buffer bytes.Buffer
 
 		for _, query := range queries {
-			data, err := proto.Marshal(query.Request())
+			data, err := proto.Marshal(query.Req)
 			if err != nil {
 				return err
 			}

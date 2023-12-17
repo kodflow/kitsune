@@ -22,11 +22,15 @@ func NewProcessManager() *Manager {
 	return mngr
 }
 
+// CreateProcess creates a new process with the given name, command, and arguments.
+// It returns a pointer to the created Process and an error if any.
+// If a process with the same name is already running or exists, an error is returned.
 func (m *Manager) CreateProcess(name string, command string, args ...string) (*Process, error) {
+	pidHandler := daemon.NewPIDHandler(name, config.PATH_RUN)
+
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	pidHandler := daemon.NewPIDHandler(name, config.PATH_RUN)
 	if pid, _ := pidHandler.GetPID(); pid != 0 {
 		return nil, fmt.Errorf("process with name %s is already running", name)
 	}
@@ -52,6 +56,9 @@ func (m *Manager) CreateProcess(name string, command string, args ...string) (*P
 	return proc, nil
 }
 
+// DeleteProcess deletes a process with the given name from the manager.
+// It kills the process and removes it from the list of managed processes.
+// If no process is found with the given name, it returns an error.
 func (m *Manager) DeleteProcess(name string) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -70,6 +77,8 @@ func (m *Manager) DeleteProcess(name string) error {
 	return nil
 }
 
+// GetProcess récupère le processus avec le nom spécifié.
+// Il renvoie le processus et un booléen indiquant si le processus existe.
 func (m *Manager) GetProcess(name string) (*Process, bool) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -78,6 +87,8 @@ func (m *Manager) GetProcess(name string) (*Process, bool) {
 	return proc, exists
 }
 
+// ListProcesses returns a map of all processes managed by the Manager.
+// The key of the map is the name of the process, and the value is a pointer to the Process struct.
 func (m *Manager) ListProcesses() map[string]*Process {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()

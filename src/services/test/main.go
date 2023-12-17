@@ -4,12 +4,14 @@ import (
 	"flag"
 	"log"
 	"math"
+	"os"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/kodmain/kitsune/src/internal/core/server/protocols/tcp"
-	"github.com/kodmain/kitsune/src/internal/core/server/transport"
+	"github.com/kodmain/kitsune/src/internal/core/server/transport/proto/generated"
 	"github.com/shirou/gopsutil/cpu"
 )
 
@@ -20,7 +22,9 @@ var (
 )
 
 func init() {
-	flag.Parse()
+	if !strings.HasSuffix(os.Args[0], ".test") {
+		flag.Parse()
+	}
 }
 
 func main() { //runtime.NumCPU()
@@ -42,7 +46,7 @@ func main() { //runtime.NumCPU()
 			service, _ := client.Connect(*URL, *PORT)
 			for i := 0; i < max; i++ {
 				query1 := service.MakeExchange()
-				client.Send(func(responses ...*transport.Response) {
+				client.Send(func(responses ...*generated.Response) {
 					mu.Lock()
 					rps++
 					total++

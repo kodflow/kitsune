@@ -8,6 +8,7 @@ import (
 	"github.com/kodmain/kitsune/src/internal/kernel/daemon"
 )
 
+// Handler represents the process manager handler.
 var Handler *daemon.Handler = &daemon.Handler{
 	Name: "process manager",
 	Call: func() error {
