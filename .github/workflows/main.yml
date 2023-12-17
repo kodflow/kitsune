@@ -17,9 +17,9 @@ jobs:
       with:
         fetch-depth: 0
     - name: remove test
-        run: |
-          find . -name '*_test.go' -type f -exec rm -f {} \;
-        shell: bash
+      run: |
+        find . -name '*_test.go' -type f -exec rm -f {} \;
+      shell: bash
     - name: Get next version
       id: semver
       uses: ietf-tools/semver-action@v1
