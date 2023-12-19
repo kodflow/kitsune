@@ -1,15 +1,15 @@
-package daemon_test
+package daemon
 
 import (
 	"testing"
 	"time"
 
-	"github.com/kodflow/kitsune/src/internal/kernel/daemon"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDaemonHandler_StartStop(t *testing.T) {
-	handler := daemon.New()
-	testHandler := &daemon.Handler{
+	handler := New()
+	testHandler := &Handler{
 		Name: "test",
 		Call: func() error {
 			time.Sleep(10 * time.Second)
@@ -25,4 +25,41 @@ func TestDaemonHandler_StartStop(t *testing.T) {
 	})
 
 	handler.Start(testHandler)
+}
+func TestDaemonHandlerShouldExit(t *testing.T) {
+	startTime := time.Now()
+
+	tests := []struct {
+		name       string
+		count      int
+		startTime  time.Time
+		shouldExit bool
+	}{
+		{
+			name:       "NoFailures",
+			count:      0,
+			startTime:  startTime,
+			shouldExit: true,
+		},
+		{
+			name:       "LessThanMinute",
+			count:      3,
+			startTime:  startTime,
+			shouldExit: true,
+		},
+		{
+			name:       "GreaterThanMinute",
+			count:      3,
+			startTime:  startTime.Add(-time.Minute),
+			shouldExit: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &DaemonHandler{}
+			got := d.shouldExit(tt.count, tt.startTime)
+			assert.Equal(t, tt.shouldExit, got)
+		})
+	}
 }

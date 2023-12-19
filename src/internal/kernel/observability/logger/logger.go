@@ -42,8 +42,8 @@ func New(t writers.TYPE, l levels.TYPE) *Logger {
 //
 // Parameters:
 // - level: levels.TYPE The log level for the message.
-// - messages: ...interface{} The messages or data to log.
-func (l *Logger) Write(level levels.TYPE, messages ...interface{}) {
+// - messages: ...any The messages or data to log.
+func (l *Logger) Write(level levels.TYPE, messages ...any) {
 	for _, message := range messages {
 		var logger *log.Logger = nil
 		if level <= levels.WARN {
@@ -115,8 +115,8 @@ func (l *Logger) Error(err error) bool {
 // It is used for logging successful operations.
 //
 // Parameters:
-// - v: ...interface{} The success messages or data to log.
-func (l *Logger) Success(v ...interface{}) {
+// - v: ...any The success messages or data to log.
+func (l *Logger) Success(v ...any) {
 	l.Write(levels.SUCCESS, v...)
 }
 
@@ -124,8 +124,8 @@ func (l *Logger) Success(v ...interface{}) {
 // It is used for general-purpose logging.
 //
 // Parameters:
-// - v: ...interface{} The messages or data to log.
-func (l *Logger) Message(v ...interface{}) {
+// - v: ...any The messages or data to log.
+func (l *Logger) Message(v ...any) {
 	l.Write(levels.MESSAGE, v...)
 }
 
@@ -133,8 +133,8 @@ func (l *Logger) Message(v ...interface{}) {
 // It is used for logging potential issues or warnings.
 //
 // Parameters:
-// - v: ...interface{} The warning messages or data to log.
-func (l *Logger) Warn(v ...interface{}) {
+// - v: ...any The warning messages or data to log.
+func (l *Logger) Warn(v ...any) {
 	l.Write(levels.WARN, v...)
 }
 
@@ -142,8 +142,8 @@ func (l *Logger) Warn(v ...interface{}) {
 // It is used for logging informational messages.
 //
 // Parameters:
-// - v: ...interface{} The informational messages or data to log.
-func (l *Logger) Info(v ...interface{}) {
+// - v: ...any The informational messages or data to log.
+func (l *Logger) Info(v ...any) {
 	l.Write(levels.INFO, v...)
 }
 
@@ -151,8 +151,8 @@ func (l *Logger) Info(v ...interface{}) {
 // It provides detailed debug information for troubleshooting.
 //
 // Parameters:
-// - v: ...interface{} The debug messages or data to log.
-func (l *Logger) Debug(v ...interface{}) {
+// - v: ...any The debug messages or data to log.
+func (l *Logger) Debug(v ...any) {
 	l.Write(levels.DEBUG, v...)
 }
 

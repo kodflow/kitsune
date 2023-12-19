@@ -96,7 +96,7 @@ func (d *DaemonHandler) processHandler(handler *Handler) {
 		logger.Info(config.BUILD_APP_NAME + " " + handler.Name + " start")
 		if err := handler.Call(); err != nil {
 			logger.Warn(config.BUILD_APP_NAME+" "+handler.Name+" fail", err)
-			if count >= 2 && d.shouldExit(count, startTime) {
+			if d.shouldExit(count, startTime) {
 				logger.Error(fmt.Errorf(config.BUILD_APP_NAME + " " + handler.Name + " won't start"))
 				d.done <- true
 				break
@@ -114,6 +114,9 @@ func (d *DaemonHandler) processHandler(handler *Handler) {
 // - count: int The number of times the handler has failed.
 // - startTime: time.Time The start time of the handler execution.
 func (d *DaemonHandler) shouldExit(count int, startTime time.Time) bool {
-	elapsedTime := time.Since(startTime)
-	return elapsedTime < time.Minute
+	if count < 2 {
+		return true
+	}
+
+	return time.Since(startTime) < time.Minute
 }

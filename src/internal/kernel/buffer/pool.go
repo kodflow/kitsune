@@ -68,7 +68,7 @@ func GetPool(size int32) *Pool {
 
 	p := &Pool{
 		sync: &sync.Pool{
-			New: func() interface{} {
+			New: func() any {
 				b := make([]byte, size)
 				return &b
 			},

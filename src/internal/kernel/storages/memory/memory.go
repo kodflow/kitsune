@@ -7,10 +7,10 @@ import "sync"
 //
 // Attributes:
 // - mu: sync.RWMutex for synchronizing read-write access to the data.
-// - data: map[string]interface{} for storing the data with string keys.
+// - data: map[string]any for storing the data with string keys.
 type Memory struct {
 	mu   sync.RWMutex
-	data map[string]interface{}
+	data map[string]any
 }
 
 // New creates a new instance of the Memory storage.
@@ -18,9 +18,9 @@ type Memory struct {
 //
 // Returns:
 // - *Memory: A pointer to a newly created Memory instance with initialized storage.
-func New() *Memory {
+func NewMemory() *Memory {
 	return &Memory{
-		data: make(map[string]interface{}),
+		data: make(map[string]any),
 	}
 }
 
@@ -28,9 +28,8 @@ func New() *Memory {
 // It locks the storage for write operations, clears the data, and then unlocks it.
 func (m *Memory) Clear() {
 	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	m.data = make(map[string]interface{})
+	m.data = make(map[string]any)
+	m.mu.Unlock()
 }
 
 // Store adds or updates a value in the memory storage with the specified key.
@@ -38,12 +37,14 @@ func (m *Memory) Clear() {
 //
 // Parameters:
 // - key: string The key to associate with the value.
-// - value: interface{} The value to store, which can be of any type.
-func (m *Memory) Store(key string, value interface{}) {
+// - value: any The value to store, which can be of any type.
+// Returns:
+// - bool: A boolean indicating whether the key is stored in the storage.
+func (m *Memory) Store(key string, value any) bool {
 	m.mu.Lock()
-	defer m.mu.Unlock()
-
 	m.data[key] = value
+	m.mu.Unlock()
+	return true
 }
 
 // Read retrieves the value associated with the specified key from the memory storage.
@@ -53,13 +54,12 @@ func (m *Memory) Store(key string, value interface{}) {
 // - key: string The key for which to retrieve the associated value.
 //
 // Returns:
-// - interface{}: The value associated with the key.
+// - any: The value associated with the key.
 // - bool: A boolean indicating whether the key exists in the storage.
-func (m *Memory) Read(key string) (interface{}, bool) {
+func (m *Memory) Read(key string) (any, bool) {
 	m.mu.RLock()
-	defer m.mu.RUnlock()
-
 	item, exists := m.data[key]
+	m.mu.RUnlock()
 	return item, exists
 }
 
@@ -68,11 +68,13 @@ func (m *Memory) Read(key string) (interface{}, bool) {
 //
 // Parameters:
 // - key: string The key for which to remove the associated value.
-func (m *Memory) Delete(key string) {
+// Returns:
+// - bool: A boolean indicating whether the key remove from the storage.
+func (m *Memory) Delete(key string) bool {
 	m.mu.Lock()
-	defer m.mu.Unlock()
-
 	delete(m.data, key)
+	m.mu.Unlock()
+	return true
 }
 
 // Exists checks if the specified key exists in the memory storage.
@@ -85,8 +87,7 @@ func (m *Memory) Delete(key string) {
 // - bool: A boolean indicating whether the key exists in the storage.
 func (m *Memory) Exists(key string) bool {
 	m.mu.RLock()
-	defer m.mu.RUnlock()
-
 	_, exists := m.data[key]
+	m.mu.RUnlock()
 	return exists
 }

@@ -12,7 +12,7 @@ var instance *Memory = nil
 // - *Memory: A pointer to the singleton Memory instance.
 func standard() *Memory {
 	if instance == nil {
-		instance = New()
+		instance = NewMemory()
 	}
 	return instance
 }
@@ -28,8 +28,8 @@ func Clear() {
 //
 // Parameters:
 // - key: string The key to store the value under.
-// - value: interface{} The value to store, can be of any type.
-func Store(key string, value interface{}) {
+// - value: any The value to store, can be of any type.
+func Store(key string, value any) {
 	standard().Store(key, value)
 }
 
@@ -40,9 +40,9 @@ func Store(key string, value interface{}) {
 // - key: string The key corresponding to the value to retrieve.
 //
 // Returns:
-// - interface{}: The value associated with the key.
+// - any: The value associated with the key.
 // - bool: A boolean indicating whether the key exists in the storage.
-func Read(key string) (interface{}, bool) {
+func Read(key string) (any, bool) {
 	return standard().Read(key)
 }
 
