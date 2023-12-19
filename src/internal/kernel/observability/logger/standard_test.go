@@ -1,10 +1,10 @@
-package logger_test
+package logger
 
 import (
 	"errors"
 	"testing"
 
-	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/levels"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,20 +16,42 @@ func TestLoggerMethods(t *testing.T) {
 
 	// Test for Panic, Fatal, Error methods
 	// Ensures that Panic, Fatal, and Error methods return true when an error is provided.
-	assert.True(t, logger.Panic(testError), "Panic should return true if an error is provided")
-	assert.True(t, logger.Fatal(testError), "Fatal should return true if an error is provided")
-	assert.True(t, logger.Error(testError), "Error should return true if an error is provided")
+	assert.True(t, Panic(testError), "Panic should return true if an error is provided")
+	assert.True(t, Fatal(testError), "Fatal should return true if an error is provided")
+	assert.True(t, Error(testError), "Error should return true if an error is provided")
 
-	assert.False(t, logger.Panic(nil), "Panic should return false if an error is provided")
-	assert.False(t, logger.Fatal(nil), "Fatal should return false if an error is provided")
-	assert.False(t, logger.Error(nil), "Error should return false if an error is provided")
+	assert.False(t, Panic(nil), "Panic should return false if an error is provided")
+	assert.False(t, Fatal(nil), "Fatal should return false if an error is provided")
+	assert.False(t, Error(nil), "Error should return false if an error is provided")
 
 	// Test for other methods, ensuring they do not produce an error
 	// Verifies that methods such as Success, Message, Warn, Info, Debug, and Trace do not cause panics.
-	assert.NotPanics(t, func() { logger.Success("test success") }, "Success should not panic")
-	assert.NotPanics(t, func() { logger.Message("test message") }, "Message should not panic")
-	assert.NotPanics(t, func() { logger.Warn("test warn") }, "Warn should not panic")
-	assert.NotPanics(t, func() { logger.Info("test info") }, "Info should not panic")
-	assert.NotPanics(t, func() { logger.Debug("test debug") }, "Debug should not panic")
-	assert.NotPanics(t, func() { logger.Trace() }, "Trace should not panic")
+	assert.NotPanics(t, func() { Success("test success") }, "Success should not panic")
+	assert.NotPanics(t, func() { Message("test message") }, "Message should not panic")
+	assert.NotPanics(t, func() { Warn("test warn") }, "Warn should not panic")
+	assert.NotPanics(t, func() { Info("test info") }, "Info should not panic")
+	assert.NotPanics(t, func() { Debug("test debug") }, "Debug should not panic")
+	assert.NotPanics(t, func() { Trace() }, "Trace should not panic")
+}
+
+// TestSetLevel tests the SetLevel function of the logger package.
+func TestSetLevel(t *testing.T) {
+	// Test setting different log levels
+	SetLevel(levels.DEBUG)
+	assert.Equal(t, levels.DEBUG, standard().level, "SetLevel should set the log level to levels.DEBUG")
+
+	SetLevel(levels.INFO)
+	assert.Equal(t, levels.INFO, standard().level, "SetLevel should set the log level to LevelInfo")
+
+	SetLevel(levels.WARN)
+	assert.Equal(t, levels.WARN, standard().level, "SetLevel should set the log level to LevelWarn")
+
+	SetLevel(levels.ERROR)
+	assert.Equal(t, levels.ERROR, standard().level, "SetLevel should set the log level to LevelError")
+
+	SetLevel(levels.FATAL)
+	assert.Equal(t, levels.FATAL, standard().level, "SetLevel should set the log level to LevelFatal")
+
+	SetLevel(levels.PANIC)
+	assert.Equal(t, levels.PANIC, standard().level, "SetLevel should set the log level to LevelPanic")
 }

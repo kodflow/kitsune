@@ -36,8 +36,12 @@ func TestPIDHandler(t *testing.T) {
 
 func TestIsProcessRunning(t *testing.T) {
 	// Using PID of the current test process
-	assert.True(t, daemon.IsProcessRunning(os.Getpid()))
+	isRunning, err := daemon.IsProcessRunning(os.Getpid())
+	assert.True(t, isRunning)
+	assert.NoError(t, err)
 
 	// Using invalid PID
-	assert.False(t, daemon.IsProcessRunning(999999))
+	isRunning, err = daemon.IsProcessRunning(9999999999999)
+	assert.False(t, isRunning)
+	assert.Equal(t, "os: process already finished", err.Error())
 }
