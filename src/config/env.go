@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"os/user"
 )
@@ -22,22 +21,16 @@ func init() {
 	user, err := user.Current()
 	if err == nil {
 		USER = user
-	} else {
-		fmt.Println("Error fetching current user:", err)
 	}
 
 	// Retrieve and set the hostname of the system
 	if hostname, err := os.Hostname(); err == nil {
 		HOSTNAME = hostname
-	} else {
-		fmt.Println("Error fetching hostname:", err)
 	}
 
 	// Retrieve and set the current working directory
 	if cwd, err := os.Getwd(); err == nil {
 		CWD = cwd
-	} else {
-		fmt.Println("Error fetching current working directory:", err)
 	}
 
 	// Construct the SERVICE_TOKEN using the hostname and BUILD_APP_NAME.
