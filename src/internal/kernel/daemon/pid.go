@@ -86,7 +86,7 @@ func (p *PIDHandler) GetPID() (int, error) {
 	pid, _ := strconv.Atoi(pidStr)
 
 	// Check if the process is effectively running
-	if IsProcessRunning(pid) {
+	if isRunning, _ := IsProcessRunning(pid); isRunning {
 		return pid, fmt.Errorf("process is already running")
 	}
 
@@ -106,18 +106,14 @@ func (p *PIDHandler) GetPID() (int, error) {
 //
 // Returns:
 // - bool: true if the process is running, false otherwise.
-func IsProcessRunning(pid int) bool {
+func IsProcessRunning(pid int) (bool, error) {
 	// Find the process by PID
-	process, err := os.FindProcess(pid)
-	if err != nil {
-		return false
-	}
-
+	process, _ := os.FindProcess(pid)
 	// Send a signal to check if the process is still running
-	err = process.Signal(syscall.Signal(0))
+	err := process.Signal(syscall.Signal(0))
 	if err != nil && err.Error() == "os: process already finished" {
-		return false
+		return false, err
 	}
 
-	return err == nil
+	return err == nil, nil
 }
