@@ -42,16 +42,16 @@ func New() *DaemonHandler {
 // Parameters:
 // - handlers: ...*Handler A variadic list of handlers to be executed by the daemon.
 func (d *DaemonHandler) Start(handlers ...*Handler) {
-	pid := os.Getpid()
-	if _, err := d.PIDHandler.GetPID(); err != nil {
-		handleErrorAndExit(err)
-	}
-
-	if err := d.PIDHandler.SetPID(pid); err != nil {
-		handleErrorAndExit(err)
-	}
-
 	signal.Notify(d.sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	processes := findProcessByName(findProcessName(os.Getpid()))
+	if len(processes) > 1 {
+		logger.Error(fmt.Errorf("multiple processes with the same name found: %v", config.BUILD_APP_NAME))
+		d.sigs <- syscall.SIGTERM
+		return
+	}
+
+	d.PIDHandler.SetPID()
 
 	go d.handleSignal()
 
@@ -66,15 +66,6 @@ func (d *DaemonHandler) Start(handlers ...*Handler) {
 // It sends a SIGTERM signal to the daemon.
 func (d *DaemonHandler) Stop() {
 	d.sigs <- syscall.SIGTERM
-}
-
-// handleErrorAndExit logs the error and exits the program.
-// Parameters:
-// - err: error The error to log before exiting.
-func handleErrorAndExit(err error) {
-	if logger.Fatal(err) {
-		os.Exit(1)
-	}
 }
 
 // handleSignal waits for an OS signal and initiates the daemon shutdown process.
@@ -95,7 +86,7 @@ func (d *DaemonHandler) processHandler(handler *Handler) {
 	for {
 		logger.Info(config.BUILD_APP_NAME + " " + handler.Name + " start")
 		if err := handler.Call(); err != nil {
-			logger.Warn(config.BUILD_APP_NAME+" "+handler.Name+" fail", err)
+			logger.Warn(config.BUILD_APP_NAME + " " + handler.Name + " fail:" + err.Error())
 			if d.shouldExit(count, startTime) {
 				logger.Error(fmt.Errorf(config.BUILD_APP_NAME + " " + handler.Name + " won't start"))
 				d.done <- true
@@ -115,7 +106,7 @@ func (d *DaemonHandler) processHandler(handler *Handler) {
 // - startTime: time.Time The start time of the handler execution.
 func (d *DaemonHandler) shouldExit(count int, startTime time.Time) bool {
 	if count < 2 {
-		return true
+		return false
 	}
 
 	return time.Since(startTime) < time.Minute

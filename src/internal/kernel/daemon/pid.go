@@ -2,8 +2,9 @@
 package daemon
 
 import (
-	"fmt"
+	"bytes"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -52,8 +53,8 @@ func (p *PIDHandler) getPIDFilePath() string {
 //
 // Returns:
 // - error: An error if the file operation fails.
-func (p *PIDHandler) SetPID(pid int) error {
-	return fs.WriteFile(p.getPIDFilePath(), strconv.Itoa(pid))
+func (p *PIDHandler) SetPID() error {
+	return fs.WriteFile(p.getPIDFilePath(), strconv.Itoa(os.Getpid()))
 }
 
 // ClearPID deletes the PID file associated with the process.
@@ -65,40 +66,16 @@ func (p *PIDHandler) ClearPID() error {
 	return fs.DeleteFile(p.getPIDFilePath())
 }
 
-// GetPID retrieves the PID from the PID file.
-// If the associated process is running, it returns the PID and an error.
-// If the PID file exists but the process isn't running, it deletes the PID file and returns 0.
-//
-// Returns:
-// - int: The PID of the running process or 0 if not running.
-// - error: An error if the process is already running or if there's an issue reading the PID file.
 func (p *PIDHandler) GetPID() (int, error) {
-	if !fs.ExistsFile(p.getPIDFilePath()) {
-		return 0, nil
-	}
-
 	pidBytes, err := fs.ReadFile(p.getPIDFilePath())
 	if err != nil {
 		return 0, err
 	}
 
-	pidStr := strings.TrimSpace(string(pidBytes))
-	pid, _ := strconv.Atoi(pidStr)
-
-	// Check if the process is effectively running
-	if isRunning, _ := IsProcessRunning(pid); isRunning {
-		return pid, fmt.Errorf("process is already running")
-	}
-
-	// If the process isn't running but the PID file exists, delete the PID file
-	if err := p.ClearPID(); err != nil {
-		return 0, fmt.Errorf("can't read process on pid file")
-	}
-
-	return 0, nil
+	return strconv.Atoi(strings.TrimSpace(string(pidBytes)))
 }
 
-// IsProcessRunning checks if the process with the given PID is running.
+// isProcessRunning checks if the process with the given PID is running.
 // It verifies the existence of a process by its PID.
 //
 // Parameters:
@@ -106,9 +83,9 @@ func (p *PIDHandler) GetPID() (int, error) {
 //
 // Returns:
 // - bool: true if the process is running, false otherwise.
-func IsProcessRunning(pid int) (bool, error) {
+func isProcessRunning(pid int) (bool, error) {
 	// Find the process by PID
-	process, _ := os.FindProcess(pid)
+	process, _ := findProcessByID(pid)
 	// Send a signal to check if the process is still running
 	err := process.Signal(syscall.Signal(0))
 	if err != nil && err.Error() == "os: process already finished" {
@@ -116,4 +93,81 @@ func IsProcessRunning(pid int) (bool, error) {
 	}
 
 	return err == nil, nil
+}
+
+// findProcessByID searches and returns a pointer to the process corresponding to the given ID.
+// If no matching process is found, an error is returned.
+//
+// Parameters:
+// - id: int The ID of the process to find.
+//
+// Returns:
+// - process: *Process A pointer to the process if found, otherwise nil.
+// - error An error if no matching process is found.
+func findProcessByID(id int) (*os.Process, error) {
+	return os.FindProcess(id)
+}
+
+// findProcessByName finds processes by their name.
+//
+// This function searches for processes by their name using the 'ps' command,
+// which is available on most Unix-like systems. It returns all processes
+// that match the name. The function uses 'ps' to obtain the process IDs (PIDs)
+// and then uses os.FindProcess to create process objects for each PID.
+//
+// Parameters:
+// - processName: string The name of the process to search for.
+//
+// Returns:
+// - []*os.Process: A slice of process objects matching the given name.
+func findProcessByName(processName string) []*os.Process {
+	// Execute the 'ps' command to get details of processes.
+	cmd := exec.Command("ps", "-e", "-o", "pid,comm")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	_ = cmd.Run() // Ignoring error for simplicity
+
+	var processes []*os.Process
+	// Parse the output to find the processes.
+	for _, line := range strings.Split(out.String(), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) >= 2 && fields[1] == processName {
+			pid, err := strconv.Atoi(fields[0])
+			if err != nil {
+				continue // Skip lines that don't have a valid PID.
+			}
+			process, err := os.FindProcess(pid)
+			if err != nil {
+				continue // Skip if the process cannot be found.
+			}
+			processes = append(processes, process)
+		}
+	}
+
+	return processes
+}
+
+// findProcessName retrieves the name of the process given its PID.
+//
+// This function uses the 'ps' command, available on most Unix-like systems,
+// to find the name of the process associated with the provided PID. The function
+// executes 'ps' with the specified PID and parses the output to extract the process name.
+//
+// Parameters:
+// - pid: int The Process ID of the process whose name is to be found.
+//
+// Returns:
+// - string: The name of the process associated with the given PID.
+// - error: An error object if any error occurs during the process name retrieval.
+func findProcessName(pid int) string {
+	// Execute the 'ps' command to get the name of the process for the given PID.
+	cmd := exec.Command("ps", "-p", strconv.Itoa(pid), "-o", "comm=")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	if err := cmd.Run(); err != nil {
+		return ""
+	}
+
+	processName := strings.TrimSpace(out.String())
+	return processName
 }
