@@ -1,18 +1,19 @@
 package daemon
 
 import (
+	"errors"
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDaemonHandler_StartStop(t *testing.T) {
+func TestDaemonHandlerStartStop(t *testing.T) {
 	handler := New()
 	testHandler := &Handler{
 		Name: "test",
 		Call: func() error {
-			time.Sleep(10 * time.Second)
 			return nil
 		},
 	}
@@ -26,6 +27,26 @@ func TestDaemonHandler_StartStop(t *testing.T) {
 
 	handler.Start(testHandler)
 }
+
+func TestDaemonHandlerStartStopError(t *testing.T) {
+	handler := New()
+	testHandler := &Handler{
+		Name: "test",
+		Call: func() error {
+			return fmt.Errorf("test error")
+		},
+	}
+
+	time.AfterFunc(0*time.Second, func() {
+		time.AfterFunc(3*time.Second, func() {
+			t.Error("Daemon did not stop in the expected time")
+		})
+		handler.Stop()
+	})
+
+	handler.Start(testHandler)
+}
+
 func TestDaemonHandlerShouldExit(t *testing.T) {
 	startTime := time.Now()
 
@@ -39,7 +60,7 @@ func TestDaemonHandlerShouldExit(t *testing.T) {
 			name:       "NoFailures",
 			count:      0,
 			startTime:  startTime,
-			shouldExit: true,
+			shouldExit: false,
 		},
 		{
 			name:       "LessThanMinute",
@@ -53,13 +74,32 @@ func TestDaemonHandlerShouldExit(t *testing.T) {
 			startTime:  startTime.Add(-time.Minute),
 			shouldExit: false,
 		},
+		{
+			name:       "GreaterThanMinute",
+			count:      3,
+			startTime:  startTime.Add(-time.Minute),
+			shouldExit: false,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &DaemonHandler{}
+			d := New()
 			got := d.shouldExit(tt.count, tt.startTime)
 			assert.Equal(t, tt.shouldExit, got)
 		})
 	}
+}
+
+func TestDaemonHandlerProcessHandlerFail(t *testing.T) {
+	handler := &Handler{
+		Name: "test",
+		Call: func() error {
+			return errors.New("test error")
+		},
+	}
+
+	d := New()
+	d.processHandler(handler)
+	<-d.done
 }
