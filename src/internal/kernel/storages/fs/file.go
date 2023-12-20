@@ -132,12 +132,12 @@ func SHA1File(filePath string) (string, error) {
 //
 // Returns:
 // - bool: true if the file exists and is not a directory, false otherwise.
-func ExistsFile(filePath string) bool {
+func ExistsFile(filePath string) (bool, error) {
 	info, err := os.Stat(filePath)
 	if os.IsNotExist(err) {
-		return false
+		return false, err
 	}
-	return !info.IsDir()
+	return !info.IsDir(), nil
 }
 
 // StatFile returns the file information for the file at the specified file path.
@@ -163,6 +163,10 @@ func StatFile(filePath string) (fs.FileInfo, error) {
 // - []byte: The content of the file.
 // - error: An error if any occurred during the process.
 func ReadFile(filePath string) ([]byte, error) {
+	if exist, err := ExistsFile(filePath); !exist {
+		return []byte{}, err
+	}
+
 	return os.ReadFile(filePath)
 }
 

@@ -59,7 +59,8 @@ func TestOpenFile(t *testing.T) {
 	assert.NotNil(t, file)
 	file.Close()
 
-	exists := ExistsFile(VALID_FILE_PATH)
+	exists, err := ExistsFile(VALID_FILE_PATH)
+	assert.NoError(t, err)
 	assert.True(t, exists)
 }
 
@@ -72,7 +73,8 @@ func TestDeleteFile(t *testing.T) {
 	err = DeleteFile(VALID_FILE_PATH)
 	assert.NoError(t, err)
 
-	exists := ExistsFile(VALID_FILE_PATH)
+	exists, err := ExistsFile(VALID_FILE_PATH)
+	assert.Error(t, err)
 	assert.False(t, exists)
 }
 
@@ -98,7 +100,7 @@ func TestSHA1File(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-// TestExistsFile checks if the file existence checking functionality works.
+// ,errTestExistsFile checks if the file existence checking functionality works.
 // It verifies both the existence and non-existence cases.
 func TestExistsFile(t *testing.T) {
 	filePath := "test_exists.txt"
@@ -107,11 +109,13 @@ func TestExistsFile(t *testing.T) {
 	defer os.Remove(filePath)
 	assert.NoError(t, err)
 
-	exists := ExistsFile(filePath)
+	exists, err := ExistsFile(filePath)
 	assert.True(t, exists)
+	assert.NoError(t, err)
 
-	exists = ExistsFile("nonexistent.txt")
+	exists, err = ExistsFile("nonexistent.txt")
 	assert.False(t, exists)
+	assert.Error(t, err)
 }
 
 // TestStatFile tests the file status retrieval functionality.
@@ -135,10 +139,14 @@ func TestReadFile(t *testing.T) {
 	content := "Test content"
 	defer os.Remove(filePath)
 
-	err := WriteFile(filePath, content)
+	readContent, err := ReadFile(filePath)
+	assert.Error(t, err)
+	assert.Equal(t, "", string(readContent))
+
+	err = WriteFile(filePath, content)
 	assert.NoError(t, err)
 
-	readContent, err := ReadFile(filePath)
+	readContent, err = ReadFile(filePath)
 	assert.NoError(t, err)
 	assert.Equal(t, content, string(readContent))
 }
