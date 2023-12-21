@@ -1,4 +1,4 @@
-package tcp_test
+package tcp
 
 import (
 	"log"
@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kodflow/kitsune/src/internal/core/server/protocols/tcp"
 	"github.com/kodflow/kitsune/src/internal/core/server/transport/proto/generated"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/stretchr/testify/assert"
@@ -19,7 +18,7 @@ func TestTCPClient(t *testing.T) {
 	server.Start()
 	defer server.Stop()
 
-	client := tcp.NewClient()
+	client := NewClient()
 	service1, err := client.Connect("127.0.0.1", "7777")
 	assert.Nil(t, err)
 
@@ -35,11 +34,11 @@ func TestTCPClient(t *testing.T) {
 }
 
 func BenchmarkLocal(b *testing.B) {
-	server1 := tcp.NewServer("127.0.0.1:8080")
+	server1 := NewServer("127.0.0.1:8080")
 	server1.Start()
 	defer server1.Stop()
 
-	client := tcp.NewClient()
+	client := NewClient()
 	service1, _ := client.Connect("127.0.0.1", "8080")
 
 	b.Run("benchmark", func(b *testing.B) {
@@ -114,11 +113,11 @@ func bToMb(b uint64) uint64 {
 
 func TestClient(t *testing.T) {
 	logger.SetLevel(levels.OFF)
-	server := tcp.NewServer("127.0.0.1:8080")
+	server := NewServer("127.0.0.1:8080")
 	server.Start()
 	defer server.Stop()
 
-	client := tcp.NewClient("127.0.0.1:8080")
+	client := NewClient("127.0.0.1:8080")
 
 	t.Run("NewClient", func(t *testing.T) {
 		assert.NotNil(t, client, "Expected client to be non-nil")
@@ -144,9 +143,9 @@ func TestClient(t *testing.T) {
 
 	t.Run("Max", func(t *testing.T) {
 		const max = 1000
-		clients := map[int]*tcp.Client{}
+		clients := map[int]*Client{}
 		for c := 0; c < max; c++ {
-			clients[c] = tcp.NewClient("127.0.0.1:8080")
+			clients[c] = NewClient("127.0.0.1:8080")
 			err := clients[c].Connect()
 			assert.Nil(t, err, "Expected no error on multiple connect")
 		}
@@ -180,10 +179,10 @@ func TestClient(t *testing.T) {
 
 func BenchmarkRequestsOnly(b *testing.B) {
 	logger.SetLevel(levels.OFF)
-	server := tcp.NewServer("127.0.0.1:8080")
+	server := NewServer("127.0.0.1:8080")
 	server.Start()
 
-	client := tcp.NewClient("127.0.0.1:8080")
+	client := NewClient("127.0.0.1:8080")
 	client.Connect()
 
 	b.Run("benchmark", func(b *testing.B) {
@@ -254,10 +253,10 @@ func bToMb(b uint64) uint64 {
 func BenchmarkRequestAndResponse(b *testing.B) {
 	logger.SetLevel(levels.OFF)
 
-	server := tcp.NewServer("127.0.0.1:8080")
+	server := NewServer("127.0.0.1:8080")
 	server.Start()
 
-	client := tcp.NewClient("127.0.0.1:8080")
+	client := NewClient("127.0.0.1:8080")
 	client.Connect()
 
 	b.Run("benchmark", func(b *testing.B) {
@@ -325,7 +324,7 @@ func BenchmarkRequestAndResponse(b *testing.B) {
 func BenchmarkLocal(b *testing.B) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	client := tcp.NewClient("youka-PRODUCTION-9de5d4b457bad9c7.elb.eu-west-3.amazonaws.com:9999")
+	client := NewClient("youka-PRODUCTION-9de5d4b457bad9c7.elb.eu-west-3.amazonaws.com:9999")
 	client.Connect()
 	time.Sleep(time.Second)
 

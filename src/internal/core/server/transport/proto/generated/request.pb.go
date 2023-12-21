@@ -149,7 +149,7 @@ func file_src_internal_core_server_transport_proto_request_proto_rawDescGZIP() [
 }
 
 var file_src_internal_core_server_transport_proto_request_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
-var file_src_internal_core_server_transport_proto_request_proto_goTypes = []interface{}{
+var file_src_internal_core_server_transport_proto_request_proto_goTypes = []any{
 	(*Request)(nil), // 0: generated.Request
 	nil,             // 1: generated.Request.HeadersEntry
 }
@@ -168,7 +168,7 @@ func file_src_internal_core_server_transport_proto_request_proto_init() {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_src_internal_core_server_transport_proto_request_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_src_internal_core_server_transport_proto_request_proto_msgTypes[0].Exporter = func(v any, i int) any {
 			switch v := v.(*Request); i {
 			case 0:
 				return &v.state
@@ -181,7 +181,7 @@ func file_src_internal_core_server_transport_proto_request_proto_init() {
 			}
 		}
 	}
-	file_src_internal_core_server_transport_proto_request_proto_msgTypes[0].OneofWrappers = []interface{}{}
+	file_src_internal_core_server_transport_proto_request_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

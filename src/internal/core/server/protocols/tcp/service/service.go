@@ -52,33 +52,29 @@ func Create(address, port string) (*Service, error) {
 		ID:       v4.String(),
 	}
 
-	if err := s.Connect(); err != nil {
-		return nil, err
-	}
-
-	return s, nil
+	return s.Connect()
 }
 
 // Connect establishes a connection to the server.
 //
 // Returns:
 // - err: An error if the connection fails or if already connected.
-func (s *Service) Connect() error {
+func (s *Service) Connect() (*Service, error) {
 	if s.Connected {
-		return errors.New("already connected")
+		return nil, errors.New("already connected")
 	}
 
 	var err error
 	s.Network, err = net.DialTimeout(s.Protocol, s.Name, time.Second*config.DEFAULT_TIMEOUT)
 	if err != nil {
-		return fmt.Errorf("can't establish connection: %w", err)
+		return nil, fmt.Errorf("can't establish connection: %w", err)
 	}
 
 	s.Connected = true
 
 	go s.handleServerResponses()
 
-	return nil
+	return s, nil
 }
 
 // Disconnect closes the connection.
@@ -89,7 +85,7 @@ func (s *Service) Disconnect() error {
 	s.Connected = false
 
 	if err := s.Network.Close(); err != nil {
-		s.Connected = true
+		s.Connected = false
 		return err
 	}
 
@@ -143,7 +139,7 @@ func (s *Service) reconnect() {
 		}
 
 		// Try to establish a connection.
-		if err := s.Connect(); err == nil {
+		if _, err := s.Connect(); err == nil {
 			// Reconnection successful.
 			fmt.Println("Reconnected")
 			return
