@@ -49,9 +49,7 @@ func OpenFile(filePath string, options ...*Options) (*os.File, error) {
 // Returns:
 // - error: An error if any occurred during the process.
 func Permissions(filePath string, options ...*Options) error {
-	opts := resolveFileOptions(options...)
-
-	return perms(filePath, opts)
+	return perms(filePath, resolveFileOptions(options...))
 }
 
 // createOrOpenFile creates or opens a file at the specified file path with the given flags and options.

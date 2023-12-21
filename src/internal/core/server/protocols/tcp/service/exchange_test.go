@@ -1,10 +1,9 @@
-package service_test
+package service
 
 import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/kodflow/kitsune/src/internal/core/server/transport/service"
 )
 
 func TestNewExchange(t *testing.T) {
@@ -21,7 +20,7 @@ func TestNewExchange(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			exchange := service.NewExchange(tc.service, tc.answer)
+			exchange := NewExchange(tc.service, tc.answer)
 
 			if exchange == nil {
 				t.Error("Expected non-nil exchange, got nil")
