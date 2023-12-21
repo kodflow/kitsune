@@ -21,14 +21,16 @@ func setupHTTPServer(httpPort, httpsPort string) *http.Server {
 }
 
 func TestHTTPServer(t *testing.T) {
+	p1, p2 := generateTwoDistinctRandomNumbers()
+	// Création d'un serveur HTTP de test
 	logger.SetLevel(levels.OFF)
 	t.Run("NewHTTPServer", func(t *testing.T) {
-		server := setupHTTPServer("8080", "")
+		server := setupHTTPServer(p1, "")
 		assert.NotNil(t, server)
 	})
 
 	t.Run("StartStandardServer:Successfully", func(t *testing.T) {
-		server := setupHTTPServer("8080", "")
+		server := setupHTTPServer(p1, "")
 		err := server.Start()
 		assert.Nil(t, err)
 
@@ -38,7 +40,7 @@ func TestHTTPServer(t *testing.T) {
 	})
 
 	t.Run("StartStandardServer:Failure(already started)", func(t *testing.T) {
-		server := setupHTTPServer("8080", "")
+		server := setupHTTPServer(p1, "")
 		server.Start()
 
 		err := server.Start()
@@ -48,7 +50,7 @@ func TestHTTPServer(t *testing.T) {
 	})
 
 	t.Run("StartSecureServer:Successfully", func(t *testing.T) {
-		server := setupHTTPServer("", "8443")
+		server := setupHTTPServer("", p2)
 		err := server.Start()
 		assert.Nil(t, err)
 
@@ -57,4 +59,13 @@ func TestHTTPServer(t *testing.T) {
 		server.Stop()
 	})
 
+	t.Run("StartSecureServer:Failure(already started)", func(t *testing.T) {
+		server := setupHTTPServer("", p2)
+		server.Start()
+
+		err := server.Start()
+		assert.NotNil(t, err)
+
+		server.Stop()
+	})
 }

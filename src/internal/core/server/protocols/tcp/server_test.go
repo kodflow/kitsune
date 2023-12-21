@@ -1,17 +1,16 @@
-package tcp_test
+package tcp
 
 import (
 	"testing"
 	"time"
 
-	"github.com/kodflow/kitsune/src/internal/core/server/protocols/tcp"
 	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
 	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/levels"
 	"github.com/stretchr/testify/assert"
 )
 
-func setupServer(address string) *tcp.Server {
-	return tcp.NewServer(address)
+func setupServer(address string) *Server {
+	return NewServer(address)
 }
 
 func TestServer(t *testing.T) {

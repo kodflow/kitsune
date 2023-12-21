@@ -139,7 +139,7 @@ func file_src_internal_core_server_transport_proto_response_proto_rawDescGZIP() 
 }
 
 var file_src_internal_core_server_transport_proto_response_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
-var file_src_internal_core_server_transport_proto_response_proto_goTypes = []interface{}{
+var file_src_internal_core_server_transport_proto_response_proto_goTypes = []any{
 	(*Response)(nil), // 0: generated.Response
 	nil,              // 1: generated.Response.HeadersEntry
 }
@@ -158,7 +158,7 @@ func file_src_internal_core_server_transport_proto_response_proto_init() {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_src_internal_core_server_transport_proto_response_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_src_internal_core_server_transport_proto_response_proto_msgTypes[0].Exporter = func(v any, i int) any {
 			switch v := v.(*Response); i {
 			case 0:
 				return &v.state

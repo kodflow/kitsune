@@ -1,13 +1,14 @@
-package service_test
+package service
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
+	"io"
 	"net"
 	"testing"
 	"time"
 
-	"github.com/kodflow/kitsune/src/internal/core/server/transport/service"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -37,7 +38,7 @@ func TestCreate(t *testing.T) {
 	address := "127.0.0.1"
 	port := "8080"
 
-	svc, err := service.Create(address, port)
+	svc, err := Create(address, port)
 	assert.NoError(t, err)
 	assert.NotNil(t, svc)
 }
@@ -48,11 +49,19 @@ func TestConnectDisconnect(t *testing.T) {
 	address := "127.0.0.1"
 	port := "8080"
 
-	svc, _ := service.Create(address, port)
+	svc, _ := Create(address, port)
+	assert.True(t, svc.Connected)
+	svc.Connect()
 	assert.True(t, svc.Connected)
 
-	err := svc.Disconnect()
+	svc2, err := Create(address, "8081")
+	assert.Nil(t, svc2)
+	assert.Error(t, err)
+
+	err = svc.Disconnect()
 	assert.NoError(t, err)
+	err = svc.Disconnect()
+	assert.Error(t, err)
 	assert.False(t, svc.Connected)
 }
 
@@ -89,7 +98,7 @@ func (mc *MockConn) SetWriteDeadline(t time.Time) error { return nil }
 
 func TestWrite(t *testing.T) {
 	mockConn := &MockConn{Connected: true}
-	svc := &service.Service{
+	svc := &Service{
 		Name:      "localhost:8080",
 		Address:   "localhost",
 		Protocol:  "tcp",
@@ -109,7 +118,7 @@ func TestWrite(t *testing.T) {
 }
 
 func TestMakeExchange(t *testing.T) {
-	svc := &service.Service{Name: "testService"}
+	svc := &Service{Name: "testService"}
 
 	exchange1 := svc.MakeExchange()
 	assert.NotNil(t, exchange1, "MakeExchange returned nil, expected non-nil Exchange")
@@ -120,4 +129,45 @@ func TestMakeExchange(t *testing.T) {
 	assert.NotNil(t, exchange2, "MakeExchange with false returned nil, expected non-nil Exchange")
 	assert.Equal(t, svc.Name, exchange2.Service, "Service name does not match")
 	assert.False(t, exchange2.Answer, "Expected Answer to be false, got true")
+}
+func TestReadData(t *testing.T) {
+	svc := &Service{Name: "testService"}
+
+	reader := bufio.NewReader(bytes.NewBufferString("test data"))
+	length := uint32(9)
+
+	data, err := svc.readData(reader, length)
+	assert.NoError(t, err)
+	assert.Equal(t, []byte("test data"), data)
+
+}
+
+func TestHandleReadError(t *testing.T) {
+	mockConn := &MockConn{Connected: true}
+	svc := &Service{
+		Name:      "localhost:8080",
+		Address:   "localhost",
+		Protocol:  "tcp",
+		Network:   mockConn,
+		Connected: true,
+	}
+
+	err := errors.New("test error")
+
+	// Test case 1: Error is io.EOF
+	err1 := io.EOF
+	handleReadError(svc, err1)
+	assert.False(t, svc.Connected, "Expected Connected to be false")
+
+	// Test case 2: Error is not io.EOF
+	handleReadError(svc, err)
+	assert.False(t, svc.Connected, "Expected Connected to be false")
+}
+func TestUnmarshalResponse(t *testing.T) {
+	data := []byte{ /* your test data here */ }
+
+	res, err := unmarshalResponse(data)
+	assert.NoError(t, err)
+	assert.NotNil(t, res)
+	// Add your assertions for the unmarshaled response here
 }
