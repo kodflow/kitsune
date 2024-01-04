@@ -24,7 +24,7 @@ func New() (*generated.Request, *generated.Response) {
 	}
 
 	res := &generated.Response{
-		Status: 204,    // Initialize with a 204 No Content status.
+		Status: 404,    // Initialize with a 404 Not found status.
 		Id:     req.Id, // Set the Response ID to the same ID as the Request.
 	}
 

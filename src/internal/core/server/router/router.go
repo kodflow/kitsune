@@ -36,18 +36,49 @@ func (r *Router) Register(epi *EndPoint) error {
 // Returns:
 // - error: An error if there was an issue resolving the request, otherwise nil.
 func (r *Router) Resolve(req *generated.Request, res *generated.Response) error {
-	endpoints := strings.Split(req.Endpoint, "/")
 
-	logger.Debug(endpoints)
+	var endpoint *EndPoint
+	var err error
 
-	/*
-		endpoint := r.endpoints[endpoints[0]]
-		for _, endpointName := range endpoints[2:] {
-			endpoint
+	endpointNames := strings.Split(
+		strings.TrimPrefix(
+			strings.TrimSuffix(
+				req.Endpoint, "/",
+			), "/",
+		), "/",
+	)
+
+	for _, endpointName := range endpointNames {
+		if endpoint == nil && endpointName == "" {
+			endpoint = r.endpoint
+		} else if endpoint == nil {
+			ep, ok := r.endpoint.subs[endpointName]
+			if !ok {
+				endpoint = nil
+				break
+			}
+			endpoint = ep
+		} else {
+			ep, ok := endpoint.subs[endpointName]
+			if !ok {
+				endpoint = nil
+				break
+			}
+			endpoint = ep
 		}
-	*/
+	}
 
-	return nil
+	logger.Debug(endpoint)
+
+	if endpoint != nil {
+		if condition, ok := endpoint.handlers[req.Method]; ok {
+			for _, handler := range condition {
+				err = handler(req, res)
+			}
+		}
+	}
+
+	return err
 }
 
 // Router represents your API.

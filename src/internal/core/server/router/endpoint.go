@@ -18,31 +18,38 @@ type EndPoint struct {
 	Endpoint string
 	parent   *EndPoint
 	subs     map[string]*EndPoint
+	handlers map[string][]Handler
 	options  []string
 }
 
-func (a *EndPoint) Head(...Handler) {
+func (a *EndPoint) Head(h ...Handler) {
 	a.options = append(a.options, "HEAD")
+	a.handlers["HEAD"] = append(a.handlers["HEAD"], h...)
 }
 
-func (a *EndPoint) Get(...Handler) {
+func (a *EndPoint) Get(h ...Handler) {
 	a.options = append(a.options, "GET")
+	a.handlers["GET"] = append(a.handlers["GET"], h...)
 }
 
-func (a *EndPoint) Post(...Handler) {
+func (a *EndPoint) Post(h ...Handler) {
 	a.options = append(a.options, "POST")
+	a.handlers["POST"] = append(a.handlers["POST"], h...)
 }
 
-func (a *EndPoint) Put(...Handler) {
+func (a *EndPoint) Put(h ...Handler) {
 	a.options = append(a.options, "PUT")
+	a.handlers["PUT"] = append(a.handlers["PUT"], h...)
 }
 
-func (a *EndPoint) Patch(...Handler) {
+func (a *EndPoint) Patch(h ...Handler) {
 	a.options = append(a.options, "PATCH")
+	a.handlers["PATCH"] = append(a.handlers["PATCH"], h...)
 }
 
-func (a *EndPoint) Delete(...Handler) {
+func (a *EndPoint) Delete(h ...Handler) {
 	a.options = append(a.options, "DELETE")
+	a.handlers["DELETE"] = append(a.handlers["DELETE"], h...)
 }
 
 func (a *EndPoint) Sub(e *EndPoint) *EndPoint {
@@ -87,6 +94,7 @@ func NewRootPoint() *EndPoint {
 		Endpoint: "",
 		subs:     map[string]*EndPoint{},
 		options:  []string{},
+		handlers: map[string][]Handler{},
 	}
 }
 
@@ -103,6 +111,8 @@ func NewEndPoint(endpoint string) *EndPoint {
 	return &EndPoint{
 		Endpoint: clearEndpoint,
 		subs:     map[string]*EndPoint{},
+		options:  []string{},
+		handlers: map[string][]Handler{},
 	}
 }
 

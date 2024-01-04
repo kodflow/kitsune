@@ -11,9 +11,9 @@ var (
 )
 
 func init() {
-	EndPoint.Get(func(req *generated.Request, res *generated.Response, next router.HandlerInterface) (*generated.Request, *generated.Response, error) {
+	EndPoint.Get(func(req *generated.Request, res *generated.Response) error {
 		res.Body = []byte("Hello World")
-		return req, res, nil
+		return nil
 	})
 
 	EndPoint.Sub(world.EndPoint)

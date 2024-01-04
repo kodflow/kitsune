@@ -10,8 +10,9 @@ var (
 )
 
 func init() {
-	EndPoint.Get(func(req *generated.Request, res *generated.Response, next router.HandlerInterface) (*generated.Request, *generated.Response, error) {
+	EndPoint.Get(func(req *generated.Request, res *generated.Response) error {
 		res.Body = []byte("STATUS")
-		return req, res, nil
+		res.Status = 200
+		return nil
 	})
 }
