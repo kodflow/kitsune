@@ -9,9 +9,10 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/kodflow/kitsune/src/internal/core/server/api"
-	"github.com/kodflow/kitsune/src/internal/core/server/handler"
+	"github.com/kodflow/kitsune/src/internal/core/server/router"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport"
 	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
+	"google.golang.org/protobuf/proto"
 )
 
 // Server represents a TCP server and contains information about the address it listens on
@@ -19,22 +20,22 @@ import (
 type Server struct {
 	Address  string       // Address to listen on
 	listener net.Listener // TCP Listener object
-	router   *api.Router
+	router   *router.Router
 }
 
 // NewServer creates a new Server instance with the specified listening address.
 func NewServer(address string) *Server {
 	return &Server{
 		Address: address,
-		router:  api.MakeRouter(),
+		router:  router.MakeRouter(),
 	}
 }
 
 // Register is a method for registering API handlers with the server.
 //
 // Parameters:
-// - api: api.APInterface - The API interface to register handlers from.
-func (s *Server) Register(api api.APInterface) {
+// - api: router.EndPoint - The EndPoint to register handlers from.
+func (s *Server) Register(api router.EndPoint) {
 	// TODO: Implement handler registration.
 }
 
@@ -108,7 +109,7 @@ func (s *Server) handleConnection(conn net.Conn) {
 			break // Exit the loop if there is an error.
 		}
 
-		s.sendResponse(writer, handler.TCPHandler(data)) // Send a response to the client based on the processed data.
+		s.sendResponse(writer, s.TCPHandler(data)) // Send a response to the client based on the processed data.
 	}
 }
 
@@ -142,4 +143,49 @@ func (s *Server) sendResponse(writer *bufio.Writer, res []byte) {
 		writer.Write(res)
 		writer.Flush()
 	}
+}
+
+// TCPHandler handles TCP requests by unmarshalling, processing, and marshalling responses.
+// It is responsible for converting raw byte data into a structured request, processing it
+// using a router, and then returning the structured response as byte data. It handles
+// errors at each step by returning an empty response in case of failure.
+//
+// Parameters:
+// - b: []byte Raw byte array representing a TCP request.
+//
+// Returns:
+// - []byte: Processed response as a byte array. Returns an empty response in case of errors.
+func (s *Server) TCPHandler(b []byte) []byte {
+	// Initialize a new transport request and response
+	req, res := transport.New()
+
+	// Unmarshal the input byte array into the request struct
+	err := proto.Unmarshal(b, req)
+
+	// Set the process ID in the response to match the request
+	res.Pid = req.Pid
+
+	// Return an empty response if there's an error in unmarshalling
+	if err != nil {
+		return transport.Empty
+	}
+
+	// Resolve the request using the router and update the response
+	err = s.router.Resolve(req, res)
+
+	// Return an empty response if there's an error in processing the request
+	if err != nil {
+		return transport.Empty
+	}
+
+	// Marshal the response back into a byte array
+	b, err = proto.Marshal(res)
+
+	// Return an empty response if there's an error in marshalling
+	if err != nil {
+		return transport.Empty
+	}
+
+	// Return the processed response
+	return b
 }

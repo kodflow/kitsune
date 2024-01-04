@@ -3,6 +3,7 @@ package http
 import (
 	"crypto/tls"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -10,8 +11,8 @@ import (
 
 	"github.com/kodflow/kitsune/src/config"
 	"github.com/kodflow/kitsune/src/internal/core/certs"
-	"github.com/kodflow/kitsune/src/internal/core/server/api"
-	"github.com/kodflow/kitsune/src/internal/core/server/handler"
+	"github.com/kodflow/kitsune/src/internal/core/server/router"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport"
 	"github.com/kodflow/kitsune/src/internal/kernel/errors"
 	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
 	"golang.org/x/net/http2"
@@ -21,9 +22,9 @@ import (
 // It encapsulates the functionality of two engines, one for handling standard HTTP
 // connections and the other for secure HTTPS connections, along with a router for API routing.
 type Server struct {
-	standard *Engine     // The engine for handling standard HTTP connections.
-	secure   *Engine     // The engine for handling secure HTTPS connections.
-	router   *api.Router // The router for managing API endpoints.
+	standard *Engine        // The engine for handling standard HTTP connections.
+	secure   *Engine        // The engine for handling secure HTTPS connections.
+	router   *router.Router // The router for managing API endpoints.
 }
 
 // ServerCfg holds configuration data for the HTTP server.
@@ -60,7 +61,6 @@ type Engine struct {
 // - *http.Server: Configured HTTP server.
 func newServerConfig(tls *tls.Config) *http.Server {
 	srv := &http.Server{
-		Handler:           http.HandlerFunc(handler.HTTPHandler),
 		ReadTimeout:       5 * time.Second,
 		WriteTimeout:      5 * time.Second,
 		IdleTimeout:       120 * time.Second,
@@ -86,7 +86,7 @@ func newServerConfig(tls *tls.Config) *http.Server {
 // - error: An error if any.
 func NewServer(cfg *ServerCfg) *Server {
 	server := &Server{
-		router: api.MakeRouter(),
+		router: router.MakeRouter(),
 		standard: &Engine{
 			PORT:   cfg.HTTP,
 			DOMAIN: cfg.DOMAIN,
@@ -94,6 +94,8 @@ func NewServer(cfg *ServerCfg) *Server {
 			server: newServerConfig(nil),
 		},
 	}
+
+	server.standard.server.Handler = http.HandlerFunc(server.HTTPHandler)
 
 	if cfg.HTTPS == "" {
 		return server
@@ -106,6 +108,8 @@ func NewServer(cfg *ServerCfg) *Server {
 		server: newServerConfig(certs.TLSConfigFor(cfg.DOMAIN, cfg.SUBS...)),
 	}
 
+	server.secure.server.Handler = http.HandlerFunc(server.HTTPHandler)
+
 	http2.ConfigureServer(server.secure.server, &http2.Server{
 		IdleTimeout: config.DEFAULT_TIMEOUT * time.Second,
 	})
@@ -113,13 +117,8 @@ func NewServer(cfg *ServerCfg) *Server {
 	return server
 }
 
-// Register registers API handlers with the server.
-// This method binds API interfaces to the server for handling different routes and requests.
-//
-// Parameters:
-// - api: api.APInterface An interface containing API handlers.
-func (s *Server) Register(api api.APInterface) {
-	// TODO: Implement registration logic.
+func (s *Server) Register(api *router.EndPoint) {
+	s.router.Register(api)
 }
 
 // Start starts the HTTP server, allowing it to accept incoming connections.
@@ -225,4 +224,46 @@ func (e *Engine) Stop() error {
 	logger.Info(fmt.Sprintf("server stop on %v:%v with pid: %v", e.DOMAIN, e.PORT, os.Getpid()))
 
 	return err
+}
+
+// HTTPHandler handles HTTP requests and sends back HTTP responses.
+// It processes incoming HTTP requests, creates a corresponding transport request,
+// and uses the router to generate a response. The handler deals with various HTTP methods,
+// reads request bodies if necessary, and writes back responses including headers and status codes.
+//
+// Parameters:
+// - w: http.ResponseWriter Response writer to send back the HTTP response.
+// - r: *http.Request The incoming HTTP request to be processed.
+func (s *Server) HTTPHandler(w http.ResponseWriter, r *http.Request) {
+	logger.Info(fmt.Sprintf("request received on %v:%v with pid: %v", r.Host, r.URL.String(), os.Getpid()))
+	// Initialize a new transport request and response
+	req, res := transport.New()
+	req.Method = r.Method
+	req.Endpoint = r.URL.String()
+
+	// Read the request body for specific HTTP methods
+	if r.Method == "POST" || r.Method == "PATCH" || r.Method == "PUT" {
+		// Read the request body
+		body, err := io.ReadAll(r.Body)
+		defer r.Body.Close()
+		if err != nil {
+			// Handle errors in reading the request body
+			http.Error(w, "Erreur lors de la lecture de la requête", http.StatusBadRequest)
+			return
+		}
+
+		req.Body = body
+	}
+
+	// Process the request using the router
+	if err := s.router.Resolve(req, res); err != nil {
+		// Handle errors in processing the request
+		http.Error(w, "Erreur de traitement", http.StatusInternalServerError)
+		return
+	}
+
+	// Write the response back to the client
+	w.Header().Set("request-id", req.Id)
+	w.WriteHeader(int(res.Status))
+	w.Write(res.Body)
 }

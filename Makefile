@@ -67,7 +67,7 @@ update: ## Install/Update vendor
 	go get -u ./...
 	go mod vendor
 
-build: clear update build-services build-framework ## Build all services
+build: clear update generate build-services build-framework ## Build all services
 
 clear:
 	rm -rf .generated

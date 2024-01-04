@@ -161,3 +161,53 @@ func (l *Logger) Debug(v ...any) {
 func (l *Logger) Trace() {
 	l.Write(levels.TRACE, string(debug.Stack()))
 }
+
+// Infof logs an informational message with formatted output.
+// It is similar to Info but allows for formatted messages.
+//
+// Parameters:
+// - format: string The format string.
+// - a: ...any The arguments for formatting.
+func (l *Logger) Infof(format string, a ...any) {
+	l.Write(levels.INFO, fmt.Sprintf(format, a...))
+}
+
+// Warnf logs a warning message with formatted output.
+// It is similar to Warn but allows for formatted messages.
+//
+// Parameters:
+// - format: string The format string.
+// - a: ...any The arguments for formatting.
+func (l *Logger) Warnf(format string, a ...any) {
+	l.Write(levels.WARN, fmt.Sprintf(format, a...))
+}
+
+// Successf logs a success message with formatted output.
+// It is similar to Success but allows for formatted messages.
+//
+// Parameters:
+// - format: string The format string.
+// - a: ...any The arguments for formatting.
+func (l *Logger) Successf(format string, a ...any) {
+	l.Write(levels.SUCCESS, fmt.Sprintf(format, a...))
+}
+
+// Debugf logs a debug message with formatted output.
+// It is similar to Debug but allows for formatted messages.
+//
+// Parameters:
+// - format: string The format string.
+// - a: ...any The arguments for formatting.
+func (l *Logger) Debugf(format string, a ...any) {
+	l.Write(levels.DEBUG, fmt.Sprintf(format, a...))
+}
+
+// Messagef logs a general message with formatted output.
+// It is similar to Message but allows for formatted messages.
+//
+// Parameters:
+// - format: string The format string.
+// - a: ...any The arguments for formatting.
+func (l *Logger) Messagef(format string, a ...any) {
+	l.Write(levels.MESSAGE, fmt.Sprintf(format, a...))
+}
