@@ -16,8 +16,7 @@ import (
 )
 
 var (
-	URL    = flag.String("url", "localhost", "set url")
-	PORT   = flag.String("port", "9999", "set port")
+	URL    = flag.String("url", "localhost:9999", "set url")
 	NUMCPU = flag.Int("cpu", 1, "set max CPU")
 )
 
@@ -43,7 +42,7 @@ func main() { //runtime.NumCPU()
 	for i := 0; i < *NUMCPU; i++ {
 		go func() {
 			client := tcp.NewClient()
-			service, _ := client.Connect(*URL, *PORT)
+			service, _ := client.Connect(*URL)
 			for i := 0; i < max; i++ {
 				query1 := service.MakeExchange()
 				client.Send(func(responses ...*generated.Response) {

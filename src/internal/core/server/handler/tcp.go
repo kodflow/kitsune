@@ -1,10 +1,15 @@
 package handler
 
 import (
+	"time"
+
 	"github.com/kodflow/kitsune/src/internal/core/server/router"
 	"github.com/kodflow/kitsune/src/internal/core/server/transport"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/metrics"
 	"google.golang.org/protobuf/proto"
 )
+
+var tcpm = metrics.GetAverage("tcp/req", time.Second)
 
 // TCPHandler handles TCP requests by unmarshalling, processing, and marshalling responses.
 // It is responsible for converting raw byte data into a structured request, processing it
@@ -17,6 +22,8 @@ import (
 // Returns:
 // - []byte: Processed response as a byte array. Returns an empty response in case of errors.
 func TCPHandler(b []byte) []byte {
+	tcpm.Hit()
+	//metrics.GetCounter("tcp/req")
 	// Initialize a new transport request and response
 	req, res := transport.New()
 

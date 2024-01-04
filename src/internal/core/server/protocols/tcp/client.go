@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/kodflow/kitsune/src/internal/core/server/protocols/tcp/promise"
 	"github.com/kodflow/kitsune/src/internal/core/server/protocols/tcp/service"
-	"github.com/kodflow/kitsune/src/internal/core/server/transport/promise"
 	"github.com/kodflow/kitsune/src/internal/core/server/transport/proto/generated"
 	"google.golang.org/protobuf/proto"
 )
@@ -31,19 +31,18 @@ func NewClient() *Client {
 //
 // Parameters:
 // - address: string The address of the remote service.
-// - port: string The port of the remote service.
 //
 // Returns:
 // - s: *service.Service The connected service.
 // - error: An error if any.
-func (c *Client) Connect(address, port string) (*service.Service, error) {
-	s, err := service.Create(address, port)
+func (c *Client) Connect(address string) (*service.Service, error) {
+	s, err := service.Create(address)
 	if err != nil {
 		return s, err
 	}
 
 	c.mu.Lock()
-	c.services[s.Name] = s
+	c.services[s.Address] = s
 	c.mu.Unlock()
 
 	return s, nil

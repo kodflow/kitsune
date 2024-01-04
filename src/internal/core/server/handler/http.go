@@ -3,9 +3,17 @@ package handler
 import (
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/kodflow/kitsune/src/internal/core/server/router"
 	"github.com/kodflow/kitsune/src/internal/core/server/transport"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/metrics"
+)
+
+var (
+	httpm = metrics.New()
+	avg   = httpm.GetAverage("http/req", time.Second)
+	dur   = httpm.GetDuration("http/req")
 )
 
 // HTTPHandler handles HTTP requests and sends back HTTP responses.
@@ -18,6 +26,9 @@ import (
 // - r: *http.Request The incoming HTTP request to be processed.
 func HTTPHandler(w http.ResponseWriter, r *http.Request) {
 	// Initialize a new transport request and response
+	dur.Start()
+	defer dur.Elapsed()
+	defer avg.Hit(r.URL.String())
 	req, res := transport.New()
 	req.Method = r.Method
 

@@ -35,10 +35,8 @@ func startMockTCPServer(t *testing.T) func() {
 func TestCreate(t *testing.T) {
 	stopServer := startMockTCPServer(t)
 	defer stopServer()
-	address := "127.0.0.1"
-	port := "8080"
 
-	svc, err := Create(address, port)
+	svc, err := Create("127.0.0.1:8080")
 	assert.NoError(t, err)
 	assert.NotNil(t, svc)
 }
@@ -46,15 +44,13 @@ func TestCreate(t *testing.T) {
 func TestConnectDisconnect(t *testing.T) {
 	stopServer := startMockTCPServer(t)
 	defer stopServer()
-	address := "127.0.0.1"
-	port := "8080"
 
-	svc, _ := Create(address, port)
+	svc, _ := Create("127.0.0.1:8080")
 	assert.True(t, svc.Connected)
 	svc.Connect()
 	assert.True(t, svc.Connected)
 
-	svc2, err := Create(address, "8081")
+	svc2, err := Create("127.0.0.1:8081")
 	assert.Nil(t, svc2)
 	assert.Error(t, err)
 
@@ -99,8 +95,7 @@ func (mc *MockConn) SetWriteDeadline(t time.Time) error { return nil }
 func TestWrite(t *testing.T) {
 	mockConn := &MockConn{Connected: true}
 	svc := &Service{
-		Name:      "localhost:8080",
-		Address:   "localhost",
+		Address:   "localhost:8080",
 		Protocol:  "tcp",
 		Network:   mockConn,
 		Connected: true,
@@ -118,20 +113,20 @@ func TestWrite(t *testing.T) {
 }
 
 func TestMakeExchange(t *testing.T) {
-	svc := &Service{Name: "testService"}
+	svc := &Service{Address: "testService"}
 
 	exchange1 := svc.MakeExchange()
 	assert.NotNil(t, exchange1, "MakeExchange returned nil, expected non-nil Exchange")
-	assert.Equal(t, svc.Name, exchange1.Service, "Service name does not match")
+	assert.Equal(t, svc.Address, exchange1.Service, "Service name does not match")
 	assert.True(t, exchange1.Answer, "Expected Answer to be true, got false")
 
 	exchange2 := svc.MakeExchange(false)
 	assert.NotNil(t, exchange2, "MakeExchange with false returned nil, expected non-nil Exchange")
-	assert.Equal(t, svc.Name, exchange2.Service, "Service name does not match")
+	assert.Equal(t, svc.Address, exchange2.Service, "Service name does not match")
 	assert.False(t, exchange2.Answer, "Expected Answer to be false, got true")
 }
 func TestReadData(t *testing.T) {
-	svc := &Service{Name: "testService"}
+	svc := &Service{Address: "testService"}
 
 	reader := bufio.NewReader(bytes.NewBufferString("test data"))
 	length := uint32(9)
@@ -145,8 +140,7 @@ func TestReadData(t *testing.T) {
 func TestHandleReadError(t *testing.T) {
 	mockConn := &MockConn{Connected: true}
 	svc := &Service{
-		Name:      "localhost:8080",
-		Address:   "localhost",
+		Address:   "localhost:8080",
 		Protocol:  "tcp",
 		Network:   mockConn,
 		Connected: true,

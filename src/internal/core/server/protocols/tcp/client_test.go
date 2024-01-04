@@ -1,15 +1,12 @@
 package tcp
 
 import (
-	"log"
-	"math"
-	"runtime"
-	"sync"
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/kodflow/kitsune/src/internal/core/server/transport/proto/generated"
-	"github.com/shirou/gopsutil/cpu"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/metrics"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +16,7 @@ func TestTCPClient(t *testing.T) {
 	defer server.Stop()
 
 	client := NewClient()
-	service1, err := client.Connect("127.0.0.1", "7777")
+	service1, err := client.Connect(server.Address)
 	assert.Nil(t, err)
 
 	query1 := service1.MakeExchange()
@@ -39,67 +36,29 @@ func BenchmarkLocal(b *testing.B) {
 	defer server1.Stop()
 
 	client := NewClient()
-	service1, _ := client.Connect("127.0.0.1", "8080")
+	service1, _ := client.Connect(server1.Address)
 
 	b.Run("benchmark", func(b *testing.B) {
 		b.ResetTimer() // Ne compte pas la configuration initiale dans le temps de benchmark
 		var max = 1000000
-		var rps = 0
 		var total = 0
-		var mu sync.Mutex
-
-		var rpsHistory []int
-		var minRPS int = math.MaxInt64
-		var maxRPS int = math.MinInt64
-		var sumRPS int = 0
-
+		var res = 0
 		go func() {
 			for i := 0; i < max; i++ {
-				query1 := service1.MakeExchange()
-
-				client.Send(func(responses ...*generated.Response) {
-					mu.Lock()
-					rps++
-					total++
-					mu.Unlock()
-				}, query1)
+				client.Send(func(responses ...*generated.Response) { total++; res++ }, service1.MakeExchange())
 			}
 		}()
 
 		ticker := time.NewTicker(time.Second)
 		for range ticker.C {
-			var m runtime.MemStats
-			runtime.ReadMemStats(&m)
-			percent, _ := cpu.Percent(0, false)
-			cpuUsage := 0.0
-			if len(percent) > 0 {
-				cpuUsage = percent[0]
-			}
-
-			rpsHistory = append(rpsHistory, rps)
-			if rps < minRPS {
-				minRPS = rps
-			}
-			if rps > maxRPS {
-				maxRPS = rps
-			}
-			sumRPS += rps
-
-			avgRPS := sumRPS / len(rpsHistory)
-			deltaRPS := maxRPS - minRPS
-
-			log.Printf("Request/Sec: %d, Avg: %d, Min: %d, Max: %d, Delta: %d, REQS: %d/%d, Go Routine: %d, MemoryUsage: %d Mb, CPU Usage: %.2f%%", rps, avgRPS, minRPS, maxRPS, deltaRPS, total, max, runtime.NumGoroutine(), bToMb(m.Alloc), cpuUsage)
-			rps = 0
+			fmt.Println(metrics.GetAverage("tcp/req", time.Second).GetAverage(), res)
 			if int(total) >= max {
 				ticker.Stop()
 				break
 			}
+			res = 0
 		}
 	})
-}
-
-func bToMb(b uint64) uint64 {
-	return b / 1024 / 1024
 }
 
 /*

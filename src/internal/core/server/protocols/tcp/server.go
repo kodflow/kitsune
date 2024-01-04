@@ -12,12 +12,14 @@ import (
 	"github.com/kodflow/kitsune/src/internal/core/server/api"
 	"github.com/kodflow/kitsune/src/internal/core/server/handler"
 	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/metrics"
 )
 
 // Server represents a TCP server and contains information about the address it listens on
 // and the underlying network listener.
 type Server struct {
-	Address  string       // Address to listen on
+	Address  string // Address to listen on
+	Metrics  metrics.Metrics
 	listener net.Listener // TCP Listener object
 	router   *api.Router
 }

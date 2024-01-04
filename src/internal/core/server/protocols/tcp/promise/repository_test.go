@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/kodflow/kitsune/src/config"
-	"github.com/kodflow/kitsune/src/internal/core/server/transport/promise"
+	"github.com/kodflow/kitsune/src/internal/core/server/protocols/tcp/promise"
 	"github.com/kodflow/kitsune/src/internal/core/server/transport/proto/generated"
 	"github.com/stretchr/testify/assert"
 )

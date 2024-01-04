@@ -13,7 +13,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kodflow/kitsune/src/config"
-	"github.com/kodflow/kitsune/src/internal/core/server/transport/promise"
+	"github.com/kodflow/kitsune/src/internal/core/server/protocols/tcp/promise"
 	"github.com/kodflow/kitsune/src/internal/core/server/transport/proto/generated"
 	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
 	"google.golang.org/protobuf/proto"
@@ -21,8 +21,7 @@ import (
 
 // Service struct represents a remote service to interact with.
 type Service struct {
-	Name         string   // The name of the service, usually in URI form.
-	Address      string   // The address of the server.
+	Address      string   // The address of the service, usually in URI form.
 	Protocol     string   // The network protocol to use (e.g., TCP, UDP).
 	ID           string   // A unique identifier for this connection.
 	Connected    bool     // True if a connection has been established, false otherwise.
@@ -39,14 +38,13 @@ type Service struct {
 // Returns:
 // - service: A pointer to a Service instance.
 // - err: An error if any.
-func Create(address, port string) (*Service, error) {
+func Create(address string) (*Service, error) {
 	v4, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
 	}
 
 	s := &Service{
-		Name:     address + ":" + port,
 		Address:  address,
 		Protocol: "tcp",
 		ID:       v4.String(),
@@ -65,7 +63,7 @@ func (s *Service) Connect() (*Service, error) {
 	}
 
 	var err error
-	s.Network, err = net.DialTimeout(s.Protocol, s.Name, time.Second*config.DEFAULT_TIMEOUT)
+	s.Network, err = net.DialTimeout(s.Protocol, s.Address, time.Second*config.DEFAULT_TIMEOUT)
 	if err != nil {
 		return nil, fmt.Errorf("can't establish connection: %w", err)
 	}
@@ -274,8 +272,8 @@ func (s *Service) processResponse(res *generated.Response) {
 // - exchange: A pointer to a new Exchange instance.
 func (s *Service) MakeExchange(answer ...bool) *Exchange {
 	if len(answer) == 0 {
-		return NewExchange(s.Name, true)
+		return NewExchange(s.Address, true)
 	}
 
-	return NewExchange(s.Name, answer[0])
+	return NewExchange(s.Address, answer[0])
 }
