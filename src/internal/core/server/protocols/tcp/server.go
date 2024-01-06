@@ -12,7 +12,6 @@ import (
 	"github.com/kodflow/kitsune/src/internal/core/server/router"
 	"github.com/kodflow/kitsune/src/internal/core/server/transport"
 	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
-	"google.golang.org/protobuf/proto"
 )
 
 // Server represents a TCP server and contains information about the address it listens on
@@ -156,36 +155,8 @@ func (s *Server) sendResponse(writer *bufio.Writer, res []byte) {
 // Returns:
 // - []byte: Processed response as a byte array. Returns an empty response in case of errors.
 func (s *Server) TCPHandler(b []byte) []byte {
-	// Initialize a new transport request and response
-	req, res := transport.New()
-
-	// Unmarshal the input byte array into the request struct
-	err := proto.Unmarshal(b, req)
-
-	// Set the process ID in the response to match the request
-	res.Pid = req.Pid
-
-	// Return an empty response if there's an error in unmarshalling
-	if err != nil {
-		return transport.Empty
-	}
-
-	// Resolve the request using the router and update the response
-	err = s.router.Resolve(req, res)
-
-	// Return an empty response if there's an error in processing the request
-	if err != nil {
-		return transport.Empty
-	}
-
-	// Marshal the response back into a byte array
-	b, err = proto.Marshal(res)
-
-	// Return an empty response if there's an error in marshalling
-	if err != nil {
-		return transport.Empty
-	}
-
-	// Return the processed response
-	return b
+	exchange := transport.New()
+	exchange.RequestFromTCP(b)
+	s.router.Resolve(exchange)
+	return exchange.ResponseFromTCP()
 }
