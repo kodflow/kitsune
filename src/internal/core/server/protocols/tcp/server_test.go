@@ -21,6 +21,17 @@ func TestServer(t *testing.T) {
 		assert.Equal(t, "127.0.0.1:7777", server.Address)
 	})
 
+	t.Run("StartAndStop", func(t *testing.T) {
+		server := setupServer("127.0.0.1:7777")
+		assert.NotNil(t, server)
+
+		assert.Error(t, server.Stop())
+		assert.NoError(t, server.Start())
+		assert.Error(t, server.Start())
+		assert.NoError(t, server.Stop())
+		assert.Error(t, server.Stop())
+	})
+
 	t.Run("Start:Successfully", func(t *testing.T) {
 		server := setupServer("127.0.0.1:7777")
 		err := server.Start()

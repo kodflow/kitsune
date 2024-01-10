@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/kodflow/kitsune/src/internal/core/server/transport"
+	"github.com/kodflow/kitsune/src/config"
 )
 
 // Client manages multiple service connections.
@@ -30,11 +30,13 @@ func NewClient() *Client {
 //
 // Parameters:
 // - address: string The TCP address to connect to.
+// - nbInstances: ...int Optional parameter to specify the number of instances to create (default is 1).
 //
 // Returns:
+// - *Service: Instance of the Service for the specified address.
 // - error: Error, if any occurred during the connection setup.
-func (c *Client) Connect(address string, nbInstances ...int) ([]*Service, error) {
-	num := 1 // Default to one instance
+func (c *Client) Connect(address string, nbInstances ...int) (*Service, error) {
+	num := config.DEFAULT_CLIENT_SERVICE_MAX_CONNS // Default to one instance
 	if len(nbInstances) > 0 && nbInstances[0] > 0 {
 		num = nbInstances[0]
 	}
@@ -42,43 +44,13 @@ func (c *Client) Connect(address string, nbInstances ...int) ([]*Service, error)
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if services, exists := c.services[address]; exists {
-		return services, nil
+	if service, exists := c.services[address]; exists {
+		return service, nil
 	}
 
-	services := make([]*Service, num)
-	for i := 0; i < num; i++ {
-		service := &Service{Address: address}
-		if err := service.Connect(); err != nil {
-			return nil, fmt.Errorf("failed to connect to service at %s: %v", address, err)
-		}
-		services[i] = service
-	}
+	c.services[address] = NewService(address, num)
 
-	c.services[address] = services
-	return services, nil
-}
-
-// Send sends a request using the specified service and waits for a response.
-// It uses the Service.Send method for the actual network operation.
-//
-// Parameters:
-// - address: string The address of the service to send the request to.
-// - exchange: *transport.Exchange The exchange object containing request and response.
-//
-// Returns:
-// - *transport.Exchange: Exchange object containing the response.
-// - error: Error, if any occurred during the send operation.
-func (c *Client) Send(address string, exchange *transport.Exchange) (*transport.Exchange, error) {
-	c.mu.Lock()
-	service, exists := c.services[address]
-	c.mu.Unlock()
-
-	if !exists {
-		return nil, fmt.Errorf("no service found for address %s", address)
-	}
-
-	return service.Send(exchange), nil
+	return c.services[address], nil
 }
 
 // Close closes all service connections managed by the client.
@@ -90,9 +62,9 @@ func (c *Client) Close() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	for address, service := range c.services {
+	for _, service := range c.services {
 		if err := service.Close(); err != nil {
-			fmt.Printf("Error closing service at address %s: %v\n", address, err)
+			fmt.Printf("Error closing service at address %s: %v\n", service.address, err)
 		}
 	}
 

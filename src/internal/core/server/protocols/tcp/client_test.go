@@ -1,49 +1,86 @@
 package tcp
 
 import (
-	"log"
-	"math"
-	"runtime"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
 
-	"github.com/kodflow/kitsune/src/internal/core/server/transport/proto/generated"
-	"github.com/shirou/gopsutil/cpu"
+	"github.com/kodflow/kitsune/src/config"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/levels"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestTCPClient(t *testing.T) {
+	config.DEFAULT_LOG_LEVEL = levels.DEBUG
 	server := setupServer("127.0.0.1:7777")
 	server.Start()
 	defer server.Stop()
 
 	client := NewClient()
-	service1, err := client.Connect("127.0.0.1", "7777")
+	service, err := client.Connect(server.Address, 1)
+	i := transport.New()
+	o := service.Send(i)
+	assert.Equal(t, i.Request().Id, o.Request().Id)
+	assert.Equal(t, o.Request().Id, o.Response().Id)
 	assert.Nil(t, err)
 
-	query1 := service1.MakeExchange()
+	requestMax := 2000
 
-	response := make(chan bool)
+	var mu sync.Mutex
 
-	client.Send(func(responses ...*generated.Response) {
-		response <- true
-	}, query1)
+	tick := 0
+	v := 0
+	ticker := time.NewTicker(time.Second)
+	T := 0
 
-	assert.True(t, <-response)
+	go func() {
+		logger.Warn("Start")
+		for v = 0; v < requestMax; v++ {
+			go func() {
+				i := transport.New()
+				o := service.Send(i)
+				assert.Equal(t, i.Request().Id, o.Request().Id)
+				assert.Equal(t, i.Request().Id, o.Response().Id)
+			}()
+		}
+		logger.Warn("Stop")
+	}()
+
+	for range ticker.C {
+		tick++
+		logger.Infof("%d Request: %d %d %d", tick, C, v+1, T)
+		logger.Infof("promise %d", len(service.promises))
+		if T == requestMax+1 {
+			ticker.Stop()
+			logger.Success("Finished")
+			break
+		} else if T > requestMax+1 {
+			ticker.Stop()
+			logger.Error(fmt.Errorf("Too much request: %d", T))
+			break
+		}
+		mu.Lock()
+		T = T + C
+		C = 0
+		mu.Unlock()
+	}
 }
 
+/*
 func BenchmarkLocal(b *testing.B) {
 	server1 := NewServer("127.0.0.1:8080")
 	server1.Start()
 	defer server1.Stop()
 
 	client := NewClient()
-	service1, _ := client.Connect("127.0.0.1", "8080")
+	service1, _ := client.Connect(server1.Address)
 
 	b.Run("benchmark", func(b *testing.B) {
 		b.ResetTimer() // Ne compte pas la configuration initiale dans le temps de benchmark
-		var max = 1000000
+		var max = 10000
 		var rps = 0
 		var total = 0
 		var mu sync.Mutex
@@ -88,7 +125,7 @@ func BenchmarkLocal(b *testing.B) {
 			avgRPS := sumRPS / len(rpsHistory)
 			deltaRPS := maxRPS - minRPS
 
-			log.Printf("Request/Sec: %d, Avg: %d, Min: %d, Max: %d, Delta: %d, REQS: %d/%d, Go Routine: %d, MemoryUsage: %d Mb, CPU Usage: %.2f%%", rps, avgRPS, minRPS, maxRPS, deltaRPS, total, max, runtime.NumGoroutine(), bToMb(m.Alloc), cpuUsage)
+			log.Printf("Request/Sec: %d, Avg: %d, Min: %d, Max: %d, Delta: %d, REQS: %d/%d, Go Roine: %d, MemoryUsage: %d Mb, CPU Usage: %.2f%%", rps, avgRPS, minRPS, maxRPS, deltaRPS, total, max, runtime.NumGoroutine(), bToMb(m.Alloc), cpuUsage)
 			rps = 0
 			if int(total) >= max {
 				ticker.Stop()
