@@ -41,7 +41,7 @@ func TestHTTPClient(t *testing.T) {
 
 	t.Run("GET Request", func(t *testing.T) {
 		res := client.Send(req)
-		assert.Equal(t, uint32(204), res.Status)
+		assert.Equal(t, uint32(404), res.Status)
 	})
 
 	req = &generated.Request{
@@ -51,6 +51,6 @@ func TestHTTPClient(t *testing.T) {
 
 	t.Run("GET Request", func(t *testing.T) {
 		res := client.Send(req)
-		assert.Equal(t, uint32(204), res.Status)
+		assert.Equal(t, uint32(404), res.Status)
 	})
 }

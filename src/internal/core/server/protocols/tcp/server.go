@@ -4,37 +4,45 @@ import (
 	"bufio"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"os"
 	"strconv"
 
-	"github.com/kodflow/kitsune/src/internal/core/server/api"
-	"github.com/kodflow/kitsune/src/internal/core/server/handler"
+	"github.com/kodflow/kitsune/src/internal/core/server/router"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport"
 	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
 )
 
 // Server represents a TCP server and contains information about the address it listens on
 // and the underlying network listener.
 type Server struct {
-	Address  string       // Address to listen on
-	listener net.Listener // TCP Listener object
-	router   *api.Router
+	Address   string       // Address to listen on
+	listener  net.Listener // TCP Listener object
+	router    *router.Router
+	isRunning bool
+
+	i chan []byte
+	o chan []byte
 }
 
 // NewServer creates a new Server instance with the specified listening address.
 func NewServer(address string) *Server {
 	return &Server{
 		Address: address,
-		router:  api.MakeRouter(),
+		router:  router.MakeRouter(),
+		// I/O channels
+		i: make(chan []byte),
+		o: make(chan []byte),
 	}
 }
 
 // Register is a method for registering API handlers with the server.
 //
 // Parameters:
-// - api: api.APInterface - The API interface to register handlers from.
-func (s *Server) Register(api api.APInterface) {
+// - api: router.EndPoint - The EndPoint to register handlers from.
+func (s *Server) Register(api router.EndPoint) {
 	// TODO: Implement handler registration.
 }
 
@@ -49,11 +57,11 @@ func (s *Server) Start() error {
 
 	var err error
 	s.listener, err = net.Listen("tcp", s.Address)
-	if logger.Error(err) {
+	if err != nil {
 		return err
 	}
 
-	go s.accepLoop()
+	go s.acceptLoop()
 
 	logger.Info("server start on " + s.Address + " with pid:" + strconv.Itoa(os.Getpid()))
 
@@ -71,6 +79,7 @@ func (s *Server) Stop() error {
 
 	err := s.listener.Close()
 	s.listener = nil
+	s.isRunning = false
 
 	logger.Info("server stop on " + s.Address)
 	return err
@@ -78,15 +87,16 @@ func (s *Server) Stop() error {
 
 // accepLoop continuously accepts incoming connections.
 // It listens for incoming client connections and handles them asynchronously by calling 'handleConnection'.
-func (s *Server) accepLoop() {
+func (s *Server) acceptLoop() {
+	s.isRunning = true
 	for {
 		if s.listener == nil {
 			break
 		}
 
 		conn, err := s.listener.Accept() // Accept incoming connections.
-		if err != nil {
-			break // Exit the loop if there is an error accepting a connection.
+		if !s.isRunning || err != nil {
+			break
 		}
 
 		go s.handleConnection(conn) // Handle the connection asynchronously using 'handleConnection'.
@@ -99,47 +109,64 @@ func (s *Server) accepLoop() {
 // Parameters:
 // - conn: net.Conn - The client connection to handle.
 func (s *Server) handleConnection(conn net.Conn) {
-	defer conn.Close()              // Close the connection when the function exits.
-	reader := bufio.NewReader(conn) // Create a buffered reader for reading data from the connection.
-	writer := bufio.NewWriter(conn) // Create a buffered writer for writing data to the connection.
+	defer conn.Close()
+
+	reader := bufio.NewReader(conn)
+	writer := bufio.NewWriter(conn)
+
+	go s.request(reader)
+	go s.response(writer)
+
+	for data := range s.i {
+		go s.TCPHandler(data)
+	}
+}
+
+func (s *Server) request(reader *bufio.Reader) {
 	for {
-		data, err := s.handleRequest(reader) // Read and process incoming requests.
-		if logger.Error(err) {
-			break // Exit the loop if there is an error.
+		var length uint32
+		if err := binary.Read(reader, binary.LittleEndian, &length); err != nil {
+			if err == io.EOF {
+				break
+			}
+			logger.Error(fmt.Errorf("failed to read request length: %w", err))
+			continue
 		}
 
-		s.sendResponse(writer, handler.TCPHandler(data)) // Send a response to the client based on the processed data.
+		data := make([]byte, length)
+		_, err := io.ReadFull(reader, data)
+
+		if err != nil {
+			logger.Error(fmt.Errorf("failed to read request: %w", err))
+			continue
+		}
+		s.i <- data
 	}
 }
 
-// handleRequest reads and processes incoming requests.
+func (s *Server) response(writer *bufio.Writer) {
+	for data := range s.o {
+		if len(data) > 0 {
+			binary.Write(writer, binary.LittleEndian, uint32(len(data)))
+			writer.Write(data)
+			writer.Flush()
+		}
+	}
+}
+
+// TCPHandler handles TCP requests by unmarshalling, processing, and marshalling responses.
+// It is responsible for converting raw byte data into a structured request, processing it
+// using a router, and then returning the structured response as byte data. It handles
+// errors at each step by returning an empty response in case of failure.
 //
 // Parameters:
-// - reader: *bufio.Reader - The reader used to read incoming data.
+// - b: []byte Raw byte array representing a TCP request.
 //
 // Returns:
-// - []byte: The data read from the reader.
-// - error: An error if there was an issue reading the request.
-func (s *Server) handleRequest(reader *bufio.Reader) ([]byte, error) {
-	var length uint32
-	if err := binary.Read(reader, binary.LittleEndian, &length); err != nil {
-		return nil, err
-	}
-
-	data := make([]byte, length)
-	_, err := io.ReadFull(reader, data)
-	return data, err
-}
-
-// sendResponse sends a response to the client.
-//
-// Parameters:
-// - writer: *bufio.Writer - The writer used to send the response.
-// - res: []byte - The response data to be sent.
-func (s *Server) sendResponse(writer *bufio.Writer, res []byte) {
-	if len(res) > 0 {
-		binary.Write(writer, binary.LittleEndian, uint32(len(res)))
-		writer.Write(res)
-		writer.Flush()
-	}
+// - []byte: Processed response as a byte array. Returns an empty response in case of errors.
+func (s *Server) TCPHandler(b []byte) {
+	exchange := transport.New()
+	exchange.RequestFromTCP(b)
+	s.router.Resolve(exchange)
+	s.o <- exchange.ResponseFromTCP()
 }

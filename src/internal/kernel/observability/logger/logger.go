@@ -6,6 +6,7 @@ import (
 	"runtime/debug"
 
 	"github.com/Code-Hex/dd"
+	"github.com/kodflow/kitsune/src/config"
 	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/levels"
 	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/writers"
 )
@@ -45,17 +46,19 @@ func New(t writers.TYPE, l levels.TYPE) *Logger {
 // - messages: ...any The messages or data to log.
 func (l *Logger) Write(level levels.TYPE, messages ...any) {
 	for _, message := range messages {
-		var logger *log.Logger = nil
-		if level <= levels.WARN {
-			logger = l.failure
-		} else {
-			logger = l.success
-		}
+		if level <= config.DEFAULT_LOG_LEVEL {
+			var logger *log.Logger = nil
+			if level <= levels.WARN {
+				logger = l.failure
+			} else {
+				logger = l.success
+			}
 
-		if level == levels.DEBUG {
-			logger.Println(fmt.Sprintf(PATH, level.Color(), level.String()), dd.Dump(message, dd.WithIndent(4)))
-		} else if level <= l.level {
-			logger.Println(fmt.Sprintf(PATH, level.Color(), level.String()), message)
+			if level == levels.DEBUG {
+				logger.Println(fmt.Sprintf(PATH, level.Color(), level.String()), dd.Dump(message, dd.WithIndent(4)))
+			} else if level <= l.level {
+				logger.Println(fmt.Sprintf(PATH, level.Color(), level.String()), message)
+			}
 		}
 	}
 }
@@ -160,4 +163,54 @@ func (l *Logger) Debug(v ...any) {
 // It is used for logging detailed execution traces for in-depth debugging.
 func (l *Logger) Trace() {
 	l.Write(levels.TRACE, string(debug.Stack()))
+}
+
+// Infof logs an informational message with formatted output.
+// It is similar to Info but allows for formatted messages.
+//
+// Parameters:
+// - format: string The format string.
+// - a: ...any The arguments for formatting.
+func (l *Logger) Infof(format string, a ...any) {
+	l.Write(levels.INFO, fmt.Sprintf(format, a...))
+}
+
+// Warnf logs a warning message with formatted output.
+// It is similar to Warn but allows for formatted messages.
+//
+// Parameters:
+// - format: string The format string.
+// - a: ...any The arguments for formatting.
+func (l *Logger) Warnf(format string, a ...any) {
+	l.Write(levels.WARN, fmt.Sprintf(format, a...))
+}
+
+// Successf logs a success message with formatted output.
+// It is similar to Success but allows for formatted messages.
+//
+// Parameters:
+// - format: string The format string.
+// - a: ...any The arguments for formatting.
+func (l *Logger) Successf(format string, a ...any) {
+	l.Write(levels.SUCCESS, fmt.Sprintf(format, a...))
+}
+
+// Debugf logs a debug message with formatted output.
+// It is similar to Debug but allows for formatted messages.
+//
+// Parameters:
+// - format: string The format string.
+// - a: ...any The arguments for formatting.
+func (l *Logger) Debugf(format string, a ...any) {
+	l.Write(levels.DEBUG, fmt.Sprintf(format, a...))
+}
+
+// Messagef logs a general message with formatted output.
+// It is similar to Message but allows for formatted messages.
+//
+// Parameters:
+// - format: string The format string.
+// - a: ...any The arguments for formatting.
+func (l *Logger) Messagef(format string, a ...any) {
+	l.Write(levels.MESSAGE, fmt.Sprintf(format, a...))
 }

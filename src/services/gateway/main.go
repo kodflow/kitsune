@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/kodflow/kitsune/src/internal/core/server/protocols/http"
 	"github.com/kodflow/kitsune/src/internal/kernel/daemon"
+	"github.com/kodflow/kitsune/src/services/gateway/endpoints"
 )
 
 func main() {
@@ -15,6 +16,8 @@ func main() {
 				//DOMAIN: "aube.io",
 				//SUBS:   []string{"home"},
 			})
+
+			server.Register(endpoints.ROOT)
 
 			return server.Start()
 		},

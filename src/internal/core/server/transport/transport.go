@@ -1,32 +1,113 @@
 package transport
 
 import (
+	"io"
+	"net/http"
+
 	"github.com/google/uuid"
 	"github.com/kodflow/kitsune/src/internal/core/server/transport/proto/generated"
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
+	"google.golang.org/protobuf/proto"
 )
 
-// Empty represents an empty byte slice.
-// It can be used as a placeholder or default value where a byte slice is required but no data is provided.
-var Empty = []byte{}
+func NewRequest(id uuid.UUID) *generated.Request {
+	return &generated.Request{
+		Id:      id.String(), // Set the Request ID to the UUID string.
+		Headers: map[string]*generated.Header{},
+	}
+}
 
-// New creates and returns a new Request and Response pair with a unique ID.
-// It utilizes the UUID library to generate a unique identifier for each request-response pair.
-// The Response is initialized with a default status of 204 (No Content) and the same ID as the Request.
-//
-// Returns:
-// - *Request: A pointer to a newly created Request object with a unique ID.
-// - *Response: A pointer to a newly created Response object with a status of 204 and the same ID as the Request.
-func New() (*generated.Request, *generated.Response) {
+func NewReponse() *generated.Response {
+	return &generated.Response{
+		Status:  500,
+		Headers: map[string]*generated.Header{},
+	}
+}
+
+func New() *Exchange {
 	id, _ := uuid.NewRandom() // Generate a new random UUID.
+	req := NewRequest(id)
 
-	req := &generated.Request{
-		Id: id.String(), // Set the Request ID to the UUID string.
+	return &Exchange{
+		req: req,
+	}
+}
+
+func (e *Exchange) Wait() {
+	if e.res == nil && e.answer == nil {
+		e.answer = make(chan struct{}, 1)
+		<-e.answer
+	}
+}
+
+func (e *Exchange) RequestFromTCP(b []byte) {
+	// Unmarshal the input byte array into the request struct
+	err := proto.Unmarshal(b, e.req)
+	if logger.Error(err) {
+		e.res.Status = http.StatusBadRequest
+		return
 	}
 
-	res := &generated.Response{
-		Status: 204,    // Initialize with a 204 No Content status.
-		Id:     req.Id, // Set the Response ID to the same ID as the Request.
+	e.res = NewReponse()
+}
+
+func (e *Exchange) ResponseFromTCP() []byte {
+	e.res.Id = e.req.Id
+	b, err := proto.Marshal(e.res)
+
+	if logger.Error(err) {
+		return []byte{}
 	}
 
-	return req, res
+	return b
+}
+
+func (e *Exchange) RequestFromHTTP(r *http.Request) {
+	e.req.Method = r.Method
+	e.req.Endpoint = r.URL.String()
+	for k, v := range r.Header {
+		e.req.Headers[k] = &generated.Header{Items: v}
+	}
+
+	// Read the request body for specific HTTP methods
+	if r.Method == "POST" || r.Method == "PATCH" || r.Method == "PUT" {
+		// Read the request body
+		body, err := io.ReadAll(r.Body)
+		defer r.Body.Close()
+		if err != nil {
+			e.res.Status = http.StatusBadRequest
+			return
+		}
+
+		e.req.Body = body
+	}
+
+	e.res = NewReponse()
+}
+
+func (e *Exchange) ResponseFromHTTP(w http.ResponseWriter) {
+	w.Header().Set("request-id", e.req.Id)
+	w.WriteHeader(int(e.res.Status))
+	w.Write(e.res.Body)
+}
+
+func (e *Exchange) Request() *generated.Request {
+	return e.req
+}
+
+func (e *Exchange) Response(res ...*generated.Response) *generated.Response {
+	if len(res) > 0 {
+		e.res = res[0]
+		if e.answer != nil {
+			e.answer <- struct{}{}
+		}
+	}
+
+	return e.res
+}
+
+type Exchange struct {
+	req    *generated.Request
+	res    *generated.Response
+	answer chan struct{}
 }
