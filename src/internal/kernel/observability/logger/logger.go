@@ -6,6 +6,7 @@ import (
 	"runtime/debug"
 
 	"github.com/Code-Hex/dd"
+	"github.com/kodflow/kitsune/src/config"
 	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/levels"
 	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/writers"
 )
@@ -45,17 +46,19 @@ func New(t writers.TYPE, l levels.TYPE) *Logger {
 // - messages: ...any The messages or data to log.
 func (l *Logger) Write(level levels.TYPE, messages ...any) {
 	for _, message := range messages {
-		var logger *log.Logger = nil
-		if level <= levels.WARN {
-			logger = l.failure
-		} else {
-			logger = l.success
-		}
+		if level <= config.DEFAULT_LOG_LEVEL {
+			var logger *log.Logger = nil
+			if level <= levels.WARN {
+				logger = l.failure
+			} else {
+				logger = l.success
+			}
 
-		if level == levels.DEBUG {
-			logger.Println(fmt.Sprintf(PATH, level.Color(), level.String()), dd.Dump(message, dd.WithIndent(4)))
-		} else if level <= l.level {
-			logger.Println(fmt.Sprintf(PATH, level.Color(), level.String()), message)
+			if level == levels.DEBUG {
+				logger.Println(fmt.Sprintf(PATH, level.Color(), level.String()), dd.Dump(message, dd.WithIndent(4)))
+			} else if level <= l.level {
+				logger.Println(fmt.Sprintf(PATH, level.Color(), level.String()), message)
+			}
 		}
 	}
 }

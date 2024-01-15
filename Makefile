@@ -34,8 +34,11 @@ help: #Pour générer automatiquement l'aide ## Display all commands available
 aio: ## Start services in portable version
 	docker compose -f .github/build/compose.yml --profile=services up --build
 
-run: ## Run services in portable version
-	docker compose -f .github/build/compose.yml --profile=standalone run --build --rm kitsune.$(ARGS)
+#run: ## Run services in portable version
+#	docker compose -f .github/build/compose.yml --profile=standalone run --build --rm kitsune.$(ARGS)
+
+run:
+	go run $(CURDIR)/src/services/$(ARGS)/main.go
 
 #test: ## Run services in portable version
 #	docker compose -f .github/build/compose.yml --profile=standalone build

@@ -3,7 +3,6 @@ package http
 import (
 	"crypto/tls"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
 	"os"
@@ -217,9 +216,7 @@ func (e *Engine) Stop() error {
 	}
 
 	err := e.listener.Close()
-	if err != nil {
-		e.running = false
-	}
+	e.running = false
 
 	logger.Info(fmt.Sprintf("server stop on %v:%v with pid: %v", e.DOMAIN, e.PORT, os.Getpid()))
 
@@ -235,35 +232,10 @@ func (e *Engine) Stop() error {
 // - w: http.ResponseWriter Response writer to send back the HTTP response.
 // - r: *http.Request The incoming HTTP request to be processed.
 func (s *Server) HTTPHandler(w http.ResponseWriter, r *http.Request) {
-	logger.Info(fmt.Sprintf("request received on %v:%v with pid: %v", r.Host, r.URL.String(), os.Getpid()))
+	logger.Infof("request: %v %v", r.Host, r.URL.String())
 	// Initialize a new transport request and response
-	req, res := transport.New()
-	req.Method = r.Method
-	req.Endpoint = r.URL.String()
-
-	// Read the request body for specific HTTP methods
-	if r.Method == "POST" || r.Method == "PATCH" || r.Method == "PUT" {
-		// Read the request body
-		body, err := io.ReadAll(r.Body)
-		defer r.Body.Close()
-		if err != nil {
-			// Handle errors in reading the request body
-			http.Error(w, "Erreur lors de la lecture de la requête", http.StatusBadRequest)
-			return
-		}
-
-		req.Body = body
-	}
-
-	// Process the request using the router
-	if err := s.router.Resolve(req, res); err != nil {
-		// Handle errors in processing the request
-		http.Error(w, "Erreur de traitement", http.StatusInternalServerError)
-		return
-	}
-
-	// Write the response back to the client
-	w.Header().Set("request-id", req.Id)
-	w.WriteHeader(int(res.Status))
-	w.Write(res.Body)
+	exchange := transport.New()
+	exchange.RequestFromHTTP(r)
+	s.router.Resolve(exchange)
+	exchange.ResponseFromHTTP(w)
 }

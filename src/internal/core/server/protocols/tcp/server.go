@@ -18,9 +18,10 @@ import (
 // Server represents a TCP server and contains information about the address it listens on
 // and the underlying network listener.
 type Server struct {
-	Address  string       // Address to listen on
-	listener net.Listener // TCP Listener object
-	router   *router.Router
+	Address   string       // Address to listen on
+	listener  net.Listener // TCP Listener object
+	router    *router.Router
+	isRunning bool
 
 	i chan []byte
 	o chan []byte
@@ -60,7 +61,7 @@ func (s *Server) Start() error {
 		return err
 	}
 
-	go s.accepLoop()
+	go s.acceptLoop()
 
 	logger.Info("server start on " + s.Address + " with pid:" + strconv.Itoa(os.Getpid()))
 
@@ -78,6 +79,7 @@ func (s *Server) Stop() error {
 
 	err := s.listener.Close()
 	s.listener = nil
+	s.isRunning = false
 
 	logger.Info("server stop on " + s.Address)
 	return err
@@ -85,15 +87,16 @@ func (s *Server) Stop() error {
 
 // accepLoop continuously accepts incoming connections.
 // It listens for incoming client connections and handles them asynchronously by calling 'handleConnection'.
-func (s *Server) accepLoop() {
+func (s *Server) acceptLoop() {
+	s.isRunning = true
 	for {
 		if s.listener == nil {
 			break
 		}
 
 		conn, err := s.listener.Accept() // Accept incoming connections.
-		if err != nil {
-			break // Exit the loop if there is an error accepting a connection.
+		if !s.isRunning || err != nil {
+			break
 		}
 
 		go s.handleConnection(conn) // Handle the connection asynchronously using 'handleConnection'.
@@ -120,11 +123,12 @@ func (s *Server) handleConnection(conn net.Conn) {
 }
 
 func (s *Server) request(reader *bufio.Reader) {
-	var i int
 	for {
-		i++
 		var length uint32
 		if err := binary.Read(reader, binary.LittleEndian, &length); err != nil {
+			if err == io.EOF {
+				break
+			}
 			logger.Error(fmt.Errorf("failed to read request length: %w", err))
 			continue
 		}
@@ -161,11 +165,8 @@ func (s *Server) response(writer *bufio.Writer) {
 // Returns:
 // - []byte: Processed response as a byte array. Returns an empty response in case of errors.
 func (s *Server) TCPHandler(b []byte) {
-	exchange := transport.Empty()
+	exchange := transport.New()
 	exchange.RequestFromTCP(b)
 	s.router.Resolve(exchange)
 	s.o <- exchange.ResponseFromTCP()
-	C++
 }
-
-var C = 0

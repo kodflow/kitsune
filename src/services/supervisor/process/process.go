@@ -58,7 +58,7 @@ func (p *Process) Restart() error {
 		return fmt.Errorf("failed to stop process for restart: %v", err)
 	}
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(time.Second)
 
 	err = p.Start()
 	if err != nil {

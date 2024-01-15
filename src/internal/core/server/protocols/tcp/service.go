@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/kodflow/kitsune/src/internal/core/server/transport"
+	"github.com/kodflow/kitsune/src/internal/core/server/transport/proto/generated"
 )
 
 type Service struct {
@@ -12,7 +13,7 @@ type Service struct {
 	address     string        // TCP server address.
 	current     int           // Current number of connections.
 
-	recover  chan *transport.Exchange
+	recover  chan *generated.Response
 	promises map[string]*transport.Exchange
 }
 
@@ -28,7 +29,7 @@ type Service struct {
 func NewService(address string, maxConns int) *Service {
 	service := &Service{
 		address:  address,
-		recover:  make(chan *transport.Exchange),
+		recover:  make(chan *generated.Response),
 		promises: make(map[string]*transport.Exchange),
 	}
 
@@ -43,7 +44,10 @@ func NewService(address string, maxConns int) *Service {
 
 func (s *Service) aggregate() {
 	for p := range s.recover {
-		s.promises[p.Response().Id] = p
+		s.mutex.Lock()
+		s.promises[p.Id].Response(p)
+		delete(s.promises, p.Id)
+		s.mutex.Unlock()
 	}
 }
 
@@ -69,11 +73,15 @@ func (s *Service) Send(exchange *transport.Exchange) *transport.Exchange {
 // Returns:
 // - *transport.Exchange: The exchange object with the updated response.
 func (s *Service) process(exchange *transport.Exchange, index int) *transport.Exchange {
+	req := exchange.Request()
+
 	s.mutex.Lock()
 	conn := s.connections[index]
-	s.current++
+	s.promises[req.Id] = exchange
+	s.current = (s.current + 1) % len(s.connections)
 	s.mutex.Unlock()
-	conn.o <- exchange
+
+	conn.o <- req
 
 	return exchange
 }
@@ -92,14 +100,15 @@ func (s *Service) Close() error {
 	for i, conn := range s.connections {
 		if conn != nil {
 			conn.mutex.Lock()
-			if conn.conn != nil {
-				if closeErr := conn.conn.Close(); closeErr != nil {
+			if conn.net != nil {
+				conn.close = true
+				if closeErr := conn.net.Close(); closeErr != nil {
 					err = closeErr // Set the error if closing a connection fails
 				}
-				conn.conn = nil
+				conn.net = nil
 			}
-			conn.mutex.Unlock()
 			s.connections[i] = nil
+			conn.mutex.Unlock()
 		}
 	}
 
