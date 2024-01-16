@@ -50,7 +50,7 @@ func (c *HTTPClient) Send(req *generated.Request) *generated.Response {
 	// Create a default response with a 500 status code and an empty header.
 	res := &generated.Response{
 		Status:  500,
-		Headers: map[string]string{},
+		Headers: map[string]*generated.Header{},
 	}
 
 	// Create an HTTP request based on the input request.
@@ -63,7 +63,9 @@ func (c *HTTPClient) Send(req *generated.Request) *generated.Response {
 
 	// Set headers for the HTTP request.
 	for k, v := range req.Headers {
-		httpRequest.Header.Set(k, v)
+		for _, h := range v.GetItems() {
+			httpRequest.Header.Add(k, h)
+		}
 	}
 
 	// Send the HTTP request and receive the HTTP response.
@@ -79,8 +81,9 @@ func (c *HTTPClient) Send(req *generated.Request) *generated.Response {
 	res.Status = uint32(httpResponse.StatusCode)
 
 	// Copy headers from the HTTP response to the response object.
+
 	for header := range httpResponse.Header {
-		res.Headers[header] = httpResponse.Header.Get(header)
+		res.Headers[header] = &generated.Header{Items: httpResponse.Header.Values(header)}
 	}
 
 	// Read the response body and store it in the response object.

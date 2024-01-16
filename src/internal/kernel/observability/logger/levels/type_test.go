@@ -71,8 +71,8 @@ func TestLevelInt(t *testing.T) {
 		{"ERROR", levels.ERROR, 3},
 		{"WARN", levels.WARN, 4},
 		{"SUCCESS", levels.SUCCESS, 5},
-		{"MESSAGE", levels.MESSAGE, 6},
-		{"INFO", levels.INFO, 7},
+		{"INFO", levels.INFO, 6},
+		{"MESSAGE", levels.MESSAGE, 7},
 		{"DEBUG", levels.DEBUG, 8},
 		{"TRACE", levels.TRACE, 9},
 		{"TYPE99", levels.TYPE(99), 99}, // Test for an unknown log level

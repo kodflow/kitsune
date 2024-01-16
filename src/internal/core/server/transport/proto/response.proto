@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package generated;
-
+import "src/internal/core/server/transport/proto/header.proto";
 option go_package = "src/internal/core/server/transport/proto/generated";
 
 message Response {
@@ -9,5 +9,5 @@ message Response {
   string id = 2;
   string pid = 3;
   bytes body = 4;
-  map<string, string> headers = 6;
+  map<string, Header> headers = 6;
 }

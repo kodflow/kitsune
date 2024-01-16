@@ -32,6 +32,12 @@ func TestLoggerMethods(t *testing.T) {
 	assert.NotPanics(t, func() { Info("test info") }, "Info should not panic")
 	assert.NotPanics(t, func() { Debug("test debug") }, "Debug should not panic")
 	assert.NotPanics(t, func() { Trace() }, "Trace should not panic")
+
+	assert.NotPanics(t, func() { Successf("test success") }, "Success should not panic")
+	assert.NotPanics(t, func() { Messagef("test message") }, "Message should not panic")
+	assert.NotPanics(t, func() { Warnf("test warn") }, "Warn should not panic")
+	assert.NotPanics(t, func() { Infof("test info") }, "Info should not panic")
+	assert.NotPanics(t, func() { Debugf("test debug") }, "Debug should not panic")
 }
 
 // TestSetLevel tests the SetLevel function of the logger package.

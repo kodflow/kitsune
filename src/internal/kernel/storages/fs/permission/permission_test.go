@@ -1,11 +1,9 @@
-package permission_test
+package permission
 
 import (
 	"os"
 	"testing"
 
-	"github.com/kodflow/kitsune/src/internal/kernel/storages/fs"
-	"github.com/kodflow/kitsune/src/internal/kernel/storages/fs/permission"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,26 +18,17 @@ const (
 func TestValidate(t *testing.T) {
 	// Clean up the temporary directory after the test.
 	defer os.RemoveAll(Kitsune)
-
-	// Create a valid file.
-	fv, err := fs.CreateFile(VALID_FILE_PATH)
-	assert.NoError(t, err)
-	assert.NotNil(t, fv)
-
-	// Create an invalid file.
-	fi, err := fs.CreateFile(INVALID_FILE_PATH)
-	assert.NoError(t, err)
-	assert.NotNil(t, fi)
+	os.MkdirAll(VALID_FILE_PATH, 0755)
 
 	// Validate that the valid file has the specified permissions.
-	valid := permission.Validate(VALID_FILE_PATH, 0644)
+	valid := Validate(VALID_FILE_PATH, 0644)
 	assert.True(t, valid)
 
 	// Validate that the invalid file does not have the specified permissions.
-	valid = permission.Validate(INVALID_FILE_PATH, 0755)
+	valid = Validate(INVALID_FILE_PATH, 0755)
 	assert.False(t, valid)
 
 	// Validate that a non-existent file does not have the specified permissions.
-	valid = permission.Validate(NONEXISTENT_FILE_PATH, 0644)
+	valid = Validate(NONEXISTENT_FILE_PATH, 0644)
 	assert.False(t, valid)
 }

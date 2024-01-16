@@ -1,4 +1,4 @@
-package logger_test
+package logger
 
 import (
 	"errors"
@@ -6,17 +6,20 @@ import (
 	"testing"
 
 	"github.com/kodflow/kitsune/src/config"
-	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger"
 	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/levels"
 	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/writers"
 	"github.com/kodflow/kitsune/src/internal/kernel/storages/fs"
 	"github.com/stretchr/testify/assert"
 )
 
+func init() {
+	config.DEFAULT_LOG_LEVEL = levels.TRACE
+}
+
 // newTestLogger creates and returns a new logger instance for testing.
 // This logger is configured with a file writer and trace level logging.
-func newTestLogger() *logger.Logger {
-	return logger.New(writers.FILE, levels.TRACE)
+func newTestLogger() *Logger {
+	return New(writers.FILE, levels.TRACE)
 }
 
 // TestLoggerErrorMethods tests the error handling methods of the logger.

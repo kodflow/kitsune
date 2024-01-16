@@ -29,6 +29,17 @@ func TestHTTPServer(t *testing.T) {
 		assert.NotNil(t, server)
 	})
 
+	t.Run("StartAndStop", func(t *testing.T) {
+		server := setupHTTPServer(p1, p2)
+		assert.NotNil(t, server)
+
+		assert.Error(t, server.Stop())
+		assert.NoError(t, server.Start())
+		assert.Error(t, server.Start())
+		assert.NoError(t, server.Stop())
+		assert.Error(t, server.Stop())
+	})
+
 	t.Run("StartStandardServer:Successfully", func(t *testing.T) {
 		server := setupHTTPServer(p1, "")
 		err := server.Start()

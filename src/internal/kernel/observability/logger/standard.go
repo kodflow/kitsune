@@ -70,8 +70,8 @@ func Error(err error) bool {
 //
 // Parameters:
 // - v: ...any The message or variables to log.
-func Success(v ...any) {
-	standard().Success(v...)
+func Success(a ...any) {
+	standard().Success(a...)
 }
 
 // Message logs a message with Message level.
@@ -79,8 +79,8 @@ func Success(v ...any) {
 //
 // Parameters:
 // - v: ...any The message or variables to log.
-func Message(v ...any) {
-	standard().Message(v...)
+func Message(a ...any) {
+	standard().Message(a...)
 }
 
 // Warn logs a message with Warn level.
@@ -88,8 +88,8 @@ func Message(v ...any) {
 //
 // Parameters:
 // - v: ...any The message or variables to log.
-func Warn(v ...any) {
-	standard().Warn(v...)
+func Warn(a ...any) {
+	standard().Warn(a...)
 }
 
 // Info logs a message with Info level.
@@ -97,8 +97,8 @@ func Warn(v ...any) {
 //
 // Parameters:
 // - v: ...any The message or variables to log.
-func Info(v ...any) {
-	standard().Info(v...)
+func Info(a ...any) {
+	standard().Info(a...)
 }
 
 // Debug logs a message with Debug level.
@@ -106,12 +106,57 @@ func Info(v ...any) {
 //
 // Parameters:
 // - v: ...any The message or variables to log.
-func Debug(v ...any) {
-	standard().Debug(v...)
+func Debug(a ...any) {
+	standard().Debug(a...)
 }
 
 // Trace logs a message with Trace level.
 // It logs the most detailed information, often for tracing code execution paths.
 func Trace() {
 	standard().Trace()
+}
+
+// Success logs a message with Success level.
+// It logs a success or completion message.
+//
+// Parameters:
+// - v: ...any The message or variables to log.
+func Successf(format string, a ...any) {
+	standard().Successf(format, a...)
+}
+
+// Message logs a message with Message level.
+// It logs a general, informational message.
+//
+// Parameters:
+// - v: ...any The message or variables to log.
+func Messagef(format string, a ...any) {
+	standard().Messagef(format, a...)
+}
+
+// Warn logs a message with Warn level.
+// It logs a warning message, indicating potential issues.
+//
+// Parameters:
+// - v: ...any The message or variables to log.
+func Warnf(format string, a ...any) {
+	standard().Warnf(format, a...)
+}
+
+// Info logs a message with Info level.
+// It logs informational messages, useful for tracking the flow of the application.
+//
+// Parameters:
+// - v: ...any The message or variables to log.
+func Infof(format string, a ...any) {
+	standard().Infof(format, a...)
+}
+
+// Debug logs a message with Debug level.
+// It logs detailed debugging information.
+//
+// Parameters:
+// - v: ...any The message or variables to log.
+func Debugf(format string, a ...any) {
+	standard().Debugf(format, a...)
 }

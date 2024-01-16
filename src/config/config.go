@@ -1,6 +1,11 @@
 package config
 
-import "time"
+import (
+	"runtime"
+	"time"
+
+	"github.com/kodflow/kitsune/src/internal/kernel/observability/logger/levels"
+)
 
 // DEFAULT_RETRY_INTERVAL, DEFAULT_RETRY_MAX, DEFAULT_TIMEOUT, and DEFAULT_CACHE
 // are constants representing default timing configurations in the application.
@@ -22,4 +27,19 @@ var (
 	// This duration specifies how long certain data or objects should be kept in cache
 	// before being refreshed or invalidated.
 	DEFAULT_CACHE time.Duration = 15
+
+	// DEFAULT_LOG_LEVEL defines the default log level for the application.
+	// This level is used to control the verbosity of the application's logs.
+	// It can be set to any of the levels defined in the levels package.
+	// By default, it is set to levels.INFO.
+	// To change the default log level, set the DEFAULT_LOG_LEVEL constant in the config package.
+	// For example:
+	// config.DEFAULT_LOG_LEVEL = levels.DEBUG
+	// config.DEFAULT_LOG_LEVEL = levels.ERROR
+	// config.DEFAULT_LOG_LEVEL = levels.FATAL
+	// config.DEFAULT_LOG_LEVEL = levels.INFO
+	// config.DEFAULT_LOG_LEVEL = levels.TRACE
+	DEFAULT_LOG_LEVEL levels.TYPE = levels.DEFAULT
+
+	DEFAULT_CLIENT_SERVICE_MAX_CONNS int = runtime.NumCPU()
 )
