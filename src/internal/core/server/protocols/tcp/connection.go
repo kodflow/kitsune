@@ -32,7 +32,9 @@ func (c *Connection) response() {
 		var length uint32
 
 		err := binary.Read(c.net, binary.LittleEndian, &length)
-		if c.close || logger.Error(err) {
+		if c.close {
+			break
+		} else if logger.Error(err) {
 			continue
 		}
 

@@ -15,7 +15,7 @@ func setupServer(address string) *Server {
 
 func TestServer(t *testing.T) {
 	logger.SetLevel(levels.OFF)
-	ip := "127.0.0.1:7777"
+	ip := "127.0.0.1:" + generateRandomNumbers()
 	t.Run("New", func(t *testing.T) {
 		server := setupServer(ip)
 		assert.NotNil(t, server)
