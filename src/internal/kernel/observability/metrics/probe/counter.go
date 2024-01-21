@@ -8,7 +8,7 @@ import (
 // This structure provides a simple counter that can be safely incremented or decremented
 // in a concurrent environment using atomic operations.
 type Counter struct {
-	current *uint64
+	value *uint64
 }
 
 // NewCounter initializes and returns a new instance of Counter.
@@ -19,30 +19,26 @@ type Counter struct {
 func NewCounter() *Counter {
 	initialValue := uint64(0)
 	return &Counter{
-		current: &initialValue,
+		value: &initialValue,
 	}
 }
 
 // Increment safely increments the counter by one.
 // This method uses atomic operations to ensure that the increment operation is thread-safe,
 // preventing race conditions in a concurrent environment.
-func (c *Counter) Increment() {
-	atomic.AddUint64(c.current, 1)
+func (c *Counter) Increment() uint64 {
+	atomic.AddUint64(c.value, 1)
+	return c.Value()
 }
 
-// Decrement safely decrements the counter by one if it is greater than zero.
-// This method uses atomic operations and a loop with a compare-and-swap operation to ensure
-// that the decrement is thread-safe. The counter will not decrement below zero.
-func (c *Counter) Decrement() {
-	for {
-		current := atomic.LoadUint64(c.current)
-		if current == 0 {
-			return // Counter cannot be negative
-		}
-		if atomic.CompareAndSwapUint64(c.current, current, current-1) {
-			return
-		}
+// Decrement safely decrements the counter by one.
+// This method uses atomic operations to ensure that the decrement operation is thread-safe,
+func (c *Counter) Decrement() uint64 {
+	if atomic.LoadUint64(c.value) > 0 {
+		atomic.AddUint64(c.value, ^uint64(0))
 	}
+
+	return c.Value()
 }
 
 // Value returns the current value of the counter.
@@ -53,5 +49,9 @@ func (c *Counter) Decrement() {
 // Returns:
 // - uint64: The current value of the counter.
 func (c *Counter) Value() uint64 {
-	return atomic.LoadUint64(c.current)
+	return atomic.LoadUint64(c.value)
+}
+
+func (c *Counter) Reset() {
+	atomic.StoreUint64(c.value, 0)
 }

@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package generated;
+
+option go_package = "src/internal/core/server/transport/proto/generated";
+
+message Header {
+  repeated string items = 1; // Liste de strings
+}

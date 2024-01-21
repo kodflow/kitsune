@@ -11,8 +11,8 @@ const (
 	ERROR               // ERROR for non-fatal errors.
 	WARN                // WARN for warning messages.
 	SUCCESS             // SUCCESS for successful operations.
-	MESSAGE             // MESSAGE for general messages.
 	INFO                // INFO for informational messages.
+	MESSAGE             // MESSAGE for general messages.
 	DEBUG               // DEBUG for debugging messages.
 	TRACE               // TRACE for detailed tracing.
 
@@ -25,10 +25,10 @@ var LABELS = []string{
 	PANIC:   "PANIC",
 	FATAL:   "FATAL",
 	ERROR:   "ERROR",
-	SUCCESS: "SUCCESS",
-	MESSAGE: "MESSAGE",
 	WARN:    "WARN",
+	SUCCESS: "SUCCESS",
 	INFO:    "INFO",
+	MESSAGE: "MESSAGE",
 	DEBUG:   "DEBUG",
 	TRACE:   "TRACE",
 }
@@ -38,10 +38,10 @@ var COLORS = []string{
 	PANIC:   "9",   // Bright red for PANIC.
 	FATAL:   "160", // Dark red for FATAL.
 	ERROR:   "1",   // Red for ERROR.
-	SUCCESS: "2",   // Green for SUCCESS.
-	MESSAGE: "7",   // White for MESSAGE.
 	WARN:    "3",   // Yellow for WARN.
+	SUCCESS: "2",   // Green for SUCCESS.
 	INFO:    "4",   // Blue for INFO.
+	MESSAGE: "7",   // White for MESSAGE.
 	DEBUG:   "6",   // Cyan for DEBUG.
 	TRACE:   "7",   // White for TRACE.
 }

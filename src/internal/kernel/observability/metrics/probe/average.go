@@ -1,73 +1,91 @@
 package probe
 
 import (
-	"sync"
-	"sync/atomic"
 	"time"
 )
 
 type Average struct {
-	counters map[string]*circularBuffer
-	ticker   *time.Ticker
-	mu       sync.Mutex
+	ticker     *time.Ticker
+	counter    *Counter
+	data       []uint64
+	sliceTimes []int
+	capacity   uint64
+
+	current uint64
+	size    uint64
 }
 
-// circularBuffer représente un buffer circulaire pour les compteurs
-type circularBuffer struct {
-	buffer []uint64
-	index  int
-}
+func NewAverage(duration time.Duration, maxtimes ...time.Duration) *Average {
+	var times uint64
+	var defaultValue = time.Minute
+	var highestDuration = time.Duration(0)
 
-// newCircularBuffer crée un nouveau buffer circulaire avec une taille donnée
-func newCircularBuffer(size int) *circularBuffer {
-	return &circularBuffer{
-		buffer: make([]uint64, size),
-		index:  0,
-	}
-}
-
-// next avance l'index du buffer circulaire
-func (cb *circularBuffer) next() {
-	cb.index = (cb.index + 1) % len(cb.buffer)
-	cb.buffer[cb.index] = 0 // Réinitialiser le compteur à l'index actuel
-}
-
-// increment augmente le compteur à l'index actuel
-func (cb *circularBuffer) increment() {
-	atomic.AddUint64(&cb.buffer[cb.index], 1)
-}
-
-func NewAverage(duration time.Duration, historySize int) *Average {
-	a := &Average{
-		counters: make(map[string]*circularBuffer),
-		ticker:   time.NewTicker(duration),
+	if len(maxtimes) == 0 {
+		maxtimes = append(maxtimes, defaultValue)
 	}
 
-	go func() {
-		for range a.ticker.C {
-			a.advanceCounters()
+	var sliceTimes = make([]int, 0, len(maxtimes))
+	for _, maxtime := range maxtimes {
+		sliceTimes = append(sliceTimes, int(maxtime/duration))
+		if highestDuration < maxtime {
+			highestDuration = maxtime
 		}
-	}()
+	}
+
+	times = uint64(highestDuration / duration)
+	if times < 1 {
+		times = 1
+	}
+
+	a := &Average{
+		ticker:     time.NewTicker(duration),
+		counter:    NewCounter(),
+		data:       make([]uint64, times),
+		capacity:   times,
+		sliceTimes: sliceTimes,
+	}
+
+	go a.Start()
 
 	return a
 }
 
-func (a *Average) advanceCounters() {
-	a.mu.Lock()
-	defer a.mu.Unlock()
+func (a *Average) Value() []float64 {
+	var result = make([]float64, len(a.sliceTimes))
 
-	for _, cb := range a.counters {
-		cb.next()
+	for i, sliceTime := range a.sliceTimes {
+		var sum uint64
+		var count int
+		for j := 0; j < sliceTime; j++ {
+			index := (int(a.current) - j - 1 + int(a.capacity)) % int(a.capacity)
+			sum += a.data[index]
+			count++
+		}
+
+		if count > 0 {
+			result[i] = float64(sum) / float64(count) // Calculez la moyenne
+		}
+	}
+
+	return result
+}
+
+func (a *Average) Start() {
+	for range a.ticker.C {
+		a.data[a.current] = a.counter.Value()
+		a.counter.Reset()
+
+		a.current = (a.current + 1) % a.capacity
 	}
 }
 
-func (a *Average) Hit(zone string) {
-	a.mu.Lock()
-	defer a.mu.Unlock()
+func (a *Average) Hit() {
+	a.counter.Increment()
+}
 
-	if _, ok := a.counters[zone]; !ok {
-		a.counters[zone] = newCircularBuffer(0)
-	}
-
-	a.counters[zone].increment()
+func (a *Average) Reset() {
+	a.counter.Reset()
+	a.data = make([]uint64, a.capacity)
+	a.current = 0
+	a.size = 0
 }
