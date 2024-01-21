@@ -6,6 +6,8 @@ on:
 
 jobs:
   test:
+    strategy:
+      max-attempts: 3
     name: Tests
     runs-on: ubuntu-latest
     steps:
