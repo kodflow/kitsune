@@ -14,7 +14,7 @@ import (
 
 func TestTCPClient(t *testing.T) {
 	config.DEFAULT_LOG_LEVEL = levels.DEBUG
-	server := setupServer("127.0.0.1:7777")
+	server := setupServer("127.0.0.1:7778")
 	server.Start()
 	defer server.Stop()
 
