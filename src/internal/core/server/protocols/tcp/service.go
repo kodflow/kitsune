@@ -105,7 +105,7 @@ func (s *Service) Close() error {
 				if closeErr := conn.net.Close(); closeErr != nil {
 					err = closeErr // Set the error if closing a connection fails
 				}
-				//conn.net = nil
+				conn.net = nil
 			}
 			s.connections[i] = nil
 			conn.mutex.Unlock()

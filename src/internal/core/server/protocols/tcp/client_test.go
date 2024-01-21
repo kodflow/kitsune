@@ -1,6 +1,8 @@
 package tcp
 
 import (
+	"math/rand"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -12,9 +14,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func generateRandomNumbers() string {
+	min, max := 2000, 65000
+	firstNumber := rand.Intn(max-min+1) + min
+	return strconv.Itoa(firstNumber)
+}
+
 func TestTCPClient(t *testing.T) {
 	config.DEFAULT_LOG_LEVEL = levels.DEBUG
-	server := setupServer("127.0.0.1:7778")
+	server := setupServer("127.0.0.1:" + generateRandomNumbers())
 	server.Start()
 	defer server.Stop()
 
